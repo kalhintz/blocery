@@ -3,7 +3,7 @@
 Blocery is a Blockchain based fintech and  pre-purchase platform on agricultural supply value chain.  http://blocery.io 
 
 MarketBly service is for pre-purchase & purchase of agricultural produces.
-Nicefood service is for revers-factoring for vendor and restaurants.
+Nicefood service is for reverse-factoring for vendor and restaurants.
 
 
 #### dApp
