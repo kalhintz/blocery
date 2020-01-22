@@ -1,0 +1,62 @@
+@import "Color.module.scss";
+@import "Text.module.scss";
+
+.card {
+  flex-grow: 1;
+  text-align: center;
+  border: 0.5px solid gray;
+  margin: 0px 7.5px 7.5px 7.5px;
+  //border-radius: 1em;
+  opacity: 0.7;
+}
+
+.card > div {
+  //padding: 0.4em;
+}
+
+.percentage {
+  font-weight: bold;
+  font-size: 14px;
+  background: gray;
+  color: white;
+  padding: 0.4em;
+  //border-top-left-radius: 0.6em;
+  //border-top-right-radius: 0.6em;
+}
+.date {
+  font-size: 12px;
+  //color: gray;
+  margin: 0.4em;
+}
+.price {
+  font-weight:bold;
+  font-size: 14px;
+  color: gray;
+  margin: 0.4em;
+}
+
+.card.active {
+  border: 3px solid $color-info;
+  opacity: 1;
+  & .percentage{
+    background: $color-info;
+    color: white;
+  }
+  & .date, .price {
+    color: #383838;
+  }
+
+
+  animation: borderBrightAnimation 1.5s infinite;
+  animation-direction: reverse;
+  -webkit-animation-timing-function: ease-in;
+  -moz-animation-timing-function: ease-in;
+  -o-animation-timing-function: ease-in;
+  animation-timing-function: ease-in;
+}
+
+@keyframes  borderBrightAnimation{
+  0%{}
+  80%{ border: 3px solid white; }
+  100%{}
+}

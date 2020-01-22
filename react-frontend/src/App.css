@@ -1,0 +1,173 @@
+/*!**/
+    /*DEMO STYLE*/
+/**!*/
+
+/*@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";*/
+
+
+
+/*body {*/
+    /*font-family: "Poppins", sans-serif;*/
+    /*background: #fafafa;*/
+/*}*/
+/*p {*/
+    /*font-family: "Poppins", sans-serif;*/
+    /*font-size: 1.1em;*/
+    /*font-weight: 300;*/
+    /*line-height: 1.7em;*/
+    /*color: #999;*/
+/*}*/
+
+/*a,*/
+/*a:hover,*/
+/*a:focus {*/
+    /*color: inherit;*/
+    /*text-decoration: none;*/
+    /*transition: all 0.3s;*/
+/*}*/
+
+/*.navbar {*/
+    /*padding: 5px 10px;*/
+    /*background: #fff;*/
+    /*border: none;*/
+    /*border-radius: 0;*/
+    /*margin-bottom: 15px;*/
+    /*box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);*/
+/*}*/
+
+/*.navbar-btn {*/
+    /*box-shadow: none;*/
+    /*outline: none !important;*/
+    /*border: none;*/
+/*}*/
+
+/*.line {*/
+    /*width: 100%;*/
+    /*height: 1px;*/
+    /*border-bottom: 1px dashed #ddd;*/
+    /*margin: 40px 0;*/
+/*}*/
+
+
+/*!* ---------------------------------------------------*/
+    /*CONTENT STYLE*/
+/*----------------------------------------------------- *!*/
+/*#content {*/
+    /*//padding: 10px;*/
+    /*min-height: 100vh;*/
+    /*transition: all 0.3s;*/
+    /*background-color: white;*/
+    /*width: 100%;    !*jun*!*/
+
+/*}*/
+
+/*!* ag-grid 전용 begin *!*/
+/*.ag-grid-cell-link {*/
+    /*color: dodgerblue;*/
+    /*text-align: left;*/
+    /*//text-decoration: underline;*/
+/*}*/
+/*!* ag-grid 전용 end *!*/
+
+@font-face {
+    font-family: "Spoqa Han Sans";
+    font-weight: 200;
+    src: url('./styles/fonts/Spoqa Han Sans Thin.woff2') format('woff2'),
+    url('./styles/fonts/Spoqa Han Sans Thin.woff') format('woff'),
+    url('./styles/fonts/Spoqa Han Sans Thin.ttf') format('truetype');
+}
+@font-face {
+    font-family: "Spoqa Han Sans";
+    font-weight: 300;
+    src: url('./styles/fonts/Spoqa Han Sans Light.woff2') format('woff2'),
+    url('./styles/fonts/Spoqa Han Sans Light.woff') format('woff'),
+    url('./styles/fonts/Spoqa Han Sans Light.ttf') format('truetype');
+}
+@font-face {
+    font-family: "Spoqa Han Sans";
+    font-style: normal;
+    font-weight: 400;
+    src: url('./styles/fonts/Spoqa Han Sans Regular.woff2') format('woff2'),
+    url('./styles/fonts/Spoqa Han Sans Regular.woff') format('woff'),
+    url('./styles/fonts/Spoqa Han Sans Regular.ttf') format('truetype');
+}
+@font-face {
+    font-family: "Spoqa Han Sans";
+    font-weight: 500;
+    src: url('./styles/fonts/Spoqa Han Sans Bold.woff2') format('woff2'),
+    url('./styles/fonts/Spoqa Han Sans Bold.woff') format('woff'),
+    url('./styles/fonts/Spoqa Han Sans Bold.ttf') format('truetype');
+}
+
+
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 15px;
+}
+body {
+    font-family: 'Spoqa Han Sans', 'Spoqa Han Sans JP', 'Sans-serif';
+    font-size: 1rem;
+    letter-spacing: -0.4px;
+    line-height: 1.65;
+}
+
+/* ================================== [swiper global customized class] START ================================== */
+
+/*.swiper-container { height: auto;}*/
+.swiper-slide {
+    /*height: auto;*/
+}
+
+/* bullet */
+.swiper-pagination {
+    /*bottom: 0.5rem;*/
+}
+
+/* < > 버튼 */
+.swiper-button-prev,
+.swiper-button-next {
+    /*width: 20px !important;*/
+    /*height: 40px;*/
+    /*background-color: white;*/
+    /*background-color: rgba(0, 0, 0, 0.3);*/
+    /*padding: 10px;*/
+    /*border-radius: 100%;*/
+}
+.swiper-button-prev{
+    left: 5% !important;
+}
+.swiper-button-next{
+    right: 5% !important;
+}
+
+/* 버튼의 컬러 변경시 HEX 코드임 아래의 FFFFFF(현재 흰색) 을 바꾸면됨 */
+.swiper-button-prev {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2027%2044'%3E%3Cpath%20d%3D'M0%2C22L22%2C0l2.1%2C2.1L4.2%2C22l19.9%2C19.9L22%2C44L0%2C22L0%2C22L0%2C22z'%20fill%3D'%23FFFFFF'%2F%3E%3C%2Fsvg%3E");
+}
+.swiper-button-next {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2027%2044'%3E%3Cpath%20d%3D'M27%2C22L27%2C22L5%2C44l-2.1-2.1L22.8%2C22L2.9%2C2.1L5%2C0L27%2C22L27%2C22z'%20fill%3D'%23FFFFFF'%2F%3E%3C%2Fsvg%3E");
+}
+
+/* bullet 동그라미 컬러 */
+.swiper-pagination-bullet-active {
+    background-color: #17a2b8;
+}
+
+/* ================================== [swiper global customized class] END ================================== */
+
+/* 회색 배경용 */
+.blocery-bg-gray {
+    background-color: #F4F4F4;
+}
+
+/* hr 회색 배경용 */
+.blocery-bg-dark-gray {
+    background-color: #e5e5e5;
+}

@@ -1,0 +1,19 @@
+@import "Color.module.scss";
+.loadingStart {
+  opacity: 0.7;
+}
+.loadingEnd {
+  opacity: 1;
+}
+
+.hover {
+  &:hover {
+    background-color: $color-light;
+  }
+  //&:focus {
+  //  background-color: $color-light;
+  //}
+  &:active {
+    background-color: $color-light;
+  }
+}

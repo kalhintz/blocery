@@ -1,0 +1,94 @@
+@import "Color.module.scss";
+@import "Text.module.scss";
+
+.goodsInfo > li {
+  display: inline-block;
+  width: 25%;
+  vertical-align: top;
+}
+
+.wrap{
+  font-size: 1rem;
+}
+.noFocus {
+  outline: none;
+}
+.wrap *{
+  outline: none !important;
+}
+
+//$color-info: #17a2b8;       //블로서리 기본색
+$color-info-dark: #13879a;
+$color-info-light: #13aabd;
+//$color-gray: gray;
+$color-gray-light: #aeaeae;
+$contant-padding: 1rem;     //본문 패딩
+$color-light: #f1f1f1;      //묽은 회색
+$color-sharp-tag: #0b4e59;  //해시태그
+$color-warning: #ffe000;
+
+$text-margin: 0.3em;
+
+.buy > div:nth-child(1){
+  max-width:100px;
+}
+
+.buy button {
+  border-radius: 0;
+}
+
+.contentImage {
+  width: 100%;
+  height: 100%
+}
+
+//16px
+.title,.price {
+  font-size: 16px;
+}
+
+//14px
+.time, .boughtCnt, .sharpTag,
+.containerGoodsPurcaseInfo > p,
+.containerGoodsReview > p
+{
+  font-size: 14px;
+}
+
+
+.containerGoodsPurcaseInfo > li {
+  display: inline-block;
+  width: 50%;
+  vertical-align: top;
+}
+
+//12px
+.containerGoodsPurcaseInfo {
+  //text-align: center;
+  padding: 10px;
+}
+.containerGoodsPurcaseInfo > p //상세정보
+{
+  color: $color-dark;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+.containerGoodsPurcaseInfo p > span{ //상세정보(약하게)
+  color: $color-secondary;
+}
+
+
+//bold
+.bold {
+  font-weight: bold;
+}
+
+.space {
+  padding: 0.15em;
+}
+
+.goodsPriceCardWrap {
+  display: flex;
+  font-size: 0.8em;
+  justify-content: center;
+}

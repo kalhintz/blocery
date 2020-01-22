@@ -1,0 +1,91 @@
+.greenBackground {
+    background-color: #008000;
+    color: #e0ffc1;
+}
+
+.blueBackground {
+    background-color: #00008b;
+    color: white;
+}
+
+.grayBackground {
+    background-color: #c9c9c9;
+    color: black;
+}
+
+
+.topContainer {
+    display: flex;
+    flex-direction: column;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 13px;
+    height: 100%;
+    width: 100%;
+}
+.topHeader {
+    display: flex;
+}
+.item {
+    display: flex;
+    flex: 1;
+}
+fieldset.item {
+    border-radius: 5px;
+    border-color: #cecece;
+    border-style: solid;
+    height: 80px;
+}
+.details {
+    flex: none;
+    width: 250px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+.details label {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-right: 15px;
+}
+.details > label {
+    margin-bottom: 10px;
+}
+.details > label:first-of-type {
+    margin-top: 10px;
+}
+.details > label:last-of-type {
+    margin-bottom: 0;
+}
+.options {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    height: calc(100% - 10px);
+    overflow-y: auto;
+}
+.options label {
+    display: flex;
+    flex-direction: row;
+    white-space: nowrap;
+    margin-right: 10px;
+}
+.options div {
+    width: 150px;
+}
+
+.grid-wrapper {
+    display: flex;
+    flex: 1;
+}
+.grid-wrapper > div {
+    width: 100%;
+    height: 100%;
+}
+@media (max-width: 900px) {
+    fieldset.item {
+        height: 120px;
+    }
+}

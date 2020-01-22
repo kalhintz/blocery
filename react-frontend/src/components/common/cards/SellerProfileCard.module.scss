@@ -1,0 +1,21 @@
+@import "Color.module.scss";
+
+.imageFace {
+
+}
+
+.imageFace:active {
+  animation-name: aniFace;
+  animation-duration: 0.3s;
+  animation-fill-mode: forwards;
+  -webkit-animation-timing-function: ease-in;
+  -moz-animation-timing-function: ease-in;
+  -o-animation-timing-function: ease-in;
+  animation-timing-function: ease-in;
+}
+
+@keyframes aniFace {
+  0% {}
+  50% {transform: scale(1.1, 1.1); opacity: 0.9;}
+  100% {}
+}

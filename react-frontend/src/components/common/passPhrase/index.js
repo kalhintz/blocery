@@ -1,0 +1,1 @@
+export { default as PassPhrase } from './PassPhrase'

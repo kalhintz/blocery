@@ -1,0 +1,2 @@
+import TrendOfMarketPriceInfo from './TrendOfMarketPriceInfo'
+export default TrendOfMarketPriceInfo

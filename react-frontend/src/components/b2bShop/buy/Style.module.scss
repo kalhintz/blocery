@@ -1,0 +1,25 @@
+@import "Text.module.scss";
+
+.wrap{
+  display: flex;
+}
+
+.hrBold {
+  border: none;
+  height: 1px;
+  background-color: #888888;
+}
+
+.hr2Bold {
+  border: none;
+  height: 2px;
+  background-color: #888888;
+}
+
+
+//썸네일 이미지
+.img {
+  width: 5em;
+  height: 5em;
+  //object-fit: cover; //정사각형 crop
+}

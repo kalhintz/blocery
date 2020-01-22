@@ -1,0 +1,60 @@
+@import "Color.module.scss";
+@import "Text.module.scss";
+
+//.item {
+//  list-style-type: none;
+//}
+//.item > li {
+//  display: inline-block;
+//  width: 50%;
+//  vertical-align: top;
+//}
+
+$borderRadius: 0.3rem;
+
+.wrap {
+  margin: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid $color-secondary-light-border;
+  border-radius: $borderRadius;
+
+  //헤더
+  & > div:nth-child(1){
+    border-top-left-radius: $borderRadius;
+    border-top-right-radius: $borderRadius;
+    background-color: $color-light;
+    color: $color-dark;
+    border-bottom: 1px solid $color-secondary-light-border;
+  }
+
+  & > div:nth-child(1):hover{
+    background-color: $color-info;
+    color: white;
+  }
+
+  & > div:nth-child(1):active{
+    background-color: $color-info-light;
+    color: white;
+  }
+
+  & a {
+    color: $color-dark;
+    //text-decoration: none !important;
+  }
+  & a:hover {
+    color: $color-dark;
+  }
+  & a:active {
+    color: $color-dark;
+  }
+}
+
+.icon {
+  border-radius: 3px;
+  //background-color: $color-info;
+  //color: white;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  //padding: 2px;
+}

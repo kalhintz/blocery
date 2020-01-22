@@ -1,0 +1,10 @@
+@import "Color.module.scss";
+
+.agGridDivCalc {
+  height: calc(100vh - 180px);
+  width: 100vw;
+}
+
+.textSteelblue {
+  color: $color-steelblue;
+}

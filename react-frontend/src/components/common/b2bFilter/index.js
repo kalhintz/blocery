@@ -1,0 +1,1 @@
+export { default as B2bFilter } from './B2bFilter'

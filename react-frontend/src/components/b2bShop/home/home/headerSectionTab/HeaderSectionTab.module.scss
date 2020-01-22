@@ -1,0 +1,63 @@
+@import "Color.module.scss";
+.wrap {
+  display: flex;
+  width: 100%;
+  //position: -webkit-sticky;
+  //position: sticky;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  //z-index: 2;
+  font-weight: 400;
+  border-bottom: 0.5px solid #cecece;
+  //box-shadow: 1px 1px 7px $color-shadow;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 4px 5px 0px 5px;
+
+  //탭 타이틀
+  & :nth-child(1) {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  //탭 밑줄 라인
+  & :nth-child(2) {
+    height: 4px;
+  }
+}
+
+.active {
+  background-color: #555555;
+  //background-color: $color-info;
+  animation-name: aniActive;
+  animation-duration: 0.3s;
+  animation-fill-mode: forwards;
+  -webkit-animation-timing-function: ease-in;
+  -moz-animation-timing-function: ease-in;
+  -o-animation-timing-function: ease-in;
+  animation-timing-function: ease-in;
+  opacity: 0;
+}
+
+@keyframes aniActive {
+  0%{}
+  50%{}
+  100%{opacity: 1;}
+}
+
+.link {
+  color: black;
+  text-decoration: none !important;
+}
+.link:active {
+  color: black;
+}
+.link:hover {
+  color: black;
+}

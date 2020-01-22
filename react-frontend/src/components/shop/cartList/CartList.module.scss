@@ -1,0 +1,41 @@
+@import "Color.module.scss";
+@import "Text.module.scss";
+
+/* common */
+.mdCheckbox {
+  padding: 3px 10px 3px 3px !important;
+}
+
+/* CartList start */
+.wrap {
+  background-color: #F4F4F4;
+  position: relative;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 100vh;
+  padding: 0.6em;
+  padding-bottom: 1px; //가장 아래 하얀 라인이 생기는 현상때문에 강제로 1을 줬음
+}
+/* CartList end */
+
+/* CartItem start */
+.goodsImage {
+  width: 100px;
+}
+/* CartItem end */
+
+/* CartFooter start */
+
+.noBorderRadius {
+  border-radius: 0 !important;
+}
+
+/* CartFooter end */
+.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}

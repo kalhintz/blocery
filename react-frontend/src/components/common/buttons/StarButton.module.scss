@@ -1,0 +1,27 @@
+@import "Color.module.scss";
+
+.star {
+  stroke: #9B9B9B;
+  stroke-width: 30;
+}
+
+.active {
+  stroke-width: 0;
+}
+
+.star:hover {
+  animation-name: animationStar;
+  animation-duration: 0.6s;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes animationStar {
+  0% {}
+  50% {color: $color-info-light; filter:contrast(150%);}
+  100% {
+    -webkit-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);}
+}

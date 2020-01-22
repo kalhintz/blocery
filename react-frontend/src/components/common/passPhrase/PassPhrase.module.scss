@@ -1,0 +1,11 @@
+@import "Color.module.scss";
+.character {
+  width: 37px;
+  height: 37px;
+  border: 1px solid whitesmoke;
+  text-align: center;
+  color: white;
+}
+.on {
+  background-color: $color-info;
+}

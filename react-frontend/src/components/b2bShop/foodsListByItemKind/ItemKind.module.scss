@@ -1,0 +1,21 @@
+@import "Color.module.scss";
+@import "Text.module.scss";
+
+.item {
+  //border: 0.2px solid $color-light;
+  border-right: 1px solid $color-light;
+  border-bottom: 1px solid $color-light;
+  & div {
+    //text-decoration: none !important;
+    color: $color-dark;
+  }
+}
+
+.active {
+  background-color: $color-gray;
+  border: 0;
+  & div {
+    color: white;
+  }
+
+}

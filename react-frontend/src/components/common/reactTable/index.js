@@ -1,0 +1,1 @@
+export { Cell as Cell } from './ReactTable'

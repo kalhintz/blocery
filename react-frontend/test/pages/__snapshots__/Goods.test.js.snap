@@ -1,0 +1,1189 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Goods /> 1번 상품상세 렌더링 테스트 1`] = `
+<Goods
+  goodsNo={1}
+>
+  <div>
+    <ShopOnlyXButtonNav
+      back={true}
+      close={false}
+    >
+      <div
+        className="wrap"
+      >
+        <XButton
+          back={true}
+          onClick={[Function]}
+        >
+          <div
+            className="button"
+            onClick={[Function]}
+          >
+            <pure(ArrowBackIcon)>
+              <ArrowBackIcon>
+                <WithStyles(SvgIcon)>
+                  <SvgIcon
+                    classes={
+                      Object {
+                        "colorAction": "MuiSvgIcon-colorAction-4",
+                        "colorDisabled": "MuiSvgIcon-colorDisabled-6",
+                        "colorError": "MuiSvgIcon-colorError-5",
+                        "colorPrimary": "MuiSvgIcon-colorPrimary-2",
+                        "colorSecondary": "MuiSvgIcon-colorSecondary-3",
+                        "fontSizeInherit": "MuiSvgIcon-fontSizeInherit-7",
+                        "fontSizeLarge": "MuiSvgIcon-fontSizeLarge-9",
+                        "fontSizeSmall": "MuiSvgIcon-fontSizeSmall-8",
+                        "root": "MuiSvgIcon-root-1",
+                      }
+                    }
+                    color="inherit"
+                    component="svg"
+                    fontSize="default"
+                    viewBox="0 0 24 24"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      className="MuiSvgIcon-root-1"
+                      focusable="false"
+                      role="presentation"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M0 0h24v24H0z"
+                        fill="none"
+                      />
+                      <path
+                        d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
+                      />
+                    </svg>
+                  </SvgIcon>
+                </WithStyles(SvgIcon)>
+              </ArrowBackIcon>
+            </pure(ArrowBackIcon)>
+          </div>
+        </XButton>
+      </div>
+    </ShopOnlyXButtonNav>
+    <GoodsDetail
+      farmDiaries={Array []}
+      goods={
+        Object {
+          "breedNm": "미나리",
+          "confirm": true,
+          "consumerPrice": 13000,
+          "contentImages": Array [
+            Object {
+              "imageNm": "263169_60112_029.jpg",
+              "imageNo": 0,
+              "imageUrl": "SBarbBBIrlfm.jpg",
+            },
+            Object {
+              "imageNm": "81331931.2.jpg",
+              "imageNo": 1,
+              "imageUrl": "r9yyGzXzrqff.jpg",
+            },
+          ],
+          "contractHash": null,
+          "cultivationDiaries": Array [],
+          "cultivationNm": "토지",
+          "cultivationNo": 0,
+          "currentPrice": 10400,
+          "deliveryFee": 0,
+          "discountRate": 20,
+          "expectShippingEnd": 1565276400000,
+          "expectShippingStart": 1565017200000,
+          "goodsImages": Array [
+            Object {
+              "imageNm": "600.jpeg",
+              "imageNo": 0,
+              "imageUrl": "hNi00aJdTIcM.jpeg",
+            },
+            Object {
+              "imageNm": "850_686_4457.JPG",
+              "imageNo": 1,
+              "imageUrl": "Rt2IEEWSCluM.jpg",
+            },
+          ],
+          "goodsNm": "팜토리 미나리 1kg",
+          "goodsNo": 1,
+          "itemName": "미나리",
+          "itemNo": 6,
+          "maxDiaryNo": 0,
+          "packAmount": 3,
+          "packCnt": 6000,
+          "packUnit": "kg",
+          "pesticideYn": "농약사용",
+          "priceSteps": Array [
+            Object {
+              "active": false,
+              "discountRate": 30,
+              "price": 9100,
+              "stepNo": 1,
+              "until": 1563202800000,
+            },
+            Object {
+              "active": true,
+              "discountRate": 20,
+              "price": 10400,
+              "stepNo": 2,
+              "until": 1563894000000,
+            },
+            Object {
+              "active": false,
+              "discountRate": 10,
+              "price": 11700,
+              "stepNo": 3,
+              "until": 1564758000000,
+            },
+          ],
+          "producerNo": 1,
+          "productionArea": "경기도 화성",
+          "productionStart": null,
+          "remainedCnt": 5999,
+          "remainedDepositBlct": 15598960,
+          "saleEnd": 1564758000000,
+          "searchTag": "미나리",
+          "selectedPriceStep": 3,
+          "totalDepositBlct": 15600000,
+        }
+      }
+      images={
+        Array [
+          Object {
+            "imageNm": "600.jpeg",
+            "imageNo": 0,
+            "imageUrl": "hNi00aJdTIcM.jpeg",
+          },
+          Object {
+            "imageNm": "850_686_4457.JPG",
+            "imageNo": 1,
+            "imageUrl": "Rt2IEEWSCluM.jpg",
+          },
+        ]
+      }
+      producer={
+        Object {
+          "account": "0x1c2f8ea7fab11420b120aca6991a66197805b49a",
+          "address": "",
+          "coRegistrationNo": "1248173259",
+          "email": "farmtory@ezfarm.co.kr",
+          "farmName": "팜토리",
+          "name": "김옥한",
+          "passPhrase": "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=",
+          "producerNo": 1,
+          "selfDeposit": null,
+          "valword": "wE9JacyZh6NXJ9TzVxct0h0rXA+TT08b//IIo3Ca2H8=",
+        }
+      }
+    >
+      <div
+        className="wrap"
+      >
+        <ImageGallery
+          autoPlay={true}
+          disableArrowKeys={false}
+          disableSwipe={false}
+          disableThumbnailScroll={false}
+          flickThreshold={0.4}
+          indexSeparator=" / "
+          infinite={true}
+          isRTL={false}
+          items={
+            Array [
+              Object {
+                "original": "http://localhost:8080/images/hNi00aJdTIcM.jpeg",
+                "thumbnail": "http://localhost:8080/images/hNi00aJdTIcM.jpeg",
+              },
+              Object {
+                "original": "http://localhost:8080/images/Rt2IEEWSCluM.jpg",
+                "thumbnail": "http://localhost:8080/images/Rt2IEEWSCluM.jpg",
+              },
+            ]
+          }
+          lazyLoad={false}
+          preventDefaultTouchmoveEvent={false}
+          renderFullscreenButton={[Function]}
+          renderLeftNav={[Function]}
+          renderPlayPauseButton={[Function]}
+          renderRightNav={[Function]}
+          showBullets={true}
+          showFullscreenButton={false}
+          showIndex={true}
+          showNav={true}
+          showPlayButton={true}
+          showThumbnails={true}
+          slideDuration={450}
+          slideInterval={3000}
+          startIndex={0}
+          stopPropagation={false}
+          swipeThreshold={30}
+          swipingTransitionDuration={0}
+          thumbnailPosition="bottom"
+          useBrowserFullscreen={true}
+          useTranslate3D={true}
+        >
+          <div
+            aria-live="polite"
+            className="image-gallery "
+          >
+            <div
+              className="image-gallery-content"
+            >
+              <div
+                className="image-gallery-slide-wrapper bottom "
+              >
+                <button
+                  aria-label="Play or Pause Slideshow"
+                  className="image-gallery-play-button active"
+                  onClick={[Function]}
+                  type="button"
+                />
+                <span
+                  key="navigation"
+                >
+                  <button
+                    aria-label="Previous Slide"
+                    className="image-gallery-left-nav"
+                    disabled={false}
+                    onClick={[Function]}
+                    type="button"
+                  />
+                  <button
+                    aria-label="Next Slide"
+                    className="image-gallery-right-nav"
+                    disabled={false}
+                    onClick={[Function]}
+                    type="button"
+                  />
+                </span>
+                <Swipeable
+                  className="image-gallery-swipe"
+                  delta={0}
+                  disabled={false}
+                  flickThreshold={0.4}
+                  key="swipeable"
+                  nodeName="div"
+                  onSwiped={[Function]}
+                  onSwiping={[Function]}
+                  preventDefaultTouchmoveEvent={false}
+                  rotationAngle={0}
+                  stopPropagation={false}
+                >
+                  <div
+                    className="image-gallery-swipe"
+                    onMouseDown={[Function]}
+                    onTouchEnd={[Function]}
+                    onTouchMove={[Function]}
+                    onTouchStart={[Function]}
+                  >
+                    <div
+                      className="image-gallery-slides"
+                    >
+                      <div
+                        className="image-gallery-slide center"
+                        key="0"
+                        style={
+                          Object {
+                            "MozTransform": "translate3d(0%, 0, 0)",
+                            "OTransform": "translate3d(0%, 0, 0)",
+                            "WebkitTransform": "translate3d(0%, 0, 0)",
+                            "msTransform": "translate3d(0%, 0, 0)",
+                            "transform": "translate3d(0%, 0, 0)",
+                          }
+                        }
+                      >
+                        <div
+                          className="image-gallery-image"
+                        >
+                          <img
+                            onError={[Function]}
+                            src="http://localhost:8080/images/hNi00aJdTIcM.jpeg"
+                          />
+                        </div>
+                      </div>
+                      <div
+                        className="image-gallery-slide right"
+                        key="1"
+                        style={
+                          Object {
+                            "MozTransform": "translate3d(100%, 0, 0)",
+                            "OTransform": "translate3d(100%, 0, 0)",
+                            "WebkitTransform": "translate3d(100%, 0, 0)",
+                            "msTransform": "translate3d(100%, 0, 0)",
+                            "transform": "translate3d(100%, 0, 0)",
+                          }
+                        }
+                      >
+                        <div
+                          className="image-gallery-image"
+                        >
+                          <img
+                            onError={[Function]}
+                            src="http://localhost:8080/images/Rt2IEEWSCluM.jpg"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Swipeable>
+                <div
+                  className="image-gallery-bullets"
+                >
+                  <div
+                    aria-label="Bullet Navigation"
+                    className="image-gallery-bullets-container"
+                    role="navigation"
+                  >
+                    <button
+                      aria-label="Go to Slide 1"
+                      aria-pressed="true"
+                      className="image-gallery-bullet active "
+                      key="0"
+                      onClick={[Function]}
+                      type="button"
+                    />
+                    <button
+                      aria-label="Go to Slide 2"
+                      aria-pressed="false"
+                      className="image-gallery-bullet  "
+                      key="1"
+                      onClick={[Function]}
+                      type="button"
+                    />
+                  </div>
+                </div>
+                <div
+                  className="image-gallery-index"
+                >
+                  <span
+                    className="image-gallery-index-current"
+                  >
+                    1
+                  </span>
+                  <span
+                    className="image-gallery-index-separator"
+                  >
+                     / 
+                  </span>
+                  <span
+                    className="image-gallery-index-total"
+                  >
+                    2
+                  </span>
+                </div>
+              </div>
+              <div
+                className="image-gallery-thumbnails-wrapper bottom "
+                style={Object {}}
+              >
+                <div
+                  className="image-gallery-thumbnails"
+                >
+                  <div
+                    aria-label="Thumbnail Navigation"
+                    className="image-gallery-thumbnails-container"
+                    style={
+                      Object {
+                        "MozTransform": "translate3d(0px, 0, 0)",
+                        "OTransform": "translate3d(0px, 0, 0)",
+                        "WebkitTransform": "translate3d(0px, 0, 0)",
+                        "msTransform": "translate3d(0px, 0, 0)",
+                        "transform": "translate3d(0px, 0, 0)",
+                      }
+                    }
+                  >
+                    <a
+                      aria-label="Go to Slide 1"
+                      aria-pressed="true"
+                      className="image-gallery-thumbnail active"
+                      key="0"
+                      onClick={[Function]}
+                      onMouseOver={[Function]}
+                      role="button"
+                    >
+                      <div
+                        className="image-gallery-thumbnail-inner"
+                      >
+                        <img
+                          onError={[Function]}
+                          src="http://localhost:8080/images/hNi00aJdTIcM.jpeg"
+                        />
+                      </div>
+                    </a>
+                    <a
+                      aria-label="Go to Slide 2"
+                      aria-pressed="false"
+                      className="image-gallery-thumbnail"
+                      key="1"
+                      onClick={[Function]}
+                      onMouseOver={[Function]}
+                      role="button"
+                    >
+                      <div
+                        className="image-gallery-thumbnail-inner"
+                      >
+                        <img
+                          onError={[Function]}
+                          src="http://localhost:8080/images/Rt2IEEWSCluM.jpg"
+                        />
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ImageGallery>
+        <div
+          className="containerGoods"
+        >
+          <div
+            className="title"
+          >
+            팜토리 미나리 1kg
+             
+            3
+            kg
+          </div>
+          <div
+            className="price bold"
+          >
+            10,400
+            원
+            <span
+              className="text-danger"
+            >
+               
+              20
+              % 
+            </span>
+            <small>
+              <strike>
+                13,000
+              </strike>
+            </small>
+          </div>
+          <div
+            className="space"
+          />
+          <div
+            className="time"
+          >
+            <TimeText
+              date={1564758000000}
+              formatter="[D -] DD[일] HH[시] mm[분] ss[초]"
+            >
+              <span
+                className="text"
+              >
+                D - 16일 07시 32분 47초
+              </span>
+            </TimeText>
+          </div>
+          <div
+            className="boughtCnt"
+          >
+            <FontAwesomeIcon
+              border={false}
+              className=""
+              color="#1697ae"
+              fixedWidth={false}
+              flip={null}
+              icon={
+                Object {
+                  "icon": Array [
+                    576,
+                    512,
+                    Array [],
+                    "f005",
+                    "M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z",
+                  ],
+                  "iconName": "star",
+                  "prefix": "fas",
+                }
+              }
+              inverse={false}
+              listItem={false}
+              mask={null}
+              pull={null}
+              pulse={false}
+              rotation={null}
+              size="lg"
+              spin={false}
+              symbol={false}
+              title=""
+              transform={null}
+            >
+              <svg
+                aria-hidden="true"
+                className="svg-inline--fa fa-star fa-w-18 fa-lg "
+                color="#1697ae"
+                data-icon="star"
+                data-prefix="fas"
+                focusable="false"
+                role="img"
+                style={Object {}}
+                viewBox="0 0 576 512"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z"
+                  fill="currentColor"
+                  style={Object {}}
+                />
+              </svg>
+            </FontAwesomeIcon>
+            <FontAwesomeIcon
+              border={false}
+              className=""
+              color="#1697ae"
+              fixedWidth={false}
+              flip={null}
+              icon={
+                Object {
+                  "icon": Array [
+                    576,
+                    512,
+                    Array [],
+                    "f005",
+                    "M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z",
+                  ],
+                  "iconName": "star",
+                  "prefix": "fas",
+                }
+              }
+              inverse={false}
+              listItem={false}
+              mask={null}
+              pull={null}
+              pulse={false}
+              rotation={null}
+              size="lg"
+              spin={false}
+              symbol={false}
+              title=""
+              transform={null}
+            >
+              <svg
+                aria-hidden="true"
+                className="svg-inline--fa fa-star fa-w-18 fa-lg "
+                color="#1697ae"
+                data-icon="star"
+                data-prefix="fas"
+                focusable="false"
+                role="img"
+                style={Object {}}
+                viewBox="0 0 576 512"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z"
+                  fill="currentColor"
+                  style={Object {}}
+                />
+              </svg>
+            </FontAwesomeIcon>
+            <FontAwesomeIcon
+              border={false}
+              className=""
+              color="#1697ae"
+              fixedWidth={false}
+              flip={null}
+              icon={
+                Object {
+                  "icon": Array [
+                    576,
+                    512,
+                    Array [],
+                    "f005",
+                    "M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z",
+                  ],
+                  "iconName": "star",
+                  "prefix": "fas",
+                }
+              }
+              inverse={false}
+              listItem={false}
+              mask={null}
+              pull={null}
+              pulse={false}
+              rotation={null}
+              size="lg"
+              spin={false}
+              symbol={false}
+              title=""
+              transform={null}
+            >
+              <svg
+                aria-hidden="true"
+                className="svg-inline--fa fa-star fa-w-18 fa-lg "
+                color="#1697ae"
+                data-icon="star"
+                data-prefix="fas"
+                focusable="false"
+                role="img"
+                style={Object {}}
+                viewBox="0 0 576 512"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z"
+                  fill="currentColor"
+                  style={Object {}}
+                />
+              </svg>
+            </FontAwesomeIcon>
+            <FontAwesomeIcon
+              border={false}
+              className=""
+              color="#1697ae"
+              fixedWidth={false}
+              flip={null}
+              icon={
+                Object {
+                  "icon": Array [
+                    576,
+                    512,
+                    Array [],
+                    "f005",
+                    "M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z",
+                  ],
+                  "iconName": "star",
+                  "prefix": "fas",
+                }
+              }
+              inverse={false}
+              listItem={false}
+              mask={null}
+              pull={null}
+              pulse={false}
+              rotation={null}
+              size="lg"
+              spin={false}
+              symbol={false}
+              title=""
+              transform={null}
+            >
+              <svg
+                aria-hidden="true"
+                className="svg-inline--fa fa-star fa-w-18 fa-lg "
+                color="#1697ae"
+                data-icon="star"
+                data-prefix="fas"
+                focusable="false"
+                role="img"
+                style={Object {}}
+                viewBox="0 0 576 512"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z"
+                  fill="currentColor"
+                  style={Object {}}
+                />
+              </svg>
+            </FontAwesomeIcon>
+            <FontAwesomeIcon
+              border={false}
+              className=""
+              color="#88c4d8"
+              fixedWidth={false}
+              flip={null}
+              icon={
+                Object {
+                  "icon": Array [
+                    576,
+                    512,
+                    Array [],
+                    "f005",
+                    "M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z",
+                  ],
+                  "iconName": "star",
+                  "prefix": "fas",
+                }
+              }
+              inverse={false}
+              listItem={false}
+              mask={null}
+              pull={null}
+              pulse={false}
+              rotation={null}
+              size="lg"
+              spin={false}
+              symbol={false}
+              title=""
+              transform={null}
+            >
+              <svg
+                aria-hidden="true"
+                className="svg-inline--fa fa-star fa-w-18 fa-lg "
+                color="#88c4d8"
+                data-icon="star"
+                data-prefix="fas"
+                focusable="false"
+                role="img"
+                style={Object {}}
+                viewBox="0 0 576 512"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36.1-17.7 54.6l105.7 103-25 145.5c-4.5 26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 105.7-103c19-18.5 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z"
+                  fill="currentColor"
+                  style={Object {}}
+                />
+              </svg>
+            </FontAwesomeIcon>
+             1개 구매 (잔여 5,999개)
+          </div>
+          <div
+            className="sharpTag"
+          >
+            #
+            미나리
+          </div>
+          <div
+            className="space"
+          />
+        </div>
+        <Container
+          tag="div"
+        >
+          <div
+            className="container"
+          >
+            <div
+              className="goodsPriceCardWrap"
+            >
+              <HrGoodsPriceCard
+                data={
+                  Array [
+                    Object {
+                      "active": false,
+                      "discountRate": 30,
+                      "price": 9100,
+                      "stepNo": 1,
+                      "until": 1563202800000,
+                    },
+                    Object {
+                      "active": true,
+                      "discountRate": 20,
+                      "price": 10400,
+                      "stepNo": 2,
+                      "until": 1563894000000,
+                    },
+                    Object {
+                      "active": false,
+                      "discountRate": 10,
+                      "price": 11700,
+                      "stepNo": 3,
+                      "until": 1564758000000,
+                    },
+                  ]
+                }
+              >
+                <div
+                  className="card"
+                >
+                  <div
+                    className="percentage"
+                  >
+                    30
+                    %
+                  </div>
+                  <div
+                    className="date"
+                  >
+                    2019-07-16
+                     까지
+                  </div>
+                  <div
+                    className="price"
+                  >
+                    9,100
+                    원
+                  </div>
+                </div>
+                <div
+                  className="card active"
+                >
+                  <div
+                    className="percentage"
+                  >
+                    20
+                    %
+                  </div>
+                  <div
+                    className="date"
+                  >
+                    2019-07-24
+                     까지
+                  </div>
+                  <div
+                    className="price"
+                  >
+                    10,400
+                    원
+                  </div>
+                </div>
+                <div
+                  className="card"
+                >
+                  <div
+                    className="percentage"
+                  >
+                    10
+                    %
+                  </div>
+                  <div
+                    className="date"
+                  >
+                    2019-08-03
+                     까지
+                  </div>
+                  <div
+                    className="price"
+                  >
+                    11,700
+                    원
+                  </div>
+                </div>
+              </HrGoodsPriceCard>
+            </div>
+            <br />
+            <h6>
+              기본정보
+            </h6>
+            <table
+              className="table"
+            >
+              <tbody>
+                <tr>
+                  <td
+                    className="title"
+                  >
+                    생산자
+                  </td>
+                  <td>
+                    김옥한
+                  </td>
+                  <td
+                    className="title"
+                  >
+                    생산지
+                  </td>
+                  <td>
+                    경기도 화성
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    className="title"
+                  >
+                    품목
+                  </td>
+                  <td>
+                    미나리
+                  </td>
+                  <td
+                    className="title"
+                  >
+                    품종
+                  </td>
+                  <td>
+                    미나리
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    className="title"
+                  >
+                    재배방법
+                  </td>
+                  <td>
+                    토지
+                  </td>
+                  <td
+                    className="title"
+                  >
+                    농약유무
+                  </td>
+                  <td>
+                    농약사용
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    className="title"
+                  >
+                    포장단위
+                  </td>
+                  <td>
+                    kg
+                  </td>
+                  <td
+                    className="title"
+                  >
+                    배송방법
+                  </td>
+                  <td>
+                    택배
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <h6>
+              생산일정
+            </h6>
+            <table
+              className="table"
+            >
+              <tbody>
+                <tr>
+                  <td
+                    className="title"
+                  >
+                    판매마감
+                  </td>
+                  <td>
+                    2019-08-03
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    className="title"
+                  >
+                    예상발송일
+                  </td>
+                  <td>
+                    2019-08-06
+                     ~ 
+                    2019-08-09
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Container>
+        <br />
+        <TabSection
+          items={
+            Array [
+              Object {
+                "content": <div
+                  className="containerGoodsDetail"
+                >
+                  <img
+                    className="contentImage"
+                    src="http://localhost:8080/images/SBarbBBIrlfm.jpg"
+                  />
+                  <img
+                    className="contentImage"
+                    src="http://localhost:8080/images/r9yyGzXzrqff.jpg"
+                  />
+                </div>,
+                "name": "상품설명",
+              },
+              Object {
+                "content": <div
+                  className="containerGoodsPurcaseInfo"
+                >
+                  <p>
+                    <b>
+                      1. 예약상품 구매란?
+                    </b>
+                    <br />
+                    예약상품은 농부가 재배중인 프리미엄 상품을 미리 팔아 고품질의 농산물을 싸게 미리 살 수 있는 상품입니다.
+                    <br />
+                    Blocery에서는 이른 시점에 구매할 수록 더 싼값에 구매하여 농부들을 도우며, 생산과정을 모두 공개하여 소비자가 안전하게 믿고 살 수 있는 농산물 상품을 제공합니다.
+                    <br />
+                    <br />
+                    <b>
+                      2. 구매방법
+                    </b>
+                    <br />
+                    상품의 구매 시점이 빠를수록 더 큰 할인율이 적용되며, 할인율은 상품설명 메뉴에서 확인이 가능합니다.
+                    <br />
+                    각 상품의 가격 확인 후 [즉시구매] 시 해당 가격만큼이 α-BLCT로 결제가 이루어 집니다.
+                    <br />
+                    (1α-BLCT = 20원)
+                    <br />
+                    <br />
+                    <b>
+                      3. 환불 규정
+                    </b>
+                    <br />
+                    블록체인 기반의 토큰 시스템 및 예약상품의 특성상 구매(결제) 후 취소는 불가능합니다.
+                    <br />
+                    해당 구매내역은 양도거래소를 통해 다른 사용자에게 양도할 수 있습니다.
+                    <br />
+                    단, 생산자(농부)가 약속된 상품을 제공하지 못했을 경우 구매(결제)한 토큰과 함께 추가 보상토큰으로 환불 받으실 수 있습니다.
+                    <br />
+                    <br />
+                    <b>
+                      4. 배송관련
+                    </b>
+                    <br />
+                    배송은 예약상품의 수확 및 출하기간 이후에 배송이 됩니다.
+                    <br />
+                    배송은 각 예상상품마다 다르며 해당 상품에 대한 배송관련 내용은 상품설명 메뉴에서 확인이 가능하오니 참고해 주시기 바랍니다.
+                    <br />
+                    <br />
+                  </p>
+                </div>,
+                "name": "구매안내",
+              },
+              Object {
+                "content": <div
+                  className="containerGoodsFarmDiary"
+                />,
+                "name": "재배일지",
+              },
+              Object {
+                "content": <div
+                  className="containerGoodsReview"
+                >
+                  <img
+                    src="customerReview.jpeg"
+                    style={
+                      Object {
+                        "height": "100%",
+                        "width": "100%",
+                      }
+                    }
+                  />
+                </div>,
+                "name": "후기",
+              },
+            ]
+          }
+        >
+          <div
+            className="tabSticky"
+          >
+            <a
+              className="active"
+              key="상품설명0"
+              onClick={[Function]}
+            >
+              상품설명
+            </a>
+            <a
+              className={null}
+              key="구매안내1"
+              onClick={[Function]}
+            >
+              구매안내
+            </a>
+            <a
+              className={null}
+              key="재배일지2"
+              onClick={[Function]}
+            >
+              재배일지
+            </a>
+            <a
+              className={null}
+              key="후기3"
+              onClick={[Function]}
+            >
+              후기
+            </a>
+          </div>
+          <div
+            className="containerGoodsDetail"
+          >
+            <img
+              className="contentImage"
+              key="SBarbBBIrlfm.jpg"
+              src="http://localhost:8080/images/SBarbBBIrlfm.jpg"
+            />
+            <img
+              className="contentImage"
+              key="r9yyGzXzrqff.jpg"
+              src="http://localhost:8080/images/r9yyGzXzrqff.jpg"
+            />
+          </div>
+        </TabSection>
+        <br />
+        <br />
+        <br />
+        <div
+          className="buy"
+        >
+          <div>
+            <ModalAlert
+              className={null}
+              color="info"
+              content="장바구니 기능은 GRAND OPEN 때 제공될 예정입니다"
+              onClick={[Function]}
+              title="알림"
+            >
+              <span
+                onClick={[Function]}
+              >
+                <Button
+                  block={true}
+                  color="info"
+                  tag="button"
+                >
+                  <button
+                    className="btn btn-info btn-block"
+                    onClick={[Function]}
+                  >
+                    장바구니
+                  </button>
+                </Button>
+              </span>
+              <div>
+                <Modal
+                  autoFocus={true}
+                  backdrop={true}
+                  backdropTransition={
+                    Object {
+                      "mountOnEnter": true,
+                      "timeout": 150,
+                    }
+                  }
+                  centered={true}
+                  className={null}
+                  fade={true}
+                  isOpen={false}
+                  keyboard={true}
+                  modalTransition={
+                    Object {
+                      "timeout": 300,
+                    }
+                  }
+                  onClosed={[Function]}
+                  onOpened={[Function]}
+                  role="dialog"
+                  toggle={[Function]}
+                  zIndex={1050}
+                />
+              </div>
+            </ModalAlert>
+          </div>
+          <div>
+            <Button
+              block={true}
+              color="warning"
+              onClick={[Function]}
+              tag="button"
+            >
+              <button
+                className="btn btn-warning btn-block"
+                onClick={[Function]}
+                type="button"
+              >
+                즉시구매
+              </button>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </GoodsDetail>
+  </div>
+</Goods>
+`;

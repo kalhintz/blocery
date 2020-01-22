@@ -1,0 +1,1 @@
+export { default as B2bNoticeList } from './NoticeList'

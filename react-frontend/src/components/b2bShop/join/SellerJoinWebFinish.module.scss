@@ -1,0 +1,30 @@
+.fadeIn {
+  animation-name: aniFadeIn;
+  opacity: 0;
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
+
+  -webkit-animation-timing-function: ease-in;
+  -moz-animation-timing-function: ease-in;
+  -o-animation-timing-function: ease-in;
+  animation-timing-function: ease-in;
+}
+
+
+
+@keyframes aniFadeIn {
+  0%{}
+  100%{opacity: 1}
+}
+
+
+.delayOne {
+  animation-delay: 1s;
+}
+.delayTwo {
+  animation-delay: 1.5s;
+}
+.delayThree {
+  animation-delay: 2s;
+}
+
