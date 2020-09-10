@@ -1,20 +1,20 @@
 import React, { Component, Fragment } from 'react'
 import { Container, Row, Col } from 'reactstrap'
 import Style from './NotificationList.module.scss'
-import { Server } from '~/components/Properties'
 import ComUtil from '~/util/ComUtil'
+import { Webview } from '~/lib/webviewApi'
 
-import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {BodyFullHeight} from '~/components/common/layouts'
+// import { ShopXButtonNav, LoginLinkCard } from '../../../common'
 
-
-import { ShopXButtonNav } from '~/components/common/index'
+import { ShopXButtonNav, LoginLinkCard } from '~/components/common/index'
 
 import { getConsumer, getNotificationListByUniqueNo } from '~/lib/shopApi'
 import { getProducer } from '~/lib/producerApi'
 import { getLoginUserType } from '~/lib/loginApi'
 
-import { ToastContainer, toast } from 'react-toastify'     //토스트
+import { toast } from 'react-toastify'     //토스트
+import Skeleton from '~/components/common/cards/Skeleton'
 
 export default class NotificationList extends Component {
     constructor(props) {
@@ -23,6 +23,7 @@ export default class NotificationList extends Component {
         this.state = {
             loginUser : null,
             notificationList: undefined,
+            loading: true
         }
     }
 
@@ -35,96 +36,127 @@ export default class NotificationList extends Component {
 
     async componentDidMount() {
 
-        const loginUserType = await getLoginUserType();
+        const {data: loginUserType} = await getLoginUserType();
 
         let loginUser; // = await getConsumer();
 
-        if(loginUserType.data == 'consumer') {
-            loginUser = await getConsumer();
-        } else if (loginUserType.data == 'producer') {
-            loginUser = await getProducer();
+        if(loginUserType === 'consumer') {
+            const {data} = await getConsumer();
+            loginUser = data
+        } else if (loginUserType === 'producer') {
+            const {data} = await getProducer();
+            loginUser = data
         }
+
+        const notificationList = await this.getNotificationList(loginUserType, loginUser);
+
+        console.log({loginUserType, loginUser, notificationList})
 
         this.setState({
-            loginUser: (loginUser) ? loginUser.data : '',
-            loginUserType: loginUserType.data
+            loginUser: (loginUser) ? loginUser : '',
+            loginUserType: loginUserType,
+            notificationList: notificationList,
+            loading: false
         })
 
-        this.getNotificationList();
+
     }
 
-    getNotificationList = async () => {
+    getNotificationList = async (loginUserType, loginUser) => {
 
-        if(this.state.loginUserType === "consumer") {
+        let notificationList;
+
+        if(loginUserType === "consumer") {
 
             let params = {
-                uniqueNo: this.state.loginUser.consumerNo,
-                userType: this.state.loginUserType
+                uniqueNo: loginUser.consumerNo,
+                userType: loginUserType
             }
 
-            const {data: notificationList} = await getNotificationListByUniqueNo(params);
+            console.log({params})
 
-            this.setState({
-                notificationList: notificationList
-            })
+            const {data} = await getNotificationListByUniqueNo(params);
+
+            notificationList = data
+
+            // this.setState({
+            //     notificationList: notificationList
+            // })
+        } else if(loginUserType === "producer") {
+
+            let params = {
+                uniqueNo: loginUser.producerNo,
+                userType: loginUserType
+            }
+
+            const {data} = await getNotificationListByUniqueNo(params);
+
+            notificationList = data
         }
 
-        if(this.state.loginUserType === "producer") {
+        return notificationList
+    }
 
-            let params = {
-                uniqueNo: this.state.loginUser.producerNo,
-                userType: this.state.loginUserType
-            }
 
-            const {data: notificationList} = await getNotificationListByUniqueNo(params);
+    onNotificationClick = async (title) => {
 
-            this.setState({
-                notificationList: notificationList
-            })
+        if (title.startsWith('배송')) {
+            this.props.history.push('/mypage/orderList');
+        }
+        if (title.startsWith('단골')) {
+            this.props.history.push('/home/7');
+        }
+        if (title.startsWith('상품문의')) {
+            this.props.history.push('/mypage/goodsQnaList');
         }
     }
 
+    onLoginClick = () => {
+        Webview.openPopup('/login');
+    }
 
     render() {
+
         const data = this.state.notificationList;
+
         return(
             <Fragment>
-                <ShopXButtonNav fixed back history={this.props.history}>알림</ShopXButtonNav>
-                <Container fluid>
-                <Row>
-                    <Col style={{padding:0, margin:0}}>
-                        {
-                            (data && data.length !== 0) ?
-                                data.map(({notificationNo, title, body, uniqueNo, userType, notificationType, notificationDate}, index)=>{
-                                    return (
-                                        <div className={Style.wrap} key={'notificationList'+index}>
-                                            <section className={Style.sectionContent}>
-                                                <div className='flex-grow-1'>
-                                                    <div className={'d-flex'}>
-                                                        <div style={{minWidth:'60px'}}>[{title}]</div>
-                                                        {/*<div className={'ml-1 mr-1'}> </div>*/}
-                                                        <div className='ml-1'>{body}</div>
+                <ShopXButtonNav underline fixed historyBack>알림</ShopXButtonNav>
+                {
+                    this.state.loading ? <Skeleton count={4}/> : (
+                        !this.state.loginUserType ? (
+                            <BodyFullHeight nav bottomTabbar>
+                                <LoginLinkCard icon description={'로그인 후 알림 서비스를 이용 하실 수 있습니다'} onClick={this.onLoginClick} />
+                            </BodyFullHeight>
+                        ) : (
+                            <Container fluid>
+                                <Row>
+                                    <Col style={{padding:0, margin:0}}>
+                                        {
+                                            (data && data.length <= 0) && <div className='w-100 h-100 bg-light d-flex justify-content-center align-items-center p-5 text-dark'>{(data===undefined)?'':'알림내역이 없습니다.'}</div>
+                                        }
+                                        {
+                                            !data ? <Skeleton/> : data.map(({notificationNo, title, body, uniqueNo, userType, notificationType, notificationDate}, index) => {
+                                                return (
+
+                                                    <div key={'notificationList' + index}
+                                                         onClick={() => this.onNotificationClick(title)}>
+                                                        <a id="a" className={Style.alert}>
+                                                            <div>[{title}]</div>
+                                                            <div>{body}</div>
+                                                            <span>{notificationDate && ComUtil.utcToString(notificationDate)}</span>
+
+                                                        </a>
                                                     </div>
-                                                </div>
-                                                {/*<div className={Style.listDetail}>*/}
-                                                    {/*<div><FontAwesomeIcon icon={faAngleRight} /></div>*/}
-                                                {/*</div>*/}
-                                            </section>
-                                            <section className={Style.sectionDate}>
-                                                <div>
-                                                    <small>Blocery</small>
-                                                    <small>{notificationDate ? ' | '+ComUtil.utcToString(notificationDate):null}</small>
-                                                </div>
-                                            </section>
-                                        </div>
-                                    )
-                                })
-                            :
-                                <div className='w-100 h-100 bg-light d-flex justify-content-center align-items-center p-5 text-dark'>{(data===undefined)?'':'알림내역이 없습니다.'}</div>
-                        }
-                    </Col>
-                </Row>
-                </Container>
+                                                )
+                                            })
+                                        }
+                                    </Col>
+                                </Row>
+                            </Container>
+                        )
+                    )
+                }
 
             </Fragment>
         )

@@ -1,10 +1,9 @@
 import React, { Component, Fragment } from 'react'
-import { updateOrderTrackingInfo } from '../../../lib/producerApi'
+import { updateOrderTrackingInfo, producerCancelOrder, partialRefundOrder, getProducerByProducerNo } from '../../../lib/producerApi'
 import { getConsumerByConsumerNo, getOrderDetailByOrderSeq } from '../../../lib/shopApi'
 import { getGoodsByGoodsNo } from '../../../lib/goodsApi'
 import { getTransportCompany } from '../../../lib/adminApi'
-import { getTransportCompanies } from '../../../lib/deliveryOpenApi'
-import { Container, Row, Col, ListGroup, ListGroupItem, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
+import { Container, ListGroup, ListGroupItem, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
 import Style from './Order.module.scss'
 import ComUtil from '../../../util/ComUtil'
 
@@ -12,9 +11,8 @@ import { FooterButtons, ModalWithNav } from '../../common'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import 'react-toastify/dist/ReactToastify.css'
 import Select from 'react-select'
-import moment from 'moment-timezone'
 import 'react-dates/initialize';
-import { SingleDatePicker } from 'react-dates';
+import { Flex } from "~/styledComponents/shared/Layouts";
 
 // const transportationCompanies = [
 //     {value:'', name:'선택하세요'},
@@ -65,12 +63,17 @@ export default class Order extends Component{
         const { data: order } = await getOrderDetailByOrderSeq(this.props.orderSeq)
         const { data: consumer } = await getConsumerByConsumerNo(order.consumerNo)
         const { data: goods } = await getGoodsByGoodsNo(order.goodsNo)
+        const { data: producer} = await getProducerByProducerNo(order.producerNo)
+
+        console.log(order);
 
         this.setState({
             order,
             consumer,
             goods,
-            trackingUrl: this.getTraceUrl(order)
+            trackingUrl: this.getTraceUrl(order),
+            originalTrackingNumber: order.trackingNumber,
+            producerPayoutBlctFlag: producer.payoutBlct
         })
     }
     onChange = (e) => {
@@ -149,6 +152,77 @@ export default class Order extends Component{
         }
     }
 
+    onCancel = async () => {
+        // 배송 전 주문취소
+        if(!window.confirm('해당 주문을 취소하시겠습니까?')) return
+
+        const orderDetail = Object.assign({},this.state.order);
+
+        this.setState({chainLoading: true});
+        this.notify('주문취소중.', toast.info);
+
+        let {data} = await producerCancelOrder(orderDetail);
+
+        // console.log('producerCancelOrder', data);
+        this.notify('주문취소가 완료되었습니다.', toast.info);
+
+        this.setState({
+            order: data,
+            chainLoading: false  //블록체인스피너 chainLoading=false
+        });
+
+    }
+
+
+    onRefund = async () => {
+        // 배송 전 주문취소
+        if(!window.confirm('해당 주문을 환불하시겠습니까?')) return
+
+        const orderDetail = Object.assign({},this.state.order);
+        orderDetail.refundFlag = true;
+
+        this.setState({chainLoading: true});
+        this.notify('환불중.', toast.info);
+
+        let {data} = await producerCancelOrder(orderDetail);
+
+        // console.log('producerCancelOrder', data);
+        this.notify('환불이 완료되었습니다.', toast.info);
+
+        this.setState({
+            order: data,
+            chainLoading: false  //블록체인스피너 chainLoading=false
+        });
+
+    }
+
+    onPartialRefund = async() => {
+        if(!window.confirm('부분환불은 주문개수를 감소시킵니다. 주문1건을 환불하시겠습니까?')) return;
+
+        const orderDetail = Object.assign({},this.state.order);
+
+        if(orderDetail.orderCnt < 2) return;
+
+        this.setState({chainLoading: true});
+        this.notify('환불중.', toast.info);
+
+        let {data} = await partialRefundOrder(orderDetail);
+        console.log(data);
+
+        if('' === data) {
+            this.notify('환불에 실패했습니다. 다시 시도해주세요.', toast.warn);
+            this.setState({
+                chainLoading: false  //블록체인스피너 chainLoading=false
+            });
+
+        } else {
+            this.notify('환불이 완료되었습니다.', toast.info);
+            this.setState({
+                order: data,
+                chainLoading: false  //블록체인스피너 chainLoading=false
+            });
+        }
+    }
 
     render(){
         if(!this.state.order)
@@ -189,33 +263,58 @@ export default class Order extends Component{
                     </div>
                     {
                         !order.notDeliveryDate && order.payStatus !== "cancelled" ?
-                            <div className={Style.invoiceBox}>
-                                <FormGroup>
-                                    <Label><h6>택배사</h6></Label>
-                                    <Select options={this.transportCompanies}
-                                            value={this.transportCompanies.find(item => item.value === order.transportCompanyCode)}
-                                            onChange={this.onItemChange}
-                                    />
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label><h6>송장번호</h6></Label>
-                                    <Input name='trackingNumber' onChange={this.onChange} value={order.trackingNumber}/>
-                                </FormGroup>
-
+                            <div>
+                                <Flex>
                                 {
-                                    !order.consumerOkDate  ?
-                                            <Button color={'warning'} block onClick={this.onSave}>저장</Button>
-                                            : null
+                                    order.directGoods && !this.state.originalTrackingNumber ?  //즉시상품만 주문취소 있음. (예약상품은 위약금+취소로 => (개발을 할필요 존재)현재는 미배송을 통해 미배송배치로 처리됨..  )
+                                        <div className="mb-2">
+                                            <Button color={'info'} onClick={this.onCancel}>배송 전 주문취소</Button>
+                                        </div> : null
                                 }
-
-
                                 {
-                                    order.transportCompanyCode && order.trackingNumber && this.state.trackingUrl.length > 0 ? (
-                                        <Button outline block onClick={this.toggle}>배송조회</Button>
-                                    ) : (
-                                        <Button outline block onClick={this.toggle} disabled={true}>배송조회 미지원</Button>
-                                    )
+                                    //(order.directGoods && this.state.originalTrackingNumber) &&
+                                    (!this.state.producerPayoutBlctFlag && this.state.originalTrackingNumber) &&  //예약상품도 환불 가능하도록 수정 20200902, payoutBlct인 생산자(팜토리)는 제외
+                                         <div className="mb-2">
+                                                <Button color={'danger'} onClick={this.onRefund}>환불</Button>
+                                         </div>
                                 }
+                                {
+                                    (!this.state.producerPayoutBlctFlag && order.orderCnt > 1 && this.state.originalTrackingNumber) &&  // payoutBlct인 생산자(팜토리)는 일단 제외
+                                        <div className="mb-2 ml-2">
+                                            <Button color={'warning'} onClick={this.onPartialRefund}>1건 부분환불</Button>
+                                        </div>
+
+                                }
+                                </Flex>
+                                <div className={Style.invoiceBox}>
+                                    <FormGroup>
+                                        <Label><h6>택배사</h6></Label>
+                                        <Select options={this.transportCompanies}
+                                                value={this.transportCompanies.find(item => item.value === order.transportCompanyCode)}
+                                                onChange={this.onItemChange}
+                                        />
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Label><h6>송장번호</h6></Label>
+                                        <Input type="number" name='trackingNumber' onChange={this.onChange} value={order.trackingNumber}/>
+                                        <div className='text-secondary'>송장번호 등록 시 '-'를 제외한 <span className='text-danger'>숫자만 입력</span>해주세요('-'입력 시 조회 불가)</div>
+                                    </FormGroup>
+
+                                    {
+                                        !order.consumerOkDate  ?
+                                                <Button color={'warning'} block onClick={this.onSave}>저장</Button>
+                                                : null
+                                    }
+
+
+                                    {
+                                        order.transportCompanyCode && order.trackingNumber && this.state.trackingUrl.length > 0 ? (
+                                            <Button outline block onClick={this.toggle}>배송조회</Button>
+                                        ) : (
+                                            <Button outline block onClick={this.toggle} disabled={true}>배송조회 미지원</Button>
+                                        )
+                                    }
+                                </div>
                             </div>
                         : null
                     }

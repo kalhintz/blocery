@@ -86,7 +86,8 @@ export default class WaesangHistory extends Component {
 
     // 주문 상세 팝업.
     popupDealDetail = (dealSeq) => {
-        Webview.openPopup(`/b2b/mypage/dealDetail?dealSeq=${dealSeq}`, true)
+        this.props.history.push(`/b2b/mypage/dealDetail?dealSeq=${dealSeq}`)
+        // Webview.openPopup(`/b2b/mypage/dealDetail?dealSeq=${dealSeq}`, true)
     }
 
     // refreshCallback = async() => {
@@ -116,18 +117,17 @@ export default class WaesangHistory extends Component {
         const data = this.state.waesangList
         return (
             <Fragment>
-                <B2bShopXButtonNav back history={this.props.history}>외상거래내역</B2bShopXButtonNav>
-                <div className='p-3'>
-                    <div className='p-3 bg-light'>
-                        <div className='text-center'>
-                            <span className='f5'> 미입금 외상금 : </span>
-                            <span className='font-weight-bold text-danger f3'> {this.state.nonePaidWaesang} 원 </span>
+                <B2bShopXButtonNav historyBack history={this.props.history}>외상거래내역</B2bShopXButtonNav>
+                <div className='m-3'>
+                    <div className='p-3'>
+                        <div className='text-center lead'>
+                            <span className=''> 미입금 외상금 : </span>
+                            <span className='font-weight-bold text-danger'> {this.state.nonePaidWaesang} 원 </span>
                         </div>
-                        <div className='text-left f6 pt-3' style={{color:'gray'}} >판매자 입금이 확인되면 실시간으로 차감됩니다.</div>
-
+                        <div className='text-center f6 mt-2' style={{color:'gray'}} >판매자 입금이 확인되면 실시간으로 차감됩니다.</div>
                     </div>
                 </div>
-                <div>
+                <div className={'m-3'}>
                     <Select name="filterSelect"
                             options={this.state.optionList}
                             value={ this.state.optionList.find(item => item.value === this.state.selectedOption)}
@@ -138,39 +138,69 @@ export default class WaesangHistory extends Component {
                     data?
                         data.map(({dealSeq, orderPrice, orderDate, goodsNm, farmName, payStatus, waesangPayTo})=>{
                             return (
-                                <div onClick={this.popupDealDetail.bind(this, dealSeq)}>
+                                <div key={'deal_'+dealSeq}
+                                     className={'cursor-pointer'}
+                                     onClick={this.popupDealDetail.bind(this, dealSeq)}
+                                >
                                     <hr className={'m-0'}/>
-                                    <div className={'d-flex p-3'}>
 
-                                        {/*</div>*/}
-                                        <div style={{minWidth: 260}} className={'ml-3'}>
-                                            <div className={'d-flex'}>
-                                                <div style={{minWidth: 180}} className='font-weight-bold'>{farmName}</div>
-                                                <div className='font-weight-bold'>{ComUtil.addCommas(orderPrice)}원</div>
+                                    <div className={'d-flex align-items-center m-3'}>
+                                        <div>
+                                            <div>
+                                                {farmName}
                                             </div>
-
-
-                                            <div style={{color:'gray'}}>{goodsNm}</div>
-                                            <div style={{color:'gray', fontSize:'9pt'}}>{ComUtil.utcToString(orderDate, 'YYYY.MM.DD HH:mm')}</div>
+                                            <div className={'small'}>
+                                                {ComUtil.utcToString(orderDate, 'YYYY.MM.DD HH:mm')}
+                                            </div>
                                         </div>
-                                        {
-                                            <div style={{minWidth: 80, fontSize:'10pt'}} className={classNames(mypageStyle.centerAlign, 'text-center font-weight-bold f2')}>
-                                                {
-                                                    payStatus == 'paid' ? (<div className='f6 border bg-light justify-content-center align-items-center d-inline-block'> 입금완료 </div>)
-                                                        : ''
-                                                }
-                                                {
-                                                    payStatus == 'ready' ?  //test -> 배포시에는 ready로 바꿔야함
-                                                         (<div> <div className='text-primary f6 border bg-light justify-content-center align-items-center d-inline-block'> 미입금 </div>
-                                                            <div style={{color:'gray', fontSize:'8pt'}}>(~{ComUtil.utcToString(waesangPayTo, 'YYYY.MM.DD')})</div> </div>) : ''
-                                                }
-                                                {
-                                                    payStatus == 'cancelled' ? (<div className='f6 border bg-light justify-content-center align-items-center d-inline-block'> 취소 </div>)
-                                                        : ''
-                                                }
+                                        <div className={'ml-auto align-items-center d-flex'}>
+                                            <div className={'font-weight-bolder'}>{ComUtil.addCommas(orderPrice)} 원</div>
+                                            <div className={'ml-2'}>
+                                                <div className={'text-center f6 border bg-light p-2'}>
+                                                    <div>
+                                                        {payStatus == 'paid' && '입금완료'}
+                                                        {payStatus == 'ready' && '미입금'}
+                                                        {payStatus == 'cancelled' && '취소'}
+                                                    </div>
+                                                    {payStatus == 'ready' && <div className={'small'}>~{ComUtil.utcToString(waesangPayTo, 'YYYY.MM.DD')}</div>}
+                                                </div>
+
                                             </div>
-                                        }
+                                        </div>
                                     </div>
+
+
+                                    {/*<div className={'d-flex'}>*/}
+
+                                        {/*/!*</div>*!/*/}
+                                        {/*<div className={''}>*/}
+                                            {/*<div className={'d-flex'}>*/}
+                                                {/*<div style={{minWidth: 180}} className='font-weight-bold'>{farmName}</div>*/}
+                                                {/*<div className='font-weight-bold'>{ComUtil.addCommas(orderPrice)}원</div>*/}
+                                            {/*</div>*/}
+
+
+                                            {/*<div style={{color:'gray'}}>{goodsNm}</div>*/}
+                                            {/*<div style={{color:'gray', fontSize:'9pt'}}>{ComUtil.utcToString(orderDate, 'YYYY.MM.DD HH:mm')}</div>*/}
+                                        {/*</div>*/}
+                                        {/*{*/}
+                                            {/*<div style={{minWidth: 80, fontSize:'10pt'}} className={classNames(mypageStyle.centerAlign, 'text-center font-weight-bold f2')}>*/}
+                                                {/*{*/}
+                                                    {/*payStatus == 'paid' ? (<div className='f6 border bg-light justify-content-center align-items-center d-inline-block'> 입금완료 </div>)*/}
+                                                        {/*: ''*/}
+                                                {/*}*/}
+                                                {/*{*/}
+                                                    {/*payStatus == 'ready' ?  //test -> 배포시에는 ready로 바꿔야함*/}
+                                                         {/*(<div> <div className='text-primary f6 border bg-light justify-content-center align-items-center d-inline-block'> 미입금 </div>*/}
+                                                            {/*<div style={{color:'gray', fontSize:'8pt'}}>(~{ComUtil.utcToString(waesangPayTo, 'YYYY.MM.DD')})</div> </div>) : ''*/}
+                                                {/*}*/}
+                                                {/*{*/}
+                                                    {/*payStatus == 'cancelled' ? (<div className='f6 border bg-light justify-content-center align-items-center d-inline-block'> 취소 </div>)*/}
+                                                        {/*: ''*/}
+                                                {/*}*/}
+                                            {/*</div>*/}
+                                        {/*}*/}
+                                    {/*</div>*/}
                                 </div>
                             )
                         })

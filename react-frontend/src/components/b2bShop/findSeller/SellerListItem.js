@@ -17,7 +17,7 @@ const SellerListCard = (props) => {
         <div className={classNames('d-flex p-3', Css.hover)}>
             <div className='d-flex flex-column'>
                 <div className='d-flex mb-2'>
-                    <img className='mr-2 rounded-sm' style={{width: 80, height: 80}} src={url} />
+                    <img className='mr-2 rounded-sm' style={{width: 80, height: 80}} src={url} alt={'사진'} />
                     <div>
                         <SellerIntroduce {...props} />
                     </div>

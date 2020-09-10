@@ -1,0 +1,152 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.black{
+  color: $color-b2c-black;
+}
+
+/* Footer */
+.footer{
+  padding: 7px;
+  background-color: $color-b2c-bg;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 4;
+  border-top: 1px solid $color-b2c-light;
+}
+
+.footer .handle{
+  position: absolute;
+  top: -22px;
+
+  left: 50%;
+  transform: translate(-50%, 0);
+  cursor: pointer;
+  width: 80px;
+  height: 18px;
+}
+
+.footer .handle .arrowIcon{
+  position: absolute;
+  top: 47%;
+  left: 50%;
+  transform: translate(-50%);
+}
+
+/* 상품카드, 수량 인풋*/
+.payableBox{
+  border: 1px solid #efefef;
+  background-color: $color-b2c-default;
+  margin-bottom: 6px;
+}
+.payableBox .item{margin: 16px; display: flex;}
+.payableBox .item img{width: 74px; height: 74px; object-fit: cover;} //상품이미지
+
+.payableBox .summaryBox{padding: 18px 16px;}
+.payableBox .text{margin-bottom: 7px; display: flex;}
+.payableBox .text:last-child{margin: 0;}
+.payableBox .text{font-size: $f12; color: $color-b2c-adjust;}
+.payableBox .text > div:nth-child(1){}
+.payableBox .text > div:nth-child(2){margin-left: auto;}
+.payableBox .big{font-size: $f16; font-weight: bold;}
+
+
+
+.btnGroup{
+  display: flex;
+}
+
+
+/* 공통 버튼 */
+
+.btnWhite{
+  background-color: white;
+  /*   width: 42px; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: $f14;
+  border: 1px solid #efefef;
+}
+
+.btnGreen{
+  //flex-grow: 1;
+  background-color: $color-b2c-green;
+  color: white;
+  margin-left: 5px;
+  font-size: $f14;
+}
+
+.btnYellow{
+  background-color: $color-warning;
+  margin-left: 5px;
+  font-size: $f14;
+}
+
+
+.btn{
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 8px 10px;
+
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;          /* Likely future */
+}
+
+.disabled{background-color: $color-b2c-dark;}
+
+
+
+
+
+
+
+
+
+
+
+
+//.btn:hover::after{
+//  content: "";
+//  position: absolute;
+//  top: 0;
+//  left: 0;
+//  right: 0;
+//  bottom: 0;
+//  /*   background-color: rgba(255,255,255, 0.1); */
+//  background-color: rgba(0,0,0, 0.1);
+//}
+.btn:active::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255,255,255, 0.1);
+
+  /*   background-color: rgba(0,0,0, 0.1); */
+}
+
+.scale{
+  animation-name: heartAni;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-in-out;
+}
+@keyframes heartAni {
+  0%{}
+  50%{
+    -webkit-transform: scale(1.2);
+    -moz-transform: scale(1.2);
+    -ms-transform: scale(1.2);
+    -o-transform: scale(1.2);
+    transform: scale(1.2);}
+  100%{}
+}

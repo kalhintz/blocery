@@ -16,7 +16,7 @@ function B2bSlideImage(props){
             {
                 (discountRate && discountRate > 0) ? <div className={Style.discountLayer}>{Math.round(discountRate, 0)}%</div> : null
             }
-            <img className={Style.image} src={imageUrl} />
+            <img className={Style.image} src={imageUrl} alt={'사진'} />
             {
                 remainedCnt <= 0 && <div className={classNames( Style.soldOut)}>SOLD OUT</div>
             }

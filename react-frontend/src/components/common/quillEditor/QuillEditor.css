@@ -1,0 +1,129 @@
+/* Set default font-family */
+.ql-editor {
+    font-family: "NotoSansKR";
+    line-height: 1.8em;
+}
+
+/* Set dropdown font-families */
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='']::before
+{
+    content: 'Default';
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='noto-sans-kr']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='noto-sans-kr']::before
+{
+    content: '본고딕';
+    font-family: 'NotoSansKR';
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='seoul-hangang-l']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='seoul-hangang-l']::before
+{
+    content: '서울한강L';
+    font-family: 'SeoulHangangL';
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='seoul-hangang-m']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='seoul-hangang-m']::before
+{
+    content: '서울한강M';
+    font-family: 'SeoulHangangM';
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='seoul-hangang-b']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='seoul-hangang-b']::before
+{
+    content: '서울한강B';
+    font-family: 'SeoulHangangB';
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='seoul-hangang-eb']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='seoul-hangang-eb']::before
+{
+    content: '서울한강EB';
+    font-family: 'SeoulHangangEB';
+}
+
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='arial']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='arial']::before
+{
+    content: 'Arial';
+    font-family: 'Arial';
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='sans-serif']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='sans-serif']::before
+{
+    content: 'Sans Serif';
+    font-family: 'Sans Serif';
+}
+
+/* Set content font-families */
+.ql-font-noto-sans-kr {
+    font-family: "NotoSansKR";
+}
+.ql-font-seoul-hangang-l {
+    font-family: "SeoulHangangL";
+}
+.ql-font-seoul-hangang-m {
+    font-family: "SeoulHangangM";
+}
+.ql-font-seoul-hangang-b {
+    font-family: "SeoulHangangB";
+}
+.ql-font-seoul-hangang-eb {
+    font-family: "SeoulHangangEB";
+}
+.ql-font-arial {
+    font-family: 'Arial';
+}
+.ql-font-sans-serif {
+    font-family: "Sans-Serif";
+}
+/* We do not set Aref Ruqaa since it is the default font */
+
+/* video default size */
+.ql-editor .ql-video {
+    display: block;
+    max-width: 100%;
+    min-height: 50vh;
+    width: 100% !important;
+}
+
+.ql-toolbar.ql-snow{
+    position: sticky;
+    z-index: 99;
+    top: 46px;
+    background: white;
+}
+
+
+/* ql editor resize and scrollbar */
+/*.ql-editor-resize-scroll > div:nth-child(2) > div:nth-child(1) {*/
+    /*height: 764px;*/
+    /*resize: vertical;*/
+    /*overflow-y: scroll;*/
+/*}*/
+
+/* editor view */
+.ql-no-border {
+    border: 0px none !important;
+}
+.ql-no-resize {
+    resize: none;
+    overflow-y: inherit;
+    height: auto !important;
+}
+
+/* ql editor toolbar span-block  */
+.ql-editor .span-block {
+    background-color: #F8F8F8;
+    border: 1px solid #CCC;
+    line-height: 19px;
+    padding: 6px 10px;
+    border-radius: 3px;
+    margin: 15px 0;
+}

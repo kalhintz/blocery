@@ -1,0 +1,91 @@
+/* 공통 */
+.leftRound{
+  border-top-left-radius: 25px;
+}
+.grandTitleBox{
+  padding: 15px 20px;
+  font-family: SeoulHangangL;
+}
+
+
+//예약상품 텍스트
+.smallTitle{
+  font-size: 19px;
+}
+
+.flexRow{
+  display: flex;
+  align-items: center;
+}
+.flexRow{
+  margin-bottom: 21px;
+}
+.flexRow:last-child{
+  margin-bottom: 0;
+}
+//이미지 레이아웃
+.flexRow > div:first-child{
+  margin-right: 8px;
+}
+
+//마감임박
+.largeTitle{
+  font-size: 27px;
+}
+// -> 아이콘
+.flexRow a{
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.backgroundBox{
+  height: 100vmin;
+}
+.cornerRoundedBox{
+  margin-top: -30vmin;
+  background-color: white;
+  position: relative;
+}
+
+.greenTitleLayer{
+  font-family: NotoSansKR;
+  font-weight: 500;
+  font-size: 14px;
+  color: #ffffff;
+  padding: 3px 5px;
+  position: absolute;
+  background-color: #24855b;
+  top: calc(-29px / 2);
+  left: 20px;
+}
+
+
+.info{
+  padding: 29px 20px 21px 20px;
+  font-family: NotoSansCJKkr;
+}
+//농장명
+.info > div:nth-child(1){
+  font-size: 27px;
+  font-weight: 500;
+  line-height: 35px;
+  height: 38px;
+}
+//농장설명
+.info > div:nth-child(2){
+  font-size: 12px;
+  color: #9c9c9c;
+  white-space: pre-line;
+}
+
+
+.slide{
+  width: 128px;
+  margin-bottom: 35px;
+}
+.slide:first-child{
+  margin-left: 20px;
+}
+.slide:last-child{
+  margin-right: 20px;
+}

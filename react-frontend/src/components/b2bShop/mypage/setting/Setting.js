@@ -7,7 +7,7 @@ import { getBuyer, updateBuyerInfo } from '~/lib/b2bShopApi'
 
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Webview } from "~/lib/webviewApi";
+
 
 export default class Setting extends Component {
     constructor(props) {

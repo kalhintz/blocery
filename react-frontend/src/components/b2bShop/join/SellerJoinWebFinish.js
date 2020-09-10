@@ -47,7 +47,7 @@ const SellerJoinWebFinish = () => {
                             </p>
                             <p>궁금한 사항은 나이스푸드(NiceFood) 고객센터 또는 메일로 문의 부탁 드립니다.<br/>
                                 - 전화번호 : 031-421-3414<br/>
-                                - 메일 : info@blocery.io<br/>
+                                - 메일 : cs@blocery.io<br/>
                             </p>
                         </div>
                     </Col>
@@ -60,13 +60,13 @@ const SellerJoinWebFinish = () => {
             {/*<div className='w-50'>*/}
                 <div className='d-flex mt-4 pt-4 justify-content-center'>
                     <div className='mr-3' style={{maxWidth: 270}}>
-                        <img src={mockupImage1} style={{width: '100%'}} className={classNames(Css.fadeIn, Css.delayOne)}/>
+                        <img src={mockupImage1} style={{width: '100%'}} className={classNames(Css.fadeIn, Css.delayOne)} alt={'사진'}/>
                     </div>
                     <div className='mr-3' style={{maxWidth: 270}}>
-                        <img src={mockupImage2} style={{width: '100%'}} className={classNames(Css.fadeIn, Css.delayTwo)}/>
+                        <img src={mockupImage2} style={{width: '100%'}} className={classNames(Css.fadeIn, Css.delayTwo)} alt={'사진'}/>
                     </div>
                     <div style={{maxWidth: 270}}>
-                        <img src={mockupImage3} style={{width: '100%'}} className={classNames(Css.fadeIn, Css.delayThree)}/>
+                        <img src={mockupImage3} style={{width: '100%'}} className={classNames(Css.fadeIn, Css.delayThree)} alt={'사진'}/>
                     </div>
                 </div>
             {/*</div>*/}

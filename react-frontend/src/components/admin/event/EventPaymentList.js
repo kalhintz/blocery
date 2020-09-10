@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getB2cEventPaymentList } from '~/lib/adminApi'
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+import "ag-grid-community/src/styles/ag-grid.scss";
+import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { Button } from 'reactstrap'
 import { ExcelDownload } from '~/components/common'
-import { scOntGetBalanceOfBlct } from '~/lib/smartcontractApi';
 
 const EventPaymentList = (props) => {
 
@@ -25,83 +24,51 @@ const EventPaymentList = (props) => {
                 }
             },
             {
-                headerName: "미션01", field: "mission01", width:90,
+                headerName: "미션11", field: "mission11", width:90,
                 cellStyle:{"text-align":"right"},
                 valueGetter: function(params) {
                     //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,1);
+                    return getMissionItemBlct(params.data.missionList,11);
                 }
             },
             {
-                headerName: "미션02", field: "mission02", width:90,
+                headerName: "미션12", field: "mission12", width:90,
                 cellStyle:{"text-align":"right"},
                 valueGetter: function(params) {
                     //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,2);
+                    return getMissionItemBlct(params.data.missionList,12);
                 }
             },
             {
-                headerName: "미션03", field: "mission03", width:90,
+                headerName: "미션13", field: "mission13", width:90,
                 cellStyle:{"text-align":"right"},
                 valueGetter: function(params) {
                     //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,3);
+                    return getMissionItemBlct(params.data.missionList,13);
                 }
             },
             {
-                headerName: "미션04", field: "mission04", width:90,
+                headerName: "미션14", field: "mission14", width:90,
                 cellStyle:{"text-align":"right"},
                 valueGetter: function(params) {
                     //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,4);
+                    return getMissionItemBlct(params.data.missionList,14);
                 }
             },
             {
-                headerName: "미션05", field: "mission05", width:90,
+                headerName: "미션15", field: "mission15", width:90,
                 cellStyle:{"text-align":"right"},
                 valueGetter: function(params) {
                     //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,5);
+                    return getMissionItemBlct(params.data.missionList,15);
                 }
             },
             {
-                headerName: "미션06", field: "mission06", width:90,
+                headerName: "미션01~10합계", field: "missionBeforeTot", width:120,
                 cellStyle:{"text-align":"right"},
                 valueGetter: function(params) {
                     //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,6);
-                }
-            },
-            {
-                headerName: "미션07", field: "mission07", width:90,
-                cellStyle:{"text-align":"right"},
-                valueGetter: function(params) {
-                    //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,7);
-                }
-            },
-            {
-                headerName: "미션08", field: "mission08", width:90,
-                cellStyle:{"text-align":"right"},
-                valueGetter: function(params) {
-                    //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,8);
-                }
-            },
-            {
-                headerName: "미션09", field: "mission09", width:90,
-                cellStyle:{"text-align":"right"},
-                valueGetter: function(params) {
-                    //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,9);
-                }
-            },
-            {
-                headerName: "미션10", field: "mission10", width:90,
-                cellStyle:{"text-align":"right"},
-                valueGetter: function(params) {
-                    //console.log(params.data.missionList);
-                    return getMissionItemBlct(params.data.missionList,10);
+                    return getMissionItemBlctBefore10(params.data.missionList);
                 }
             }
         ],
@@ -130,7 +97,7 @@ const EventPaymentList = (props) => {
 
         excelData();
 
-    }, [dataList])
+    }, [dataList]);
 
     useEffect(() => {
 
@@ -140,12 +107,27 @@ const EventPaymentList = (props) => {
 
             let r_toto_blct_sum = 0;
             let r_toto_f_sum = 0;
+            let r_toto_bf01to10_sum = 0;
             data.map(item => {
+
+                let v_finish_cnt = 0;
+                let r_blct_sum = 0;
                 item.missionList.map(itemMission => {
-                    r_toto_blct_sum = r_toto_blct_sum + (itemMission.blct || 0);
+
+                    if(itemMission.missionNo < 11){
+                        r_toto_bf01to10_sum = r_toto_bf01to10_sum + (itemMission.blct || 0);
+
+                    }
+                    if(itemMission.missionNo > 10){
+                        r_toto_blct_sum = r_toto_blct_sum + (itemMission.blct || 0);
+                        v_finish_cnt = v_finish_cnt + 1;
+                    }
+
                 });
 
-                r_toto_f_sum = r_toto_f_sum + (item.missionList.length || 0);
+                r_toto_f_sum = r_toto_f_sum + v_finish_cnt;
+
+
             });
             //console.log("r_toto_blct_sum",r_toto_blct_sum);
             setTotalBlct(r_toto_blct_sum);
@@ -156,6 +138,17 @@ const EventPaymentList = (props) => {
 
     }, []);
 
+    const getMissionItemBlctBefore10 = (missionItems) => {
+        let sum_blct = 0;
+
+        missionItems.map(item => {
+            if(item.missionNo < 11){
+                sum_blct = sum_blct + (item.blct||0);
+            }
+        });
+        return sum_blct;
+    };
+
     const getMissionItemBlct = (missionItems,missionNo) => {
         let r_blct = "";
         missionItems.map(item => {
@@ -163,54 +156,51 @@ const EventPaymentList = (props) => {
                 r_blct = item.blct || "";
                 return false;
             }
-        })
+        });
         return r_blct;
-    }
+    };
+
     const getMissionItemTotBlct = (missionItems) => {
         let r_toto_blct = 0;
         missionItems.map(item => {
-            r_toto_blct = r_toto_blct + (item.blct || 0);
+
+            if(item.missionNo > 10) {
+                r_toto_blct = r_toto_blct + (item.blct || 0);
+            }
         });
         return r_toto_blct;
-    }
-
-    const getBlctBalance = async(account) => {
-        let balance = await scOntGetBalanceOfBlct(account);
-        return balance;
-    }
+    };
 
     const setExcelData = async () => {
         let excelData = await getExcelData();
         setDataExcel(excelData);
-    }
+    };
 
     const getExcelData = async() => {
         const columns = [
             'ID',
-            '이름', 'account', '이벤트 총합', 'Balance'
-        ]
+            '이름', 'account', '이벤트 총합', '첫번째 이벤트 총합'
+        ];
 
-        const data = dataList.map( async(item ,index)=> {
-            const totalBlct = getMissionItemTotBlct(item.missionList)
-            const {data:balance} = await getBlctBalance(item.consumerAccount);
-            console.log(item.consumerNo, '  ', balance);
+        const data = dataList.map((item ,index)=> {
+            const totalBlct = getMissionItemTotBlct(item.missionList);
+            const total1stBlct = getMissionItemBlctBefore10(item.missionList);
             return [
                 item.consumerNo,
                 item.consumerName,
                 item.consumerAccount,
-                totalBlct,
-                balance
+                totalBlct, total1stBlct
             ]
-        })
+        });
 
-        const result = await Promise.all(data)
+        // const result = await Promise.all(data)
         // console.log('result : ', result)
 
         return [{
             columns: columns,
-            data: result
+            data: data
         }]
-    }
+    };
 
     return (
         <div>

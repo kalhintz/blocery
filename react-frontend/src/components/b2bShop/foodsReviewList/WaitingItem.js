@@ -6,7 +6,7 @@ const WaitingItem = (props) => {
     return(
         <div style={{boxShadow: '1px 1px 2px gray'}} className='d-flex mb-2 p-3 bg-white'>
             <div className='mr-3'>
-                <img style={{borderRadius: '100%', width: 50, height: 50, objectFit: 'cover'}} src={imgUrl} />
+                <img style={{borderRadius: '100%', width: 50, height: 50, objectFit: 'cover'}} src={imgUrl} alt={"후기사진"} />
             </div>
             <div className='flex-grow-1'>
                 <div className='font-weight-border'>{goodsNm}</div>

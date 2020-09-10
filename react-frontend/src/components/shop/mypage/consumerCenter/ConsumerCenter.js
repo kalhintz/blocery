@@ -63,23 +63,32 @@ export default class ConsumerCenter extends Component {
     render() {
         return(
             <Fragment>
-                <ShopXButtonNav history={this.props.history} historyBack>고객센터</ShopXButtonNav>
+                <ShopXButtonNav underline history={this.props.history} historyBack>고객센터</ShopXButtonNav>
+                <div className='m-3'>
+                    <p className='text-center font-weight-bold'>카카오톡 채널 문의</p>
+                    <p className='text-center m-3'>상품, 배송, 이벤트 등 마켓블리에 대한 <br/> 궁금한 사항은 [마켓블리 카카오톡 채널]을 통해 <br/> 문의해 주시면 보다 빠르게 <br/> 답변 받으실 수 있습니다. </p>
+                    <p className='text-center'>
+                        <a href="http://pf.kakao.com/_GvBnxb" target="_blank" data-rel="external" className='text-info'><u>[마켓블리 카카오톡 채널 바로가기]</u></a>
+                    </p>
+                </div>
+                <hr/>
                 <div className='m-3'>
                     <p className='text-center font-weight-bold'>1:1 문의</p>
                     <p className='text-center m-3'>회원님들의 소중한 의견에 귀 기울여 <br/> 신속하고 정확하게 답변 드리도록 하겠습니다.</p>
                     <p className='text-center'>
-                        <a href="mailto:info@blocery.io" data-rel="external" className='text-info'><u>info@blocery.io</u></a>
+                        <a href="mailto:cs@blocery.io" data-rel="external" className='text-info'><u>cs@blocery.io</u></a>
                     </p>
                 </div>
                 <hr/>
                 <div className='m-3'>
                     <p className='text-center font-weight-bold'>전화문의</p>
                     {
-                        ComUtil.isPcWeb() ? <p className='text-center cursor-pointer text-info' onClick={this.callCenter}><u>031-8090-3184</u></p>
+                        ComUtil.isPcWeb() ? <p className='text-center cursor-pointer text-info' onClick={this.callCenter}><u>031-8090-3108</u></p>
                             :
-                            <p className='text-center cursor-pointer'><u><a href="tel:031-8090-3184" data-rel="external" className='text-info'>031-8090-3184</a></u></p>
+                            <p className='text-center cursor-pointer'><u><a href="tel:031-8090-3108" data-rel="external" className='text-info'>031-8090-3108</a></u></p>
                     }
-                    <p className='text-center'>고객센터 | 주중 오전 9시 ~ 오후 6시</p>
+                    <p className='text-center'>주중 오전 9시 ~ 오후 6시</p>
+                    <p className='text-center'>점심시간 낮12시 ~ 오후 1시</p>
                 </div>
                 <hr/>
                 <ToastContainer/>

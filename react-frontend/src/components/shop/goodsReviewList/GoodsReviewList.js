@@ -6,7 +6,7 @@ import { Server } from '../../Properties'
 import HeaderBox from './HeaderBox'
 import WaitingItem from './WaitingItem'
 import GoodsReviewItem from './GoodsReviewItem'
-import { useSelector, useDispatch, connect } from 'react-redux'
+import { connect } from 'react-redux'
 import * as actions  from '../../../reducers/GoodsReviewReducer'
 function GoodsReviewList(props){
 

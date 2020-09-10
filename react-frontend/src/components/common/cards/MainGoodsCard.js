@@ -27,7 +27,7 @@ const MainGoodsCard = (props) => {
                         )
                     }
 
-                    <img src={props.imageUrl} />
+                    <img src={props.imageUrl} alt={'사진'} />
                 </div>
                 <footer>
                     <div>{props.goodsNm} {props.packAmount} {props.packUnit}</div>

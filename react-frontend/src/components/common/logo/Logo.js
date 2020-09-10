@@ -7,18 +7,24 @@ import LogoGreenVertical from '../../../../src/images/logo/Blocery_logo_green_ve
 import SymbolGreen from '../../../../src/images/logo/Blocery_symbol_green.png'
 import MarketBlyLogoWhiteImage from '~/images/logo/MarketBly_logo_white.png'
 import NiceFoodLogoWhiteImage from '~/images/logo/NiceFood_logo_white.png'
-import MarketBlyLogoColorRectangleImage from '~/images/logo/MarketBly_Logo_Color_Rectangle.jpeg'
-import NiceFoodLogoColorRectangleImage from '~/images/logo/NiceFood_Logo_Color_Rectangle.jpeg'
+//import MarketBlyLogoColorRectangleImage from '~/images/logo/MarketBly_Logo_Color_Rectangle.jpeg'
+import MarketBlyLogoColorRectangleImage from '~/images/logo/MarketBly_Main_Logo@3x.png'
 
-const BloceryLogoGreen = (props) => <img src={LogoGreen} className={props.className || null} style={props.style} />
-const BloceryLogoWhite = (props) => <img src={LogoWhite} className={props.className || null} style={props.style} />
-const BloceryLogoBlack = (props) => <img src={LogoBlack} className={props.className || null} style={props.style} />
-const BloceryLogoGreenVertical = (props) => <img src={LogoGreenVertical} className={props.className || null} style={props.style} />
-const BlocerySymbolGreen = (props) => <img src={SymbolGreen} className={props.className || null} style={props.style} />
-const MarketBlyLogoWhite = (props) => <img src={MarketBlyLogoWhiteImage} className={props.className || null} style={props.style} />
-const NiceFoodLogoWhite = (props) => <img src={NiceFoodLogoWhiteImage} className={props.className || null} style={props.style} />
-const MarketBlyLogoColorRectangle = (props) => <img src={MarketBlyLogoColorRectangleImage} className={props.className || null} style={props.style} />
-const NiceFoodLogoColorRectangle = (props) => <img src={NiceFoodLogoColorRectangleImage} className={props.className || null} style={props.style} />
+import NiceFoodLogoColorRectangleImage from '~/images/logo/NiceFood_Logo_Color_Rectangle.jpeg'
+import MarketBlyMainLogoImage from '~/images/logo/MarketBly_Main_Logo.png'
+
+
+const BloceryLogoGreen = (props) => <img src={LogoGreen} className={props.className || null} style={props.style}  alt={'로고'}/>
+const BloceryLogoWhite = (props) => <img src={LogoWhite} className={props.className || null} style={props.style} alt={'로고'}/>
+const BloceryLogoBlack = (props) => <img src={LogoBlack} className={props.className || null} style={props.style} alt={'로고'}/>
+const BloceryLogoGreenVertical = (props) => <img src={LogoGreenVertical} className={props.className || null} style={props.style} alt={'로고'}/>
+const BlocerySymbolGreen = (props) => <img src={SymbolGreen} className={props.className || null} style={props.style} alt={'로고'}/>
+const MarketBlyLogoWhite = (props) => <img src={MarketBlyLogoWhiteImage} className={props.className || null} style={props.style} alt={'로고'}/>
+const NiceFoodLogoWhite = (props) => <img src={NiceFoodLogoWhiteImage} className={props.className || null} style={props.style} alt={'로고'}/>
+const MarketBlyLogoColorRectangle = (props) => <img src={MarketBlyLogoColorRectangleImage} className={props.className || null} style={props.style} alt={'로고'}/>
+const NiceFoodLogoColorRectangle = (props) => <img src={NiceFoodLogoColorRectangleImage} className={props.className || null} style={props.style} alt={'로고'}/>
+
+const MarketBlyMainLogo = (props) => <img src={MarketBlyMainLogoImage} className={props.className || null} style={props.style} alt={'마켓블리 로고'}/>
 
 BloceryLogoGreen.propTypes = {
     style: PropTypes.object
@@ -53,6 +59,9 @@ BlocerySymbolGreen.defaultProps = {
 MarketBlyLogoWhite.defaultProps = {
     style: {width: '100px', height: '100%'}
 }
+MarketBlyMainLogo.defaultProps = {
+    style: {width: '100px', height: '100%'}
+}
 NiceFoodLogoWhite.defaultProps = {
     style: {width: '100px', height: '100%'}
 }
@@ -71,5 +80,6 @@ export {
     MarketBlyLogoWhite,
     NiceFoodLogoWhite,
     MarketBlyLogoColorRectangle,
-    NiceFoodLogoColorRectangle
+    NiceFoodLogoColorRectangle,
+    MarketBlyMainLogo
 }

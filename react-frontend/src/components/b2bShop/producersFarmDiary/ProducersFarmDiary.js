@@ -46,7 +46,7 @@ const ProducersFarmDiary = (props) => {
                         {
                             farmDiary.diaryImages.map(((diaryImage, index) => (
                                 <div key={'diaryImage'+index} className='text-center w-100 mb-2'>
-                                    <img style={{width: '100%'}} src={Server.getImageURL() + diaryImage.imageUrl}/>
+                                    <img style={{width: '100%'}} src={Server.getImageURL() + diaryImage.imageUrl} alt={'사진'}/>
                                 </div>
                             )))
                         }

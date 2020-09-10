@@ -1,10 +1,9 @@
 import React, {Fragment, Component} from 'react';
-import {Col, Button, FormGroup, Label, Input, Container, Table, Badge, Row, Modal, ModalBody, ModalFooter, ModalHeader, InputGroup, InputGroupAddon, InputGroupText} from 'reactstrap'
+import {Col, Button, Label, Input, Container, Row, Modal, ModalBody, ModalFooter, ModalHeader, InputGroup, InputGroupAddon } from 'reactstrap'
 
-import { getConsumerByConsumerNo, updateConsumerInfo, updateDeliverInfo, putAddress } from "~/lib/shopApi";
+import { getConsumerByConsumerNo, putAddress } from "~/lib/shopApi";
 import { JusoSearch, ShopXButtonNav } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
-import {Webview} from "~/lib/webviewApi";
 import { setMissionClear } from "~/lib/eventApi"
 
 import TextCss from "~/styles/Text.module.scss"
@@ -241,7 +240,7 @@ export default class AddressModify extends Component {
         return (
             <Fragment>
                 {
-                    this.state.flag === 'mypage' && <ShopXButtonNav history={this.props.history} >배송지 추가/수정</ShopXButtonNav>
+                    this.state.flag === 'mypage' && <ShopXButtonNav history={this.props.history} historyBack>배송지 추가/수정</ShopXButtonNav>
                 }
                 <div className={TextCss.textUnderlineWrap}>
                 <Container fluid>

@@ -19,6 +19,8 @@ import Style from './MyPage.module.scss'
 
 import { LoginLinkCard } from '~/components/common'
 
+import { Redirect } from 'react-router-dom'
+
 export default class Mypage extends Component {
     constructor(props) {
         super(props);
@@ -26,7 +28,8 @@ export default class Mypage extends Component {
             tokenBalance: '',
             loginUser:'notRender',  //로그인 판별여부가 결정날때까지 render방지 -> (로그인 된경우) 로그인 버튼 안그리기.
             regularConsumerCount:'',
-            totalOrderCount:''
+            totalOrderCount:'',
+            redirect: null
         }
     }
 
@@ -107,13 +110,17 @@ export default class Mypage extends Component {
         // localStorage.clear();
 
         //자기 페이지 강제 새로고침()
-        window.location = this.props.history.location.pathname
+        // window.location = this.props.history.location.pathname
+        this.setState({
+            redirect: '/home/1'
+        })
+
     }
 
 
     //정보관리
     onInfoModify = () => {
-        alert('정보의 확인 및 수정이 필요한 경우 메일(info@blocery.io)로 요청해 주시기 바랍니다.')
+        alert('정보의 확인 및 수정이 필요한 경우 메일(cs@blocery.io)로 요청해 주시기 바랍니다.')
     }
 
     //알림
@@ -137,6 +144,12 @@ export default class Mypage extends Component {
     }
 
     render() {
+
+        if(this.state.redirect){
+            return <Redirect to={this.state.redirect} />
+        }
+
+
         return (
             <Fragment>
                 <Header />

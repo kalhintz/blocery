@@ -15,8 +15,8 @@ import classNames from 'classnames';
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+import "ag-grid-community/src/styles/ag-grid.scss";
+import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 import { Refresh } from '@material-ui/icons'
 import Style from './GoodsList.module.scss'
@@ -110,8 +110,9 @@ export default class GoodsList extends Component {
                 {headerName: "할인%", field: "discountRate", width: 100, cellStyle:this.getCellStyle({cellAlign: 'center'}), valueGetter: function(params){
                     return Math.round(params.data.discountRate, 1)
                 }},
-                {headerName: "판매가", field: "currentPrice", width: 90, cellStyle:this.getCellStyle({cellAlign: 'right',color:'red'}), cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "판매가", field: "defaultCurrentPrice", width: 90, cellStyle:this.getCellStyle({cellAlign: 'right',color:'red'}), cellRenderer: 'formatCurrencyRenderer'},
                 {headerName: "요약정보", field: "goodsSaleStop", width:250, suppressSizeToFit: 'true', suppressMenu:"false",suppressSorting:"false", cellRenderer: 'goodsTagRenderer'},
+
                 {headerName: "수량", field: "packCnt", width: 70, cellStyle:this.getCellStyle({cellAlign: 'right'}), cellRenderer: 'formatCurrencyRenderer'},
                 {headerName: "판매", field: "saleCnt", width: 70, cellStyle:this.getCellStyle({cellAlign: 'right'}), cellRenderer: 'saleCntRenderer'},
                 {headerName: "재고", field: "remainedCnt", width: 70, cellStyle:this.getCellStyle({cellAlign: 'right'}), cellRenderer: 'formatCurrencyRenderer'},
@@ -179,7 +180,7 @@ export default class GoodsList extends Component {
                 <div>
                     <span>{rowData.goodsNm}</span><br/>
                     <span className='small'>{Math.round(rowData.discountRate)}%{' '}<del className='text-secondary'>{ComUtil.addCommas(rowData.consumerPrice)}</del>원</span><br/>
-                    <span className='text-danger font-weight-bolder'>{ComUtil.addCommas(rowData.currentPrice)}원</span><br/>
+                    <span className='text-danger font-weight-bolder'>{ComUtil.addCommas(rowData.defaultCurrentPrice)}원</span><br/>
                     <span className='small'>{`수량/판매/재고 : ${rowData.packCnt}/${rowData.packCnt-rowData.remainedCnt}/${rowData.remainedCnt}`}</span><br/>
                     <span className='small'>판매기한 : {(rowData.saleEnd ? ComUtil.utcToString(rowData.saleEnd, 'YY.MM.DD') : '-')}</span><br/>
                     <span className='small'>예상발송일 : {(rowData.expectShippingStart ? ComUtil.utcToString(rowData.expectShippingStart, 'YY.MM.DD') : '-')} ~ {(rowData.expectShippingEnd ? ComUtil.utcToString(rowData.expectShippingEnd, 'YY.MM.DD') : '-')}</span><br/>

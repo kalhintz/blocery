@@ -24,13 +24,7 @@ import CurrencyInput from '~/components/common/inputs/CurrencyInput'
 
 import { TERMS_OF_DELIVERYFEE } from '~/lib/bloceryConst'
 
-// import '../../../styles/react_dates_overrides.css'
-
-import 'codemirror/lib/codemirror.css';
-import 'tui-editor/dist/tui-editor.min.css';
-import 'tui-editor/dist/tui-editor-contents.min.css';
-import { Editor } from '@toast-ui/react-editor'
-
+import TuiEditor from '~/components/common/toastUI/TuiEditor'
 
 let validatedObj = {}
 
@@ -54,8 +48,6 @@ let bindData = {
 }
 
 export default class GoodsReg extends Component {
-
-    editorRef = React.createRef();
 
     constructor(props) {
         super(props);
@@ -261,25 +253,23 @@ export default class GoodsReg extends Component {
 
         //업데이트
         const goods = await this.search()
-        console.log({goods})
 
         //품종세팅
-        this.setItemKinds(goods.itemNo)
+        this.setItemKinds(goods.itemNo);
 
-        state.goods = goods
+        state.goods = goods;
 
         //goodsContent 분리되었으므로 다시 가져오기, 가끔 data가 없을경우 fileName이 null이나 0인 경우가 있어서 제외
         if (!state.goods.goodsContent && state.goods.goodsContentFileName != 0) {
             let {data:goodsContent} = await getGoodsContent(state.goods.goodsContentFileName)
-            state.goods.goodsContent = goodsContent
+            if(goodsContent) {
+                state.goods.goodsContent = goodsContent
+            }
             //console.log('goodsContent await:', goodsContent, state.goods.goodsContentFileName)
         }
 
         this.setValidatedObj(state)
-
-        console.log('state.isLoading',state.isLoading)
         this.setState(state)
-
     }
 
     setLoginUserInfo = async() => {
@@ -378,6 +368,16 @@ export default class GoodsReg extends Component {
         this.setValidatedObj({goods})
         this.setState({goods})
     }
+
+    onContentImageChange = (images) => {
+
+        const goods = Object.assign({}, this.state.goods)
+        goods.contentImages = images
+
+        this.setValidatedObj({goods})
+        this.setState({goods})
+    }
+
 
     //재배방법
     onCultivationNmClick = (item) => {
@@ -481,8 +481,6 @@ export default class GoodsReg extends Component {
 
     isPassedValidation = () => {
         const state = Object.assign({}, this.state)
-        //에디터의 내용을 state에 미리 저장 후 밸리데이션 체크
-        state.goods.goodsContent = this.editorRef.current.getInstance().getValue()
 
         //밸리데이션 체크
         this.setValidatedObj(state)
@@ -498,24 +496,8 @@ export default class GoodsReg extends Component {
 
     //상품노출
     onConfirmClick = async () => {
-//<ModalConfirmButton block={true} color={'danger'} title={'상품을 노출 하시겠습니까?'} content={'앞으로 수정 및 삭제가 불가능 합니다!'} onClick={this.onAddGoodsClick}>노출(판매개시)</ModalConfirmButton> : null
-
-        // //에디터의 내용을 state에 미리 저장 후 밸리데이션 체크
-        // const state = Object.assign({}, this.state)
-        // state.goods.goodsContent = this.editorRef.current.getInstance().getValue()
-        //
-        // //밸리데이션 체크
-        // this.setValidatedObj(state)
-        // //밸리데이션을 통과했는지 여부
-        // const valid = this.isValidatedSuccessful()
-        //
-        // if(!valid.isSuccess){
-        //     this.notify(valid.msg, toast.error)
-        //     return
-        // }
 
         if(!this.isPassedValidation()) return
-
 
         if(!window.confirm('상품을 판매개시 하시겠습니까? 이후 수정되는 항목이 제한 됩니다!')) return
 
@@ -528,7 +510,7 @@ export default class GoodsReg extends Component {
             let balance = await scOntGetBalanceOfBlct(this.state.loginUser.account);
             if(balance < this.state.goods.totalDepositBlct){
                 // TODO 토큰 구매페이지 이동 혹은 안내 필요
-                alert('상품 판매개시에 필요한 미배송보증금의 BLCT가 부족합니다');
+                alert('상품 판매개시에 필요한 미배송보증금의 BLY가 부족합니다');
                 return;
             }
         }
@@ -567,9 +549,6 @@ export default class GoodsReg extends Component {
             goods.priceSteps = []
         }
 
-        //상품상세
-        goods.goodsContent = this.editorRef.current.getInstance().getValue()
-
         let maxPrice = (goods.priceSteps[goods.priceSteps.length-1]).price;
         // console.log("maxPrice : " , maxPrice);
         goods.totalDepositBlct = await exchangeWon2BLCT(maxPrice * goods.packCnt * GOODS_TOTAL_DEPOSIT_RATE);
@@ -579,9 +558,6 @@ export default class GoodsReg extends Component {
         if(!goods.confirm){
             goods.remainedCnt = goods.packCnt;
         }
-
-        console.log({saveGoods: goods})
-
 
         //상품이미지의 imageNo로 정렬
         ComUtil.sortNumber(goods.goodsImages, 'imageNo', false)
@@ -1054,6 +1030,13 @@ export default class GoodsReg extends Component {
         this.setState(state)
     }
 
+    //상품 컨텐츠 온체인지 (tui-editor)
+    onChangeGoodsContent = (editorHtml) => {
+        const goods = Object.assign({}, this.state.goods)
+        goods.goodsContent = editorHtml;
+        this.setState({goods});
+    }
+
     render() {
 
         if(!this.state.isDidMounted) return <BlocerySpinner/>
@@ -1136,6 +1119,18 @@ export default class GoodsReg extends Component {
                                     {/*<SingleImageUploader images={goods.goodsImages} defaultCount={10} onChange={this.onGoodsImageChange} />*/}
                                     {/*<ImageUploader onChange={this.onGoodsImageChange} multiple={true} limit={10}/>*/}
                                     <Fade in={validatedObj.goodsImages ? true : false} className="text-danger small mt-1" >{validatedObj.goodsImages}</Fade>
+                                </FormGroup>
+                                <h6>상세이미지업로드(소비자에게 노출되지 않는 이미지 입니다)</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>이미지{star}</Label>
+                                    <SingleImageUploader
+                                        images={goods.contentImages}
+                                        defaultCount={10}
+                                        isShownMainText={false}
+                                        onChange={this.onContentImageChange}
+                                        isShownCopyButton={true}
+                                        isNoResizing={true}
+                                    />
                                 </FormGroup>
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>상품명{star}</Label>
@@ -1558,60 +1553,13 @@ export default class GoodsReg extends Component {
                                 <Row>
                                     <Col>
                                         <h6>상품상세설명{star}</h6>
-
-                                        {
-                                            /*
-
-                                                Documentation :
-                                                    https://ui.toast.com/tui-editor/
-                                                    https://nhn.github.io/tui.editor/api/latest/ToastUIEditor.html
-                                                    https://docs.toast.com/ko/Open%20Source/ToastUI%20Editor/ko/opensource-guide/
-
-                                                속성 설명
-                                                height: Height in string or auto ex) 300px | auto
-                                                initialValue: Initial value. Set Markdown string
-                                                initialEditType: Initial type to show markdown | wysiwyg
-                                                previewType: Preview style of Markdown mode tab | vertical
-                                                usageStatistics: Let us know the hostname. We want to learn from you how you are using the editor. You are free to disable it. true | false
-                                            */
-                                        }
-                                        <Editor
-                                            previewStyle="vertical" //tab | vertical
-                                            // viewer={true}
-                                            height={800}       //"auto" | {800} 숫자로 해야 내부 scroll이 자동으로 생김.
-                                            initialEditType="wysiwyg" //markdown wysiwyg
-                                            initialValue={goods.goodsContent}
-                                            ref={this.editorRef}
-                                            toolbarItems={[
-                                                'heading',
-                                                'bold',
-                                                'italic',
-                                                'strike',
-                                                'divider',
-                                                'hr',
-                                                'quote',
-                                                'divider',
-                                                'ul',
-                                                'ol',
-                                                'task',
-                                                'indent',
-                                                'outdent',
-                                                'divider',
-                                                'table',
-                                                'image',
-                                                //'link',
-                                                'divider',
-                                                'code',
-                                                'codeblock',
-                                                'divider',
-                                            ]}
+                                        <TuiEditor
+                                            editorHtml={goods.goodsContent}
+                                            onChange={this.onChangeGoodsContent}
                                         />
-
                                         <FormGroup>
                                             <Fade in={validatedObj.goodsContent ? true : false} className="text-danger small mt-1" >{validatedObj.goodsContent}</Fade>
                                         </FormGroup>
-
-
                                     </Col>
                                 </Row>
                             </Container>
@@ -1659,7 +1607,7 @@ export default class GoodsReg extends Component {
                 {/* 결제비번 입력 모달 */}
                 <Modal isOpen={this.state.modalType === 'pay' && this.state.modal} toggle={this.toggle} className={this.props.className} centered>
                     <ModalHeader toggle={this.modalToggle}> 블록체인비밀번호 입력</ModalHeader>
-                    <ModalBody>
+                    <ModalBody className={'p-0'}>
                         {/* clearPassPhrase 초기화, onChange 결과값 세팅 */}
                         <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhrase}></PassPhrase>
                     </ModalBody>

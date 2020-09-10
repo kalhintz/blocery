@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import Style from './QtyInputGroup.module.scss'
+import Css from './QtyInputGroup.module.scss'
 import ComUtil from '../../../util/ComUtil'
-import classNames from 'classnames'
+import {Input} from 'reactstrap'
+
+import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai';
+
+
 const QtyInputGroup = (props) => {
 
 
@@ -36,18 +40,12 @@ const QtyInputGroup = (props) => {
     //업데이트 되었을때
     // useEffect(() => {
     // },[value]);
-
+    
     return(
-        <div className={Style.btnWrap}>
-            <div className={classNames(Style.btn, 'cursor-default')} onClick={onDecreaseClick}>
-                -
-            </div>
-            <div className={Style.inp}>
-                <input type="number" readOnly={props.readonly} placeholder={props.placeholder} onChange={onChange} value={props.value}/>
-            </div>
-            <div className={classNames(Style.btn, 'cursor-default')} onClick={onIncreaseClick}>
-                +
-            </div>
+        <div className={Css.wrap}>
+            <div className={Css.button} onClick={onDecreaseClick}><AiOutlineMinus/></div>
+            <Input type="number" readOnly={props.readonly} placeholder={props.placeholder} onChange={onChange} value={props.value}/>
+            <div className={Css.button} onClick={onIncreaseClick}><AiOutlinePlus /></div>
         </div>
     )
 }

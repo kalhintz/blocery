@@ -5,9 +5,6 @@ import Switch from 'react-switch'
 
 import { getProducer, updateProducerPush } from '~/lib/producerApi'
 
-import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Webview } from "~/lib/webviewApi";
 
 export default class Setting extends Component {
     constructor(props){

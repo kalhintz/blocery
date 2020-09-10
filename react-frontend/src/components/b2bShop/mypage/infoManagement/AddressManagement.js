@@ -73,19 +73,17 @@ export default class AddressManagement extends Component {
                             return (
                                 <div key={index}>
                                     <div className='d-flex p-3'>
-                                        <div className='flex-grow-1'>
+                                        <div className='mr-2'>
                                             {
                                                 basicAddress == 1?
-                                                    <div className='f6 border bg-light justify-content-center align-items-center d-inline-block'>기본배송지</div> : ''
+                                                    <div className='p-1 f6 border bg-light mb-2 d-inline-block'>기본배송지</div> : ''
                                             }
-                                            <div className='f2 textBoldLarge mr-10'>{addrName} ({receiverName})</div>
-                                            <div>{addr} {addrDetail}({zipNo})</div>
-                                            <div>{phone}</div>
+                                            <div className='f5 textBoldLarge text-secondary'>{addrName} ({receiverName})</div>
+                                            <div className='f6'>{addr} {addrDetail}({zipNo})</div>
+                                            <div className='f6'>{phone}</div>
                                         </div>
-                                        <div>
-                                            <div className='d-flex justify-content-center align-items-center'>
-                                                <Button outline color="secondary" size='sm' onClick={this.addressModify.bind(this, index)}>수정</Button>
-                                            </div>
+                                        <div className='flex-shrink-0 d-flex justify-content-center align-items-center ml-auto'>
+                                            <Button outline color="secondary" size='sm' onClick={this.addressModify.bind(this, index)}>수정</Button>
                                         </div>
                                     </div>
                                     <hr className='m-0 p-0' />

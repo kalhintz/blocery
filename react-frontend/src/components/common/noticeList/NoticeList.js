@@ -3,6 +3,7 @@ import { getNoticeList } from '~/lib/adminApi';
 import { getLoginUserType } from '~/lib/loginApi';
 import { ShopXButtonNav, Hr, HeaderTitle } from '~/components/common'
 import ComUtil from '~/util/ComUtil';
+import { setMissionClear } from "~/lib/eventApi"
 
 const NoticeList = (props) => {
 
@@ -16,8 +17,16 @@ const NoticeList = (props) => {
 
     const getData = async () => {
         const {data: userType} = await getLoginUserType();
-        const {data: notices} = await getNoticeList(userType);
+        // let {data: notices} = await getNoticeList(userType);
+        let {data: notices} = await getNoticeList((userType) ? userType : 'consumer');
+
+        notices = ComUtil.sortDate(notices, 'regDate', true);
+
         setNoticeList(notices);
+
+        //20200217 - 미션이벤트 2차:
+        console.log('missionClear 14')
+        setMissionClear(14).then( (response) => console.log('notificationList SET:missionEvent14:' + response.data )); //기본배송지를 저장
     }
 
     const toggle = (index) => {
@@ -27,7 +36,7 @@ const NoticeList = (props) => {
 
     return (
         <Fragment>
-            <ShopXButtonNav history={props.history} back>공지사항</ShopXButtonNav>
+            <ShopXButtonNav underline history={props.history} back>공지사항</ShopXButtonNav>
             <div className='mt-4 mb-4'>
                 {
                     (noticeList && noticeList.length != 0) ?

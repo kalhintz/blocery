@@ -24,9 +24,9 @@ export const searchWrittenList = () => {
 }
 
 // 삭제
-export const deleteFoodsReview = (foodsNo) => {
+export const deleteFoodsReview = (dealSeq, foodsNo) => {
     return async dispatch => {
-        await delFoodsReview(foodsNo)
+        await delFoodsReview(dealSeq, foodsNo)
 
         //병렬처리
         const response = await Promise.all([getWaitingFoodsReview(), getFoodsReview()])

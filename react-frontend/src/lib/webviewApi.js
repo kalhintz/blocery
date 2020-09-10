@@ -225,7 +225,23 @@ export const Webview = {
 
         const data = {type: 'PHONE_LOCATION'};
         window.ReactNativeWebView.postMessage(JSON.stringify(data));
+    },
+
+    cameraPermission: function (){
+        const data = {type: 'CAMERA_PERMISSION'};
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+    },
+
+    qrcodeScan: function (){
+        const data = {type: 'QRCODE_SCAN'};
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+    },
+
+    clipboardPaste: function() {
+        const data = {type: 'CLIPBOARD_TEXT'};
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
     }
+
 
 }
 

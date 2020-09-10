@@ -166,109 +166,102 @@ class PassPhrase extends React.Component {
         this.props.onChange(result);
     }
 
-
     render() {
         return(
             <div>
-                <div className="d-flex align-items-center justify-content-center" style={{height:'100px'}}>
-                    <div
-                        id="key_1"
-                        className={
-                            this.state.passPhraseClass1 ?
-                                [Style.character,Style.on,'mr-1'].join(' ') :
-                                [Style.character,'mr-1'].join(' ')
+                <div className="d-flex align-items-center justify-content-center bg-light" style={{height:'170px'}}>
+                    {
+                        (this.state.passPhraseClass1 ||
+                        this.state.passPhraseClass2 ||
+                        this.state.passPhraseClass3 ||
+                        this.state.passPhraseClass4 ||
+                        this.state.passPhraseClass5 ||
+                        this.state.passPhraseClass6) ? (
+                            <>
+                            <div
+                                id="key_1"
+                                className={
+                                    this.state.passPhraseClass1 ?
+                                        [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
+                                        [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
 
-                        }
-                    >{this.state.passPhraseClass1 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
-                    <div
-                        id="key_2"
-                        className={
-                            this.state.passPhraseClass2 ?
-                                [Style.character,Style.on,'mr-1'].join(' ') :
-                                [Style.character,'mr-1'].join(' ')
-                        }
-                    >{this.state.passPhraseClass2 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
-                    <div
-                        id="key_3"
-                        className={
-                            this.state.passPhraseClass3 ?
-                                [Style.character,Style.on,'mr-1'].join(' ') :
-                                [Style.character,'mr-1'].join(' ')
-                        }
-                    >{this.state.passPhraseClass3 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
-                    <div
-                        id="key_4"
-                        className={
-                            this.state.passPhraseClass4 ?
-                                [Style.character,Style.on,'mr-1'].join(' ') :
-                                [Style.character,'mr-1'].join(' ')
-                        }
-                    >{this.state.passPhraseClass4 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
-                    <div
-                        id="key_5"
-                        className={
-                            this.state.passPhraseClass5 ?
-                                [Style.character,Style.on,'mr-1'].join(' ') :
-                                [Style.character,'mr-1'].join(' ')
-                        }
-                    >{this.state.passPhraseClass5 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
-                    <div
-                        id="key_6"
-                        className={
-                            this.state.passPhraseClass6 ?
-                                [Style.character,Style.on,'mr-1'].join(' ') :
-                                [Style.character,'mr-1'].join(' ')
-                        }
-                    >{this.state.passPhraseClass6 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                                }
+                            >{this.state.passPhraseClass1 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            <div
+                                id="key_2"
+                                className={
+                                    this.state.passPhraseClass2 ?
+                                        [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
+                                        [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
+                                }
+                            >{this.state.passPhraseClass2 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            <div
+                                id="key_3"
+                                className={
+                                    this.state.passPhraseClass3 ?
+                                        [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
+                                        [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
+                                }
+                            >{this.state.passPhraseClass3 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            <div
+                                id="key_4"
+                                className={
+                                    this.state.passPhraseClass4 ?
+                                        [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
+                                        [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
+                                }
+                            >{this.state.passPhraseClass4 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            <div
+                                id="key_5"
+                                className={
+                                    this.state.passPhraseClass5 ?
+                                        [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
+                                        [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
+                                }
+                            >{this.state.passPhraseClass5 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            <div
+                                id="key_6"
+                                className={
+                                    this.state.passPhraseClass6 ?
+                                        [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
+                                        [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
+                                }
+                            >{this.state.passPhraseClass6 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            </>
+                        ) : (
+                            <div className={Style.fadeIn}>
+                                <div className={'font-weight-border f1 text-center'}><u>비밀번호</u></div>
+                                <small>블록체인 결제시 사용됩니다</small>
+                            </div>
+                        )
+                    }
+
                 </div>
-                <Table responsive="sm" bordered>
-                    <tbody>
-                    <tr>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[0]}</div>
-                        </td>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[1]}</div>
-                        </td>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[2]}</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[3]}</div>
-                        </td>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[4]}</div>
-                        </td>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[5]}</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[6]}</div>
-                        </td>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[7]}</div>
-                        </td>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[8]}</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoAllClearClick}><FontAwesomeIcon icon={faRandom} size={'1x'} /></div>
-                        </td>
-                        <td className="text-center">
-                            <div onClick={this.passPhraseDoClick}>{this.pad[9]}</div>
-                        </td>
-                        <td className="text-center" style={{width:'35%'}}>
-                            <div onClick={this.passPhraseDoClearClick}><FontAwesomeIcon icon={faBackspace} /></div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </Table>
+
+
+
+                <div class={Style.container}>
+                <div class={Style.row}>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[0]}</figure>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[1]}</figure>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[2]}</figure>
+                </div>
+                <div class={Style.row}>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[3]}</figure>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[4]}</figure>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[5]}</figure>
+                </div>
+                <div class={Style.row}>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[6]}</figure>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[7]}</figure>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[8]}</figure>
+                </div>
+                <div class={Style.row}>
+                    <figure onClick={this.passPhraseDoAllClearClick}><FontAwesomeIcon icon={faRandom} size={'1x'} /></figure>
+                    <figure onClick={this.passPhraseDoClick}>{this.pad[9]}</figure>
+                    <figure onClick={this.passPhraseDoClearClick}><FontAwesomeIcon icon={faBackspace} /></figure>
+                </div>
+                </div>
 
             </div>
         );

@@ -2,7 +2,7 @@ import React from 'react'
 import Style from './B2bShopXButtonNav.module.scss'
 import PropTypes from 'prop-types'
 import { Webview } from '~/lib/webviewApi'
-import { XButton } from '~/components/common/buttons'
+import { B2bXButton } from '~/components/common/buttons'
 import { CartLink } from '~/components/common/b2bCart'
 import classNames from 'classnames'
 import { Link } from 'react-router-dom'
@@ -90,19 +90,19 @@ const ShopXButtonNav = (props) => {
     function getXButton() {
 
         if (backCloseToMypageOrderList) {
-            return <XButton back onClick={onCloseToMypageDealList}/>
+            return <B2bXButton back onClick={onCloseToMypageDealList}/>
         } else if(backClose){
-            return <XButton back onClick={onCloseClick}/>
+            return <B2bXButton back onClick={onCloseClick}/>
         } else if(home){
-            return <XButton close onClick={onHomeClick}/>
+            return <B2bXButton close onClick={onHomeClick}/>
         } else if(close){
-            return <XButton close onClick={onCloseClick}/>
+            return <B2bXButton close onClick={onCloseClick}/>
         } else if(backToMypage) {
-            return <XButton back onClick={onBackToMypage} />
+            return <B2bXButton back onClick={onBackToMypage} />
         } else if(historyBack) {
-            return <XButton back onClick={onHistoryBackClick} />
+            return <B2bXButton back onClick={onHistoryBackClick} />
         } else{
-            return <XButton back onClick={onBackClick}/>
+            return <B2bXButton back onClick={onBackClick}/>
         }
     }
 

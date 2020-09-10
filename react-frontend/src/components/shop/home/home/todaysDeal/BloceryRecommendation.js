@@ -83,6 +83,7 @@ const BloceryRecommendation = (props) => {
                                     imageUrl={Server.getImageURL() + goods.goodsImages[0].imageUrl}
                                     discountRate={Math.round(goods.discountRate)}
                                     remainedCnt={goods.remainedCnt}
+                                    blyReview={goods.blyReviewConfirm}
                                 />
                                 <SlideItemContent
                                     className={'p-2'}

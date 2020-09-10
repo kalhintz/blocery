@@ -11,7 +11,11 @@ import { Webview } from '~/lib/webviewApi'
 
 import { SpinnerBox } from '~/components/common'
 import { SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
+import { B2cHeader } from '~/components/common/headers'
+import Css from './Search.module.scss'
+import { IconStore, IconSearch, IconBackArrow } from '~/components/common/icons'
 import { Server } from '~/components/Properties'
+import {BodyFullHeight} from '~/components/common/layouts'
 
 //팝업창 닫기
 function onCloseClick() {
@@ -64,7 +68,6 @@ const Search = (props) => {
 
         setLoading(true)
         const {data} = await getConsumerGoodsByKeyword(keyword)
-        console.log('result:',data)
         setGoodsList(data)
         setLoading(false)
 
@@ -92,18 +95,17 @@ const Search = (props) => {
 
     return(
         <div>
-
             {/* ======================= Nav(start) ======================= */}
-            <div className={'d-flex align-items-center p-2 pl-3 pr-3 text-dark'}>
+            <div style={{height: 56}} className={'d-flex align-items-center p-2 pl-3 pr-3 text-dark'}>
 
                 { /* 뒤로가기 */ }
                 {/*<span c
                 lassName={'mr-3'} onClick={onCloseClick}>*/}
-                    {/*<FontAwesomeIcon*/}
-                        {/*//className={'text-white'}*/}
-                        {/*icon={faAngleLeft}*/}
-                        {/*size={'lg'}*/}
-                    {/*/>*/}
+                {/*<FontAwesomeIcon*/}
+                {/*//className={'text-white'}*/}
+                {/*icon={faAngleLeft}*/}
+                {/*size={'lg'}*/}
+                {/*/>*/}
                 {/*</span>*/}
 
                 { /* 검색바 */ }
@@ -119,14 +121,13 @@ const Search = (props) => {
 
                 { /* 돋보기 버튼 */ }
                 <span onClick={onSearchClick}>
-                    <FontAwesomeIcon
-                        className={'text-info'}
-                        icon={faSearch}
-                        size={'lg'}
-                    />
+                    <IconSearch />
                 </span>
             </div>
             {/* ======================= Nav(end) ======================= */}
+            <div className={Css.back} onClick={()=>props.history.goBack()}>
+                <IconBackArrow />
+            </div>
 
             <hr className={'m-0 border-info'}/>
 
@@ -145,25 +146,32 @@ const Search = (props) => {
                                 goodsList.map(goods =>
                                     <Col key={'goods_'+goods.goodsNo}
                                          xs={12} sm={12} md={6} lg={6} xl={6}
-                                         className={'p-0 mb-2'}>
-                                        <div className={'d-flex'}>
+                                         className={'p-0 mb-2'} >
+                                        <div style={{zIndex:1}} className={'d-flex'} onClick={onGoodsClick.bind(this, goods)}>
                                             <SlideItemHeaderImage
                                                 imageUrl={Server.getThumbnailURL() + goods.goodsImages[0].imageUrl}
                                                 imageWidth={100}
                                                 imageHeight={100}
                                                 discountRate={Math.round(goods.discountRate)}
-                                                onClick={onGoodsClick.bind(this, goods)}
                                                 remainedCnt={goods.remainedCnt}
+                                                blyReview={goods.blyReviewConfirm}
                                             />
-                                            <SlideItemContent
-                                                className={'m-2'}
-                                                directGoods={goods.directGoods}
-                                                goodsNm={goods.goodsNm}
-                                                currentPrice={goods.currentPrice}
-                                                consumerPrice={goods.consumerPrice}
-                                                // discountRate={goods.discountRate}
-                                                onClick={onGoodsClick.bind(this, goods)}
-                                            />
+                                            <div className={Css.content}>
+                                                <div className={Css.farmersInfo} onClick={onGoodsClick.bind(this, goods)} >
+                                                    <div><IconStore style={{marginRight: 6}}/></div>
+                                                    {/* goods.level 농가등급 */}
+                                                    <div>{goods.farmName}</div>
+                                                </div>
+                                                <SlideItemContent
+                                                    style={{padding: 5}}
+                                                    directGoods={goods.directGoods}
+                                                    goodsNm={goods.goodsNm}
+                                                    currentPrice={goods.currentPrice}
+                                                    consumerPrice={goods.consumerPrice}
+                                                    discountRate={goods.discountRate}
+                                                    onClick={onGoodsClick.bind(this, goods)}
+                                                />
+                                            </div>
                                         </div>
                                     </Col>
                                 )

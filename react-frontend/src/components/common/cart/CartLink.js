@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
 import {NavLink, Badge} from 'reactstrap'
 import { getCart } from '../../../lib/cartApi'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
-// import { faShop } from '@fortawesome/free-regular-svg-icons'
-import classNames from 'classnames'
+import { IconShoppingCart,IconShoppingCartWhite } from '~/components/common/icons'
+
+import {Link} from '~/styledComponents/shared'
 
 function getIconStyle({showShadow}){
 
@@ -21,7 +19,7 @@ function getIconStyle({showShadow}){
 
 function CartLink(props) {
 
-    const { showShadow = false } = props
+    const { white, showShadow = false } = props
 
     const [counter, setCounter] = useState(0)
     const cartCounter = useSelector(store => store.cart.counter)
@@ -32,18 +30,24 @@ function CartLink(props) {
     }, [cartCounter])
 
     return (
+
         <NavLink tag={Link} to={'/cartList'} className={'p-0'} >
-            <div style={{position:'relative', paddingRight: 13}}>
-                <FontAwesomeIcon icon={faShoppingCart}
-                                 size={'lg'}
-                                 className={'text-white'}
-                                 style={getIconStyle({showShadow})}
-                />
+            <div style={{position:'relative'}}>
+                {  (white)? <IconShoppingCartWhite/>
+                    : <IconShoppingCart/>
+                }
                 {
                     counter > 0 && <span style={{position:'absolute', right: 0, top: -8}}><Badge pill color='dark'>{counter}</Badge></span>
                 }
             </div>
         </NavLink>
+
+
+        // <Link to={'/cartList'} noti={counter > 0} notiRight={-2} >
+        //     {  (white)? <IconShoppingCartWhite/>
+        //                : <IconShoppingCart/>
+        //     }
+        // </Link>
     )
 }
 

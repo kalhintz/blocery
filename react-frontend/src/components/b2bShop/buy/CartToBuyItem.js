@@ -16,7 +16,7 @@ const CartToBuyItem = (props) => {
 
             <Row>
                 <Col xs={4} style={{paddingRight: 0}}>
-                    <img className={Style.img} src={orderImg}/>
+                    <img className={Style.img} src={orderImg} alt={'사진'}/>
                 </Col>
 
                 <Col xs={8} className={'text-dark f13'}>

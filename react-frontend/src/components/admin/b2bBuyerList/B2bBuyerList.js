@@ -22,8 +22,9 @@ export default class B2bBuyerList extends Component{
                 {headerName: "회원번호", field: "buyerNo", sort:"asc"},
                 {headerName: "회원명", field: "name"},
                 {headerName: "email", field: "email", width: 200},
+                {headerName: "phone", field: "phone", width: 200},
                 {headerName: "가입일", field: "timestamp", width: 200},
-                {headerName: "account", field: "account", width: 200},
+                // {headerName: "account", field: "account", width: 200},
                 // {headerName: "BLCT", field: "blct", cellRenderer: "blctRenderer", width: 200}
             ],
             defaultColDef: {

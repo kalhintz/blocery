@@ -10,12 +10,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { ShopXButtonNav, ModalConfirm } from '../../../common'
 
+import { Server } from '~/components/Properties'
+import { Redirect } from 'react-router-dom'
+
+
 export default class infoManagementMenu extends Component {
     constructor(props) {
         super(props)
         this.state = {
             consumerNo: 0,
-            loginUser: {}
+            loginUser: {},
+            redirect: null
         }
     }
 
@@ -60,14 +65,20 @@ export default class infoManagementMenu extends Component {
         console.log(isConfirmed)
         if (isConfirmed) {
             await doLogout();
-            this.props.history.push('/mypage')
+            // this.props.history.push('/mypage')
+            this.setState({
+                redirect: Server.getShopMainUrl()
+            })
         }
     }
 
     render() {
+        if(this.state.redirect){
+            return <Redirect to={this.state.redirect} />
+        }
         return(
             <Fragment>
-                <ShopXButtonNav history={this.props.history} historyBack> 정보관리 </ShopXButtonNav>
+                <ShopXButtonNav underline history={this.props.history} historyBack> 정보관리 </ShopXButtonNav>
                 <div className={'m-3'}><h6 className='font-weight-border'>회원정보</h6></div>
                 <ListGroup flush>
                     <ListGroupItem><FontAwesomeIcon className={'mr-2'} icon={faUserAlt} />{this.state.loginUser.name}</ListGroupItem>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="43" height="43" viewBox="0 0 43 43">
+    <defs>
+        <style>
+            .prefix__cls-2{fill:#9c9c9c}
+        </style>
+    </defs>
+    <g id="prefix__ic_more_11" transform="translate(-.138)">
+        <path id="prefix__사각형_4456" d="M0 0H43V43H0z" data-name="사각형 4456" transform="translate(.138)" style="fill:#fff;opacity:0"/>
+        <g id="prefix__XMLID_2590_" transform="translate(9.384 5.637)">
+            <g id="prefix__forms">
+                <g id="prefix__그룹_9462" data-name="그룹 9462">
+                    <g id="prefix__그룹_9461" data-name="그룹 9461">
+                        <path id="prefix__패스_13925" d="M69.951 7.571L62.563.183A.624.624 0 0062.122 0H47.974a3.034 3.034 0 00-3.03 3.031v24.492a3.034 3.034 0 003.03 3.03H67.1a3.034 3.034 0 003.03-3.03V8.012a.624.624 0 00-.179-.441zm-7.205-5.442L68 7.388h-3.471A1.783 1.783 0 0162.746 5.6zm6.141 25.394a1.785 1.785 0 01-1.787 1.784H47.974a1.785 1.785 0 01-1.783-1.783V3.031a1.786 1.786 0 011.783-1.783H61.5V5.6a3.03 3.03 0 003.03 3.03h4.357v18.893z" class="prefix__cls-2" data-name="패스 13925" transform="translate(-44.944)"/>
+                    </g>
+                </g>
+                <g id="prefix__그룹_9464" data-name="그룹 9464" transform="translate(5.235 18.126)">
+                    <g id="prefix__그룹_9463" data-name="그룹 9463">
+                        <path id="prefix__패스_13926" d="M133.565 303.745h-.279a.624.624 0 100 1.247h.279a.624.624 0 000-1.247z" class="prefix__cls-2" data-name="패스 13926" transform="translate(-132.662 -303.745)"/>
+                    </g>
+                </g>
+                <g id="prefix__그룹_9466" data-name="그룹 9466" transform="translate(7.531 18.126)">
+                    <g id="prefix__그룹_9465" data-name="그룹 9465">
+                        <path id="prefix__패스_13927" d="M182.944 303.745h-11.176a.624.624 0 100 1.247h11.177a.624.624 0 100-1.247z" class="prefix__cls-2" data-name="패스 13927" transform="translate(-171.144 -303.745)"/>
+                    </g>
+                </g>
+                <g id="prefix__그룹_9468" data-name="그룹 9468" transform="translate(5.235 15.277)">
+                    <g id="prefix__그룹_9467" data-name="그룹 9467">
+                        <path id="prefix__패스_13928" d="M133.565 256h-.279a.624.624 0 000 1.247h.279a.624.624 0 000-1.247z" class="prefix__cls-2" data-name="패스 13928" transform="translate(-132.662 -256)"/>
+                    </g>
+                </g>
+                <g id="prefix__그룹_9470" data-name="그룹 9470" transform="translate(7.531 15.277)">
+                    <g id="prefix__그룹_9469" data-name="그룹 9469">
+                        <path id="prefix__패스_13929" d="M182.944 256h-11.176a.624.624 0 100 1.247h11.177a.624.624 0 100-1.247z" class="prefix__cls-2" data-name="패스 13929" transform="translate(-171.144 -256)"/>
+                    </g>
+                </g>
+                <g id="prefix__그룹_9472" data-name="그룹 9472" transform="translate(5.235 12.428)">
+                    <g id="prefix__그룹_9471" data-name="그룹 9471">
+                        <path id="prefix__패스_13930" d="M133.565 208.255h-.279a.624.624 0 100 1.247h.279a.624.624 0 000-1.247z" class="prefix__cls-2" data-name="패스 13930" transform="translate(-132.662 -208.255)"/>
+                    </g>
+                </g>
+                <g id="prefix__그룹_9474" data-name="그룹 9474" transform="translate(7.531 12.428)">
+                    <g id="prefix__그룹_9473" data-name="그룹 9473">
+                        <path id="prefix__패스_13931" d="M182.944 208.255h-11.176a.624.624 0 100 1.247h11.177a.624.624 0 100-1.247z" class="prefix__cls-2" data-name="패스 13931" transform="translate(-171.144 -208.255)"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

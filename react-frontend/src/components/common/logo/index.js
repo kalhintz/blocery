@@ -7,7 +7,8 @@ import {
     MarketBlyLogoWhite,
     NiceFoodLogoWhite,
     MarketBlyLogoColorRectangle,
-    NiceFoodLogoColorRectangle
+    NiceFoodLogoColorRectangle,
+    MarketBlyMainLogo
 } from "./Logo";
 
 export {
@@ -19,5 +20,6 @@ export {
     MarketBlyLogoWhite,
     NiceFoodLogoWhite,
     MarketBlyLogoColorRectangle,
-    NiceFoodLogoColorRectangle
+    NiceFoodLogoColorRectangle,
+    MarketBlyMainLogo
 }

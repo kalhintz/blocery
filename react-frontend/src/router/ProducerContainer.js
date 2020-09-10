@@ -3,6 +3,7 @@ import { Route, Switch, Redirect } from 'react-router-dom'
 import { ProducerNav, ProducerXButtonNav } from '../components/common'
 import { ProducerMenuList } from '../components/Properties'
 import { TabBar } from '../components/common'
+import ProducerTabBar from '~/components/common/tabBars/ProducerTabBar'
 class ProducerContainer extends Component {
     constructor(props) {
         super(props)
@@ -15,7 +16,7 @@ class ProducerContainer extends Component {
 
     render() {
 
-        console.log(this.props)
+        console.log('ProducerContainer ======', this.props)
 
         const url = this.props.match.url                        //ex) /producer/farmDiaryList
         const id = this.props.match.params.id                   //ex)           farmDiaryList    //상위 route 에서 /producer/:id 로 지정되어있음(/index.js 참조)
@@ -38,11 +39,7 @@ class ProducerContainer extends Component {
                 }
 
                 <Route path={url} component={page} />
-
-                <TabBar
-                    pathname={this.props.history.location.pathname}
-                />
-
+                <ProducerTabBar pathname={this.props.history.location.pathname} />
 
             </div>
 

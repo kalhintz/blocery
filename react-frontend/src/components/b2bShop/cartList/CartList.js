@@ -10,7 +10,7 @@ import { getFoodsByFoodsNo } from '~/lib/b2bFoodsApi'
 import { getDeliveryFee } from '~/util/bzLogic'
 
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
-import { B2bShopXButtonNav, LoginLinkCard, BlocerySpinner } from '~/components/common'
+import { B2bShopXButtonNav, B2bLoginLinkCard, BlocerySpinner } from '~/components/common'
 import HeaderBox from './HeaderBox'
 import CartHeader from './CartHeader'
 import ExpiredFoodsItem from './ExpiredFoodsItem'
@@ -832,7 +832,7 @@ class CartList extends React.Component {
             <Fragment>
                 <B2bShopXButtonNav back history={this.props.history}>장바구니</B2bShopXButtonNav>
                 <div className='p-4'>
-                    <LoginLinkCard onClick={this.onLoginClick} />
+                    <B2bLoginLinkCard onClick={this.onLoginClick} />
                 </div>
             </Fragment>
         )

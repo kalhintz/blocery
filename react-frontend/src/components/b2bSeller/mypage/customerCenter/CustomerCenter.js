@@ -20,7 +20,7 @@ export default class CustomerCenter extends Component {
                     <div className='text-center font-weight-bold'>1:1 문의</div>
                     <div className='text-center m-3'>나이스푸드는 회원님들의 소중한 의견에 귀 기울여 <br/> 신속하고 정확하게 답변 드리도록 하겠습니다.</div>
                     <div className='m-2'>
-                        <Button outline block><a href="mailto:info@blocery.io">info@blocery.io</a></Button>
+                        <Button outline block><a href="mailto:cs@blocery.io">cs@blocery.io</a></Button>
                     </div>
                 </div>
                 <hr/>

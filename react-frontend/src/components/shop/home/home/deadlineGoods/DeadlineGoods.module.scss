@@ -1,0 +1,54 @@
+//.grandTitle{
+//  padding: 16px;
+//  color: white;
+//  font-size: 27px;
+//}
+.backgroundContainer{
+  height: 90vmin;
+  background-color: #24855b;
+}
+.forwardContainer{
+  margin-top: -90vmin;
+}
+
+.grandTitle{
+  color: white;
+}
+
+//small text
+.grandTitle > div:nth-child(1){
+  opacity: 0.6;
+}
+//large text
+.grandTitle > div:nth-child(2){
+
+}
+
+//timeText
+.slide > div > span:nth-child(1){
+  font-family: NotoSansCJKkr;
+  font-size: 34px;
+  font-weight: bold;
+  color: white;
+}
+//남음
+.slide > div > span:nth-child(2){
+  font-size: 14px;
+  color: white;
+  margin-left: 5px;
+}
+
+
+
+.slide{
+  width: 260px;
+  margin-bottom: 35px;
+  cursor: pointer;
+}
+.slide:first-child{
+  margin-left: 20px;
+}
+.slide:last-child{
+  margin-right: 20px;
+}
+

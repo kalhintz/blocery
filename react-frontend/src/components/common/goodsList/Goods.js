@@ -83,7 +83,7 @@ export default class Goods extends Component {
 
 /*===== bad ======
 
-GoodsList.js
+WebGoodsList.js
 
 import Goods from './Goods'
 
@@ -109,7 +109,7 @@ render(){
 
 ============= good ============
 -------------------------------------------
-GoodsList.js
+WebGoodsList.js
 
 import Goods from './Goods'
 

@@ -5,9 +5,6 @@ import Switch from 'react-switch'
 
 import { getSeller, updateSellerPush } from '~/lib/b2bSellerApi'
 
-import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Webview } from "~/lib/webviewApi";
 
 export default class Setting extends Component {
     constructor(props){

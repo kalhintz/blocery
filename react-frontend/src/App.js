@@ -1,6 +1,8 @@
 import React, {Component} from 'react'
 import Router from './router'
 
+import {autoLoginCheckAndTryAsync} from '~/lib/loginApi'
+
 // react-native에서 현재 url을 반환받기 위해 추가
 document.addEventListener('message', ()=>{
     // url type
@@ -19,14 +21,9 @@ class App extends Component {
         // }
     }
 
-    componentWillMount() {
-        //쿠키(localStorage)에서 로그인정보 가져오기(새로고침 대비)
-        const userType = localStorage.getItem('loginUserType');
+    async componentWillMount() {
+        await autoLoginCheckAndTryAsync(); //모둔 패이지에서 자동로그인 시도 중. 20200410.
 
-        // if (userType !== 'logout')
-        //     this.setState({
-        //         userType:userType
-        //     })
     }
 
     render() {

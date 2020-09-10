@@ -24,14 +24,15 @@ const CartHeader  = (props) => {
         })
     }
 
-    const checked = props.checkedCount === props.totCount && props.totCount > 0 ? true : false
+    const {totCount, checkedCount} = props
+
     return (
     <div className='d-flex align-items-center pl-2 pt-2 pb-2 mb-2' style={{backgroundColor: '#F4F4F4'}}>
-        <Checkbox id={'checkAll'} className={Style.mdCheckbox} color={'default'} checked={checked} onChange={onChange} />
-        <Label for={'checkAll'} className='font-weight-bold m-0'>전체선택 ({props.checkedCount}/{props.totCount})</Label>
+        <Checkbox id={'checkAll'} className={Style.mdCheckbox} color={'default'} checked={totCount === checkedCount} onChange={onChange} />
+        <Label for={'checkAll'} className='font-weight-bold m-0'>전체선택 ({checkedCount}/{totCount})</Label>
         <div className='ml-auto'>
             {
-                props.checkedCount > 0 && props.totCount > 0 && <Button size='sm' color={'info'} outline onClick={onDelete}>삭제({props.checkedCount})</Button>
+                checkedCount > 0 && totCount > 0 && <Button size='sm' color={'info'} outline onClick={onDelete}>삭제({checkedCount})</Button>
             }
 
         </div>

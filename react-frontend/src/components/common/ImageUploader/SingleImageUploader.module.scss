@@ -3,7 +3,7 @@
 .wrap {
   display: flex;
   width: 100%;
-  height: 129px;
+  //height: 129px;
   overflow: auto;
   text-align: center;
   flex-wrap: nowrap;
@@ -14,7 +14,7 @@
 //pc 해상도 일 경우는 스크롤 세로 사이즈 때문에 위에서 처럼 더 크게 잡혀있다
 @media screen and (max-width: 414px){
   .wrap {
-    height: 114px;
+    //height: 114px;
   }
 }
 

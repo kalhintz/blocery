@@ -1,12 +1,16 @@
 import React, { Component, Fragment } from 'react'
 import { Modal, ModalHeader, ModalBody, Input, Button, ModalFooter } from 'reactstrap'
 import PropTypes from 'prop-types'
-class ModalConfirm extends Component {
+class ModalConfirmButton extends Component {
     constructor(props){
         super(props)
         this.state = {
             modal: false
         }
+
+        const { ...rest } = props
+
+        this.rest = {...rest}
     }
     onClick = (isConfirm) => {
         this.toggle()
@@ -20,7 +24,7 @@ class ModalConfirm extends Component {
     render(){
         return(
             <Fragment>
-               <Button block={this.props.block} color={this.props.color} onClick={this.toggle}>{this.props.children}</Button>{' '}
+               <Button block={this.props.block} color={this.props.color} className={this.props.className} onClick={this.toggle} {...this.rest}>{this.props.children}</Button>{' '}
                 <div>
                     <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className} centered>
                         <ModalHeader toggle={this.modalToggle}>{this.props.title}</ModalHeader>
@@ -38,14 +42,14 @@ class ModalConfirm extends Component {
         )
     }
 }
-ModalConfirm.propTypes = {
+ModalConfirmButton.propTypes = {
     color: PropTypes.string,
     title: PropTypes.any.isRequired,
     content: PropTypes.any.isRequired,
     block: PropTypes.bool
 }
-ModalConfirm.defaultProps = {
+ModalConfirmButton.defaultProps = {
     color: 'info',
     block: false
 }
-export default ModalConfirm
+export default ModalConfirmButton

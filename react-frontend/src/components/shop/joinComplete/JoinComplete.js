@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { Container, Row, Col, Button } from 'reactstrap';
 
-import Style from '../buy/Style.module.scss'
+import Style from '../buy/Buy.module.scss'
 import { ShopXButtonNav } from '../../common'
 import ComUtil from '../../../util/ComUtil'
 import { Webview } from "../../../lib/webviewApi";

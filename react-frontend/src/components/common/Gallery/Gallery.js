@@ -22,7 +22,7 @@ export default class Gallery extends Component {
                 {
                     images.map(({imageNm, imageUrl}, index)=>{
                         return(
-                            <img key={'gallery'+index} src={rootUrl+imageUrl} name={imageUrl} style={style} onClick={this.onClick}/>
+                            <img key={'gallery'+index} src={rootUrl+imageUrl} name={imageUrl} style={style} onClick={this.onClick} alt={'사진'}/>
                         )
                     })
                 }

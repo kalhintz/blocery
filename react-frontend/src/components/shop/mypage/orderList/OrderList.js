@@ -5,7 +5,7 @@ import { Server } from '~/components/Properties'
 import ComUtil from '~/util/ComUtil'
 import OrderDetail from './OrderDetail'
 
-import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
+import { faGift } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { Webview } from '~/lib/webviewApi'
@@ -16,6 +16,107 @@ import { scOntCalculateOrderBlct } from '~/lib/smartcontractApi';
 import { getLoginUser, getLoginUserType } from '~/lib/loginApi'
 
 import { ToastContainer, toast } from 'react-toastify'     //토스트
+import { Button as Btn } from '~/styledComponents/shared/Buttons'
+import { Link } from '~/styledComponents/shared/Links'
+import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed } from '~/styledComponents/shared/Layouts'
+import { HrThin, Badge } from '~/styledComponents/mixedIn'
+import { Icon } from '~/components/common/icons'
+
+import styled from 'styled-components'
+import { pseudo } from '~/styledComponents/CoreStyles'
+import { color } from '~/styledComponents/Properties'
+
+import Skeleton from '~/components/common/cards/Skeleton'
+
+const OrderDate = styled(Sticky)`
+    margin: 16px;
+    margin-bottom: -10px;
+    top: 56px;
+`;
+const OrderGroup = styled(Div)`
+`;
+
+const OrderGroupDetail = styled(Div)`
+    ${pseudo.hover}
+    ${pseudo.active}
+    border: 1px solid ${color.light};
+    margin: 16px;
+    
+`;
+
+const Order = ({orderSeq, orderCnt, goodsNo, goodsNm, orderPrice, cardPrice, orderBlctExchangeRate, blctToken, orderDate, orderImg, itemName, trackingNumber, farmName
+                   , trackingNumberTimestamp, consumerOkDate, payMethod, payStatus, expectShippingStart, expectShippingEnd, notDeliveryDate, onConfirmed, gift, partialRefundCount}) => (
+    <Fragment>
+            <Link p={16} to={`/mypage/orderDetail?orderSeq=${orderSeq}`} display={'block'}>
+                {/*<Flex mb={8}>*/}
+                    {/*<Div fg={'dark'} fontSize={12}>{ComUtil.utcToString(orderDate)}</Div>*/}
+                    {/*<Right>*/}
+                        {/*{*/}
+                            {/*notDeliveryDate ? <Badge fg={'white'} bg={'danger'}>미배송</Badge> :*/}
+                                {/*(payStatus === 'cancelled') ? <Badge fg={'white'} bg={'danger'}>취소완료</Badge> :*/}
+                                    {/*consumerOkDate ? <Badge fg={'white'} bg={'green'}>구매확정</Badge> :*/}
+                                        {/*trackingNumber ?*/}
+                                            {/*<Badge fg={'white'} bg={'green'}>배송중</Badge> : <Badge fg={'white'} bg={'secondary'}>발송예정</Badge>*/}
+                        {/*}*/}
+                    {/*</Right>*/}
+                {/*</Flex>*/}
+                {/*<HrThin mb={12}/>*/}
+                <Flex mb={8} alignItems={'flex-start'}>
+                    <Div width={63} height={63} mr={9} flexShrink={0}>
+                        <Img cover src={Server.getThumbnailURL()+orderImg} alt={'상품사진'}/>
+                    </Div>
+                    <Div flexGrow={1}>
+                        <Div>{goodsNm}</Div>
+                        {
+                            (payMethod === 'card') ?
+                                <Div>
+                                    <Div mb={4} fontSize={14} bold>{ComUtil.addCommas(orderPrice)}원</Div>
+                                    <Right fontSize={10} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드결제</Right>
+                                </Div>
+                                : payMethod === 'blct' ?
+                                <Div alignItems={'center'}>
+                                    <Div mb={4} fontSize={14} bold><Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken)}({ComUtil.addCommas(orderPrice)}원)</Div>
+                                    <Right fontSize={10} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''}| BLY결제</Right>
+                                </Div>
+                                :
+                                <Div alignItems={'center'}>
+                                    <Div mb={4} fontSize={14} bold>
+                                        {ComUtil.addCommas(cardPrice)}원 +
+                                        <Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken)}({ComUtil.addCommas(ComUtil.roundDown(blctToken*orderBlctExchangeRate, 1))}원)
+                                    </Div>
+                                    <Right fontSize={10} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드+BLY결제</Right>
+                                </Div>
+                        }
+
+                    </Div>
+                    <Flex flexShrink={0}>
+                        {
+                            gift && <FontAwesomeIcon icon={faGift} className={'text-danger mr-1'} size={'md'} />
+                        }
+                        {
+                            notDeliveryDate ? <Badge fg={'white'} bg={'danger'}>미배송</Badge> :
+                                (payStatus === 'cancelled') ? <Badge fg={'white'} bg={'danger'}>취소완료</Badge> :
+                                    consumerOkDate ? <Badge fg={'white'} bg={'green'}>구매확정</Badge> :
+                                        trackingNumber ?
+                                            <Badge fg={'white'} bg={'green'}>배송중</Badge> : <Badge fg={'white'} bg={'secondary'}>발송예정</Badge>
+                        }
+                    </Flex>
+                </Flex>
+            </Link>
+            {
+                notDeliveryDate ? null :
+                    (payStatus === 'cancelled') ? null :
+                        consumerOkDate ? null :
+                            trackingNumber &&
+                            <Div px={10}>
+                                <ModalConfirm title={'구매확정'} content={<div>구매확정 하시겠습니까?<br/>구매확정 후 교환 및 반품이 불가합니다.</div>} onClick={onConfirmed.bind(this, orderSeq)}>
+                                    <Btn mb={8} block bc={'secondary'} rounded={5}>구매확정</Btn>
+                                </ModalConfirm>
+                            </Div>
+            }
+
+    </Fragment>
+)
 export default class OrderList extends Component {
     constructor(props) {
         super(props);
@@ -27,6 +128,9 @@ export default class OrderList extends Component {
             confirmModalOpen: false,
             reviewModalOpen: false,
             chainLoading: false,
+            orderGroupNoList: [],
+            orderGroupKeyList: [],
+            loading: true
         }
     }
 
@@ -54,11 +158,49 @@ export default class OrderList extends Component {
     getOrderList = async (consumerNo) => {
         const response = await getOrderDetailListByConsumerNo(consumerNo);
 
-        const sortData = ComUtil.sortDate(response.data, 'orderDate', true);    // 최근구매내역순으로 Desc로 정렬
+
+        const {data} = response
+
+        const orderGroupNoList = []
+        const orderGroupKeyList = []
+
+
+        let orderGroupNo
+        let orderGroupKey = ''
+
+        data.map(item => {
+
+            const compOrderGroupNo = item.orderGroupNo
+            if(orderGroupNo !== compOrderGroupNo)
+                orderGroupNoList.push(compOrderGroupNo)
+
+            const compKey = item.orderGroupNo + "_" + item.producerNo + "_" + item.producerWrapDelivered + "_" + item.directGoods
+            if (orderGroupKey !== compKey) {
+                orderGroupKeyList.push({
+                    orderGroupNo: item.orderGroupNo,
+                    producerNo: item.producerNo,
+                    producerWrapDelivered: item.producerWrapDelivered,
+                    directGoods: item.directGoods
+                })
+            }
+
+            orderGroupNo = compOrderGroupNo
+            orderGroupKey = compKey
+        })
+
+        console.log({orderGroupNoList, orderGroupKeyList})
+
+        console.log(data)
+
 
         this.setState({
-            orderList: sortData
+            orderList: data,
+            orderGroupNoList,
+            orderGroupKeyList,
+            loading: false
         })
+
+
     }
 
     // 주문 상세조회
@@ -67,7 +209,7 @@ export default class OrderList extends Component {
     }
 
     // 구매확정
-    onConfirmed = async (orderSeq, isConfirmed) => {
+    onConfirmed = async (orderSeq, isConfirmed, e) => {
         const { data : orderDetail } = await getOrderDetailByOrderSeq(orderSeq)
         console.log('orderDetail : ', orderDetail);
 
@@ -136,7 +278,6 @@ export default class OrderList extends Component {
     }
 
     toggleOk = () => {
-        //Webview.openPopup(`/goodsReview?action=I&orderSeq=${this.state.orderSeq}&goodsNo=${this.state.goodsNo}`)
         this.props.history.push('/goodsReviewList/1')
     }
 
@@ -154,90 +295,70 @@ export default class OrderList extends Component {
                 {
                     this.state.chainLoading && <BlockChainSpinner/>
                 }
-                <ShopXButtonNav fixed history={this.props.history} historyBack>주문내역</ShopXButtonNav>
-                <Container fluid>
-                <Row>
-                    <Col style={{padding:0, margin:0}}>
-                        {
-                            (data && data.length !== 0) ?
-                                data.map(({orderSeq, orderCnt, goodsNo, goodsNm, orderPrice, blctToken, orderDate, orderImg, itemName, trackingNumber, farmName
-                                              , trackingNumberTimestamp, consumerOkDate, payMethod, payStatus, expectShippingStart, expectShippingEnd, notDeliveryDate}, index)=>{
-                                    return (
-                                        <div className={Style.wrap} key={'orderList'+index}>
-                                            <section className={Style.sectionDate}>
-                                                <div><small>{ComUtil.utcToString(orderDate)}</small></div>
-                                                <div>
-                                                {
-                                                    notDeliveryDate ? <small><b>미배송</b></small> :
-                                                    (payStatus === 'cancelled') ? <small><b>취소완료</b></small> :
-                                                        consumerOkDate ? <small><b>구매확정</b></small> :
-                                                            trackingNumber ?
-                                                                    <small><b>배송중</b></small>
-                                                                    :
-                                                                expectShippingStart ?
-                                                                    <small><b>{ComUtil.utcToString(expectShippingStart,"MM.DD")} ~ {ComUtil.utcToString(expectShippingEnd,"MM.DD")} 발송예정</b></small>
-                                                                    :
-                                                                    <small><b>발송예정</b></small>
-                                                }
-                                                </div>
-                                            </section>
-                                            <section className={Style.sectionContent} onClick={this.getOrderDetail.bind(this, orderSeq)}>
-                                                <div className={Style.img}>
-                                                    <img className={Style.goodsImg} src={Server.getThumbnailURL()+orderImg} />
-                                                </div>
-                                                <div className='flex-grow-1'>
-                                                    {/*<div>주문번호 : <b>{orderSeq}</b></div>*/}
-                                                    <div className={'d-flex'}>
-                                                        <div>{itemName}</div>
-                                                        <div className={'ml-2 mr-2'}>/</div>
-                                                        <div>{farmName}</div>
-                                                    </div>
-                                                    <div>{goodsNm}</div>
-                                                    <div className='d-flex'>
-                                                        <div className={'text-danger'}>{ComUtil.addCommas(orderPrice)}</div>원
+                <ShopXButtonNav underline fixed history={this.props.history} historyBack>주문목록</ShopXButtonNav>
+                <Flex fontSize={14} m={16}>
+                    <Div bold>총 <Span fg='green'>{(data)?data.length + '개':'0개'}</Span> 주문목록</Div>
+                </Flex>
+                {
+                    this.state.loading && <Skeleton count={2} bc={'light'} m={16}/>
+                }
+                {
+                    this.state.orderGroupNoList.map(orderGroupNo => {
+                        const orderGroupKeyList = this.state.orderGroupKeyList.filter(orderGroupKey => orderGroupKey.orderGroupNo === orderGroupNo)
+
+                        return(
+                                <OrderGroup key={orderGroupNo}>
+                                    {
+                                        orderGroupKeyList.map(({orderGroupNo, producerNo, producerWrapDelivered, directGoods}, pIndex) => {
+                                            const orderList = this.state.orderList.filter(order =>
+                                                order.orderGroupNo === orderGroupNo
+                                                && order.producerNo === producerNo
+                                                && order.producerWrapDelivered === producerWrapDelivered
+                                                && order.directGoods === directGoods)
+                                            return (
+                                                <Fragment key={'orderGroup'+pIndex}>
+                                                    {
+                                                        pIndex === 0 && <OrderDate fontSize={14} bg={'white'} fg={'dark'}>{ComUtil.utcToString(orderList[0].orderDate)}</OrderDate>
+                                                    }
+
+                                                    <OrderGroupDetail key={orderGroupNo+"_"+producerNo+"_"+pIndex} bg={'white'}>
                                                         {
-                                                            (payMethod === 'blct') ?
-                                                            <span>(<span
-                                                                className={'text-danger'}>{ComUtil.addCommas(blctToken)}</span>BLCT)</span> : null
+                                                            orderList.map((order, index) =><Order key={'order_'+index} {...order} onConfirmed={this.onConfirmed}/>)
                                                         }
-                                                        <div className='ml-2 mr-2'>|</div>
-                                                        <div>수량 : {orderCnt}개</div>
-                                                    </div>
-                                                </div>
-                                                <div className={Style.orderDetail}>
-                                                    <div><FontAwesomeIcon icon={faAngleRight} /></div>
-                                                </div>
-                                            </section>
-                                            <div className='mt-2'>
-                                                {
-                                                    notDeliveryDate ? <div></div> :
-                                                    (payStatus === 'cancelled') ? <div></div> :
-                                                        consumerOkDate ? <div></div> :
-                                                            trackingNumber ?
-                                                                <ModalConfirm title={'구매확정'} content={<div>구매확정 하시겠습니까?<br/>구매확정 후 교환 및 반품이 불가합니다.</div>} onClick={this.onConfirmed.bind(this, orderSeq)}>
-                                                                    <Button block outline size='sm'>구매확정</Button>
-                                                                </ModalConfirm>
-                                                                :
-                                                                <div></div>
-                                                                //<Button block outline size='sm' onClick={this.viewFarmDiary.bind(this, goodsNo)}>생산일지 보기</Button>
-                                                }
-                                            </div>
-                                        </div>
-                                    )
-                                })
-                            :
-                                <div className='w-100 h-100 bg-light d-flex justify-content-center align-items-center p-5 text-dark'> {(data===undefined)?'':'구매내역이 없습니다.'} </div>
-                        }
-                    </Col>
-                </Row>
-                </Container>
-                    <Modal isOpen={this.state.reviewModalOpen} centered>
-                        <ModalBody>리뷰작성 하시겠습니까?</ModalBody>
-                        <ModalFooter>
-                            <Button color="info" onClick={this.toggleOk}>확인</Button>
-                            <Button color="secondary" onClick={this.toggleReview}>취소</Button>
-                        </ModalFooter>
-                    </Modal>
+                                                    </OrderGroupDetail>
+                                                </Fragment>
+                                            )
+                                        })
+                                    }
+                                </OrderGroup>
+                            )
+                    })
+                }
+
+                {/*{*/}
+                    {/*this.state.orderGroupKeyList.map(({orderGroupNo, producerNo, producerWrapDelivered, directGoods}, pIndex) => {*/}
+                        {/*const orderList = this.state.orderList.filter(order =>*/}
+                            {/*order.orderGroupNo === orderGroupNo*/}
+                            {/*&& order.producerNo === producerNo*/}
+                            {/*&& order.producerWrapDelivered === producerWrapDelivered*/}
+                            {/*&& order.directGoods === directGoods)*/}
+                        {/*return (*/}
+                            {/*<OrderGroupDetail key={orderGroupNo+"_"+producerNo+"_"+pIndex} m={16} bg={'white'} bc={'secondary'}>*/}
+                                {/*{*/}
+                                    {/*orderList.map((order, index) =><Order key={'order_'+index} {...order}/>)*/}
+                                {/*}*/}
+                            {/*</OrderGroupDetail>*/}
+                        {/*)*/}
+                    {/*})*/}
+                {/*}*/}
+
+                <Modal isOpen={this.state.reviewModalOpen} centered>
+                    <ModalBody>리뷰작성 하시겠습니까?</ModalBody>
+                    <ModalFooter>
+                        <Button color="info" onClick={this.toggleOk}>확인</Button>
+                        <Button color="secondary" onClick={this.toggleReview}>취소</Button>
+                    </ModalFooter>
+                </Modal>
             </Fragment>
         )
     }

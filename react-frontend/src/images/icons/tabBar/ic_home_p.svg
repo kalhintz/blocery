@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42">
+    <defs>
+        <style>
+            .prefix__cls-3{fill:none;stroke:#fff;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+        </style>
+    </defs>
+    <g id="prefix__ic_home_p" transform="translate(-179.476 -2297)">
+        <circle id="prefix__타원_206" cx="21" cy="21" r="21" data-name="타원 206" transform="translate(179.476 2297)" style="fill:#0c4a2f"/>
+        <g id="prefix__house-black-silhouette-without-door" transform="translate(190.072 2307.597)">
+            <path id="prefix__사각형_1141" d="M0 0H20.528V20.528H0z" data-name="사각형 1141" style="fill:#fff;opacity:0"/>
+            <path id="prefix__패스_2257" d="M-2907.738-1932.082v9.928h-17.673v-13.552l8.638-5.362 9.035 5.362v2.844" class="prefix__cls-3" data-name="패스 2257" transform="translate(2926.715 1941.833)"/>
+            <path id="prefix__패스_2258" d="M-2912.783-1920.631v-6.644h-5.559v4.135" class="prefix__cls-3" data-name="패스 2258" transform="translate(2925.936 1940.312)"/>
+        </g>
+    </g>
+</svg>

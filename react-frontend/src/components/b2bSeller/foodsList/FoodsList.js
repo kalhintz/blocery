@@ -128,10 +128,18 @@ export default class FoodsList extends Component {
                     cellRenderer: "formatDateRenderer"
                 },
                 {
-                    sort:'desc', headerName: "최종수정일", field: "timestamp", width: 120, cellStyle:this.getCellStyle,
+                    sort:'desc', headerName: "등록일시", field: "timestamp", width: 120, cellStyle:this.getCellStyle,
                     valueGetter: function(params){
                         let v_expectShippingEnd = params.data.timestamp ? ComUtil.utcToString(params.data.timestamp, 'YYYY.MM.DD HH:mm') : null;
                         return v_expectShippingEnd;
+                    }
+                },
+                {
+                    sort:'desc', headerName: "수정일시", field: "modDate", width: 120, cellStyle:this.getCellStyle,
+                    valueGetter: function(params){
+                        if(params.data.modDate)
+                            return ComUtil.utcToString(params.data.modDate, 'YYYY.MM.DD HH:mm')
+                        return ''
                     }
                 },
             ];

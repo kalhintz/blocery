@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useState, useEffect } from 'react'
 
 import { Container, Row, Col, Alert } from 'reactstrap'
 import farmDiary from '~/images/mainFarmers.jpeg'
@@ -7,135 +7,116 @@ import { MainGoodsCarousel, BlocerySpinner, RectangleNotice, ModalConfirm} from 
 import { getConsumerGoodsSorted } from '~/lib/goodsApi'
 import { Webview } from '~/lib/webviewApi'
 import { getLoginUserType } from '~/lib/loginApi'
+import { GrandTitle } from '~/components/common/texts'
+import Swiper from 'react-id-swiper'
+import { SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
+import { Server } from '~/components/Properties'
+import { SpinnerBox, TimeText } from '~/components/common'
+import Footer from '../footer'
 
-const style = {
-    image: {
-        width: '100%',
-        height: '170px'
-    },
-    noPadding: { paddingLeft: 0, paddingRight: 0 }
-}
+import moment from 'moment'
+
+import Css from './DeadlineGoods.module.scss'
 
 
 
-const sectionStyle = {
-    width: "100%",
-    height: "400px",
-    backgroundImage: `url(${farmDiary})`,
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center center',
-    paddingLeft: '20px',
-    paddingTop: '320px'
+const DeadlineGoods = (props) => {
+    const { limitCount = 99, ...rest } = props
 
-}
+    const [data, setData] = useState()
 
-export default class DeadlineGoods extends Component{
-    constructor(props) {
-        super(props);
-        this.state = {
-            loading: true,
-            goods: null,
-            userType: ''
-        }
-    }
+    useEffect(() => {
+        search()
+    }, [])
 
-    componentDidMount(){
-        this.loginCheck()
-        this.search()
-        // window.scrollTo(0,0)
-    }
-    static getDerivedStateFromProps(nextProps, prevState){
-        console.log({nextProps, prevState})
-        return true
-    }
-
-    shouldComponentUpdate(){
-        return true
-    }
-
-    search = async () => {
-        this.setState({loading: true})
+    async function search() {
 
         const sorter = {direction: 'ASC', property: 'saleEnd'}
-        const { data } = await getConsumerGoodsSorted(sorter, false)
-        this.setState({
-            loading: false,
-            goods:data
-        })
-    }
-    //[onClick] MD 카테고리 클릭
-    onMdCategoryClicked = (props) =>{
-        console.log(props)
-    }
+        const { data } = await getConsumerGoodsSorted(sorter)
 
-    movePage = (goods) => {
+        //7건만 보이도록
+        if(data.length > limitCount){
+            data.splice(limitCount, data.length);
+        }
 
-        console.log(goods)
-
-        const pathName = this.props.history.location.pathname
-        console.log('pathname:', pathName)
-        // this.props.history.push(`${pathName}?goodsNo=3`)
-        this.props.history.push(`/goods?goodsNo=${goods.goodsNo}`)
+        setData(data)
     }
 
-    openLoginPopup = (isConfirmed) => {
-        isConfirmed && Webview.openPopup(`/login`);// , this.loginCheck)
+    const params = {
+        // centeredSlides: true,   //중앙정렬
+        slidesPerView: 'auto',
+        spaceBetween: 16,
+        freeMode: true,
+        // rebuildOnUpdate: true,  //새로운 데이터 로드시 처음부터 읽어들이도록 함(0번째 인덱스로 자동 이동됨)
+        // pagination: {
+        // el: '.swiper-pagination',
+        // clickable: true,
+        // dynamicBullets: true
+        // modifierClass: '.swiper-pagination'
+        // currentClass: 'swiper-pagination2'
+
+        // },
+        scrollbar: {
+            el: '.swiper-scrollbar',
+            hide: false
+        },
+        // navigation: {
+        //     nextEl: '.swiper-button-next',
+        //     prevEl: '.swiper-button-prev',
+        // }
     }
-    //로그인 여부 조회
-    loginCheck = async () => {
-        let {data:userType} = await getLoginUserType();
-        this.setState({
-            userType: userType
-        })
-
+    function onClick(item){
+        props.history.push(`/goods?goodsNo=${item.goodsNo}`)
     }
 
-    checkLocalStorage =()=>{
-
-    }
-
-    render(){
-        console.log('render===================================')
-        // localStorage.removeItem('eventNewPopup')
-        return(
+    if(!data) return <SpinnerBox minHeight={160} />
 
 
-            <Container fluid>
-                {
-                    this.state.loading && <BlocerySpinner/>
-                }
-                <br/>
-                <Row>
-                    <Col className={'p-0'}>
-                        {
-                            this.state.goods && <MainGoodsCarousel
-                                                    data={this.state.goods}
-                                                    onClick={this.movePage}
-                                                />
-                        }
-                    </Col>
-                </Row>
-                <Row>
-                    <Col style={style.noPadding}>
-                        {
-                            /*
-                            this.state.userType === '' && (
-                                <ModalConfirm onClick={this.openLoginPopup} title={'α-BLCT 지급 이벤트'} content={<div>회원가입 후 자동 지급됩니다.<br/>회원가입 페이지로 이동 하시겠습니까?</div>}>
-                                    <RectangleNotice>
-                                        지금 <a className="alert-link">회원가입</a> 하면 <a className="alert-link">{ComUtil.addCommas(Const.INITIAL_TOKEN)}</a> α-BLCT토큰 자동 지급!
-                                    </RectangleNotice>
-                                </ModalConfirm>
-                            )
-                            */
-                        }
-
-                    </Col>
-                </Row>
-
-            </Container>
+    return(
+        <>
+        <div className={Css.backgroundContainer}></div>
+        <div className={Css.forwardContainer}>
+            <GrandTitle
+                className={Css.grandTitle}
+                smallText={'얼마 남지 않은 할인혜택,'}
+                largeText={'마감임박 상품'}
+            />
 
 
-        )
-    }
+            <div style={{marginBottom: 40}}>
+                <Swiper {...params}>
+                    {
+                        data.map((item, index) => (
+                            <div key={'deadlineGoods'+index} className={Css.slide}>
+                                <div onClick={onClick.bind(this, item)}>
+                                    <TimeText date={item.saleEnd} formatter={(moment.duration(moment().diff(item.saleEnd))._data.days >= 0 &&
+                                                                moment.duration(moment().diff(item.saleEnd))._data.months >= 0) ? '[D-Day] DD HH[:]mm[:]ss' : '[D-]DD HH[:]mm[:]ss'}/>
+                                    {/*<span>남음</span>*/}
+                                    <SlideItemHeaderImage
+                                        size={'lg'}
+                                        imageHeight={210}
+                                        imageUrl={Server.getImageURL() + item.goodsImages[0].imageUrl}
+                                        remainedCnt={item.remainedCnt}
+                                        blyReview={item.blyReviewConfirm}
+                                    />
+                                    <SlideItemContent
+                                        style={{paddingTop: 14}}
+                                        directGoods={true}
+                                        goodsNm={item.goodsNm}
+                                        currentPrice={item.currentPrice}
+                                        consumerPrice={item.consumerPrice}
+                                        discountRate={Math.round(item.discountRate)}
+                                    />
+                                </div>
+                            </div>
+                        ))
+                    }
+                </Swiper>
+            </div>
+
+        </div>
+        <Footer/>
+        </>
+    )
 }
+export default DeadlineGoods

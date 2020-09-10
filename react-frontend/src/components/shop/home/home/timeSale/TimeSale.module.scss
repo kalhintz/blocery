@@ -1,0 +1,128 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+
+.wrap{
+  position: relative;
+}
+
+//진행중인 내역이 없습니다
+.wrap .noTimeSale{
+  padding: 9px 10px;
+  background-color: $color-b2c-green;
+  color: $color-b2c-default;
+  font-size: 16px;
+  border-radius: 3px;
+  margin: 0 20px;
+}
+
+.bg{
+  background-color: $color-b2c-bg;
+  height: 100%;
+}
+.text{
+  padding: 30px 20px;
+
+  text-align: left;
+  //height: 100%;
+}
+.timeText{
+  background-color: white;
+  padding: 25px 0;
+  text-align: center;
+  color: $color-b2c-black;
+  transition: 0.3s;
+}
+.timeText > div:nth-child(1){
+  //font-weight: bold;
+  margin-bottom: 4px;
+}
+.timeText > span{
+  font-size: $f35;
+
+  //font-weight: bold;
+}
+
+
+
+.timeTextSmall{
+  //background-color: white;
+  //padding: 25px 0;
+  //text-align: center;
+  //color: $color-b2c-black;
+  box-shadow: 1px 1px 3px rgba(0,0,0, 0.3);
+}
+.timeTextSmall > div:nth-child(1){
+  //font-weight: bold;
+  //margin-bottom: 4px;
+}
+.timeTextSmall > span{
+
+
+  //font-weight: bold;
+  animation: timeTextSmall 0.3s forwards;
+  animation-delay: 0.1s;
+}
+
+@keyframes timeTextSmall {
+  0%{}
+  100%{font-size: $f20; color: $color-b2c-green; padding: 23px 0;}
+}
+
+.img {
+  width: 100%;
+}
+
+
+
+
+
+
+
+.bgGray{background-color: $color-b2c-gray; color: $color-b2c-default;}
+.bgGreen{background-color: $color-b2c-green;}
+.contentContainer > div{font-size: $f12;}
+/* .contentContainer > div:first-child{line-height: 14px;} */
+/* .contentContainer > div:last-child{margin-bottom: 10px;} */
+
+.contentContainer{color: $color-b2c-black;}
+.contentContainer .goodsName{margin-bottom: 10px; font-size: $f16; text-align: left;}
+.contentContainer .row{display: flex; align-items: center; margin-bottom: 10px;}
+.contentContainer .row:last-child{margin-bottom: 0;}
+.contentContainer .row .badge{padding: 4px 0; width: 70px; border-radius: 3px; text-align: center; color: white;}
+.contentContainer .row > div{min-width: 46px; text-align: right; margin-right: 5px;}
+.contentContainer .row .discountRate, .price{font-size: $f14;}
+.contentContainer .row .discountRate{color: red;}
+.contentContainer .row .price{color: black;}
+.contentContainer .row .beforePrice{color: black; color: gray;}
+.contentContainer .row .blct{margin-left: 10px; display: flex; align-items: center; line-height: 14px;}
+.contentContainer .row .blct > img{width: 10px; margin-right: 2px;}
+.contentContainer .row .blct > b{margin-right: 2px;}
+
+.link{
+  text-decoration: none!important;
+  position: relative;
+}
+.outline{position: relative;}
+.outline:active::after{
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0, 0.1);
+  z-index: 99;
+}
+
+
+
+
+.lineLight{height: 1px; margin:0; background-color: #efefef; border: none;}
+
+/* 상품 필수 정보 */
+.detailCard{}
+.detailCard .header{display: flex; padding: 14px 16px; font-size: $f14; cursor: pointer;}
+.detailCard .body{margin: 0 14px 16px 14px; font-size: $f10; line-height: $f17; color : $color-b2c-dark; whiteSpace: pre-line;}
+

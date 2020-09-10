@@ -85,7 +85,7 @@ function FoodsReview(props){
             return
         }
 
-        Webview.closePopupAndMovePage('/b2b/foodsReviewList/2') //작성목록 으로
+        Webview.closePopup() //작성목록 으로
     }
 
     useEffect(() => {
@@ -123,7 +123,7 @@ function FoodsReview(props){
             <B2bShopXButtonNav close>상품후기작성</B2bShopXButtonNav>
             <div className='p-3'>
                 <div className='d-flex mb-2'>
-                    <div className='mr-2'><img style={{borderRadius: '100%', width: 50, height: 50}} src={goodsImageUrl}/></div>
+                    <div className='mr-2'><img style={{borderRadius: '100%', width: 50, height: 50}} src={goodsImageUrl}  alt={'상품후기 사진'}/></div>
                     <div className='d-flex flex-column flex-grow-1 justify-content-between p-1'>
                         <div className='font-weight-bold'>{goodsNm}</div>
                         <div className='small text-secondary'>공개적으로 게시</div>

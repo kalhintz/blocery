@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+    <defs>
+        <style>
+            .prefix__cls-3{fill:#fff}
+        </style>
+    </defs>
+    <g id="prefix__ic_reser_on" transform="translate(1.443 1.347)">
+        <path id="prefix__사각형_4482" d="M0 0H20V20H0z" data-name="사각형 4482" transform="translate(-1.443 -1.347)" style="opacity:0;fill:#fff"/>
+        <circle id="prefix__타원_69" cx="9" cy="9" r="9" data-name="타원 69" transform="translate(-.443 -.347)" style="fill:#24855b"/>
+        <g id="prefix__그룹_992" data-name="그룹 992" transform="translate(3.794 5.095)">
+            <path id="prefix__사각형_436" d="M0 0H1.521V4.564H0z" class="prefix__cls-3" data-name="사각형 436" transform="rotate(-45 4.762 1.972)"/>
+            <path id="prefix__사각형_437" d="M0 0H1.521V8.621H0z" class="prefix__cls-3" data-name="사각형 437" transform="rotate(-135 3.099 2.918)"/>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="33" height="15" viewBox="0 0 33 15">
+    <g id="prefix__ic_rank_g" transform="translate(0 -.358)">
+        <g id="prefix__사각형_4435" data-name="사각형 4435" transform="translate(0 .358)" style="fill:#fd7;stroke:#d5b800">
+            <rect width="33" height="15" rx="4" style="stroke:none"/>
+            <rect width="32" height="14" x=".5" y=".5" rx="3.5" style="fill:none"/>
+        </g>
+        <text id="prefix__GOLD" transform="translate(4 11.358)" style="fill:#ae8500;font-size:9px;font-family:NotoSansCJKkr-Bold,Noto Sans CJK KR;font-weight:700">
+            <tspan x="0" y="0">GOLD</tspan>
+        </text>
+    </g>
+</svg>

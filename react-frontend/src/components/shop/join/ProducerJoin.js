@@ -1,15 +1,11 @@
 import React, { Component, Fragment } from 'react';
-import { Col, Button, Form, FormGroup, Label, Input, Container, InputGroup, Row, Fade, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
+import { Col, Button, FormGroup, Label, Input, Container, InputGroup, Row, Fade, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { getProducerEmail, addProducer } from "../../../lib/producerApi"
 
-import { Link } from 'react-router-dom'
+
 import Terms from '../../common/Terms/Terms'
-// import TokenGethSC from '../../../contracts/TokenGethSC';
-// import { initUserToken, scFrontGetUserEther } from "../../../lib/smartcontractApi";
-import { Const, Server } from "../../Properties";
 import { ShopXButtonNav } from '../../common/index'
 import { PassPhrase } from '../../common'
-import axios from 'axios'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import 'react-toastify/dist/ReactToastify.css'
 import ComUtil from '~/util/ComUtil'
@@ -360,7 +356,7 @@ export default class ProducerJoin extends Component{
                 {/* 블록체인 비밀번호용 modal */}
                 <Modal isOpen={this.state.modalPassPhrase} centered>
                     <ModalHeader toggle={this.modalToggle}>블록체인 비밀번호</ModalHeader>
-                    <ModalBody>
+                    <ModalBody className={'p-0'}>
                         <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhrase}></PassPhrase>
                     </ModalBody>
                     <ModalFooter>
@@ -372,7 +368,7 @@ export default class ProducerJoin extends Component{
                 {/* 블록체인 비밀번호 확인용 modal */}
                 <Modal isOpen={this.state.modalPassPhraseCheck} centered>
                     <ModalHeader toggle={this.modalToggleCheck}>블록체인 비밀번호 확인</ModalHeader>
-                    <ModalBody>
+                    <ModalBody className={'p-0'}>
                         <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhraseCheck}></PassPhrase>
                     </ModalBody>
                     <ModalFooter>

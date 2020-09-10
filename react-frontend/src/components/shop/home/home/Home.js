@@ -1,39 +1,68 @@
-import React, { Fragment, useState, useEffect } from 'react'
-import { Route } from "react-router-dom";
-import { Hr, ModalPopup, Sticky } from '~/components/common'
-import { Header } from '~/components/shop/header'
+//Home.js 원본
+import React, { Fragment, useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { Route, Switch } from 'react-router-dom'
+import { ModalPopup, Sticky } from '~/components/common'
 import HeaderSectionTab from './headerSectionTab'
-import TodaysDeal from './todaysDeal'
-import DeadlineGoods from './deadlineGoods'
-import BestDeal from './bestDeal'
-import FavoriteGoods from './favoriteGoods'
-import Footer from './footer'
-import { Info, NotificationsActive } from '@material-ui/icons'
+import { NotificationsActive } from '@material-ui/icons'
 import EventPopup from './EventPopup'
-import { autoLoginCheckAndTry } from "~/lib/loginApi";
+
+import { B2cHeader } from'~/components/common/headers'
+import { BLCT_TO_WON, exchangeWon2BLCTHome } from "~/lib/exchangeApi"
+
+const TodaysDeal = lazy(() => import('./todaysDeal'))
+const BlyTime  = lazy(() => import('./blyTime'))
+const TimeSale  = lazy(() => import('./timeSale'))
+const NewestGoods  = lazy(() => import('./newestGoods'))
+const DeadlineGoods  = lazy(() => import('./deadlineGoods'))
+const BestDeal  = lazy(() => import('./bestDeal'))
+const FavoriteGoods  = lazy(() => import('./favoriteGoods'))
+
 
 const Home = (props) => {
-    console.log('eventNewPopup:',localStorage.getItem('eventNewPopup'))
 
     // 자동로그인 기능
-    autoLoginCheckAndTry();
+    //App.js으로 옮겨서 시도 중:20200410 autoLoginCheckAndTry();
+
+    setBlct();
+    //BLCT 40.00원 쿠키에 저장.
+    async function setBlct() {
+        let {data: blctToWon} = await BLCT_TO_WON();
+        sessionStorage.setItem('blctToWon', blctToWon);
+    }
+
+    function setScroll(){
+        window.scrollTo(0, 0)
+    }
+
+    useEffect(()=>{
+        setScroll()
+    })
+
 
     return (
 
         <div>
             <Sticky>
-                <Header />
-                <HeaderSectionTab tabId={props.match.params.id}/>
+                <B2cHeader />
+                <HeaderSectionTab history={props.history} tabId={props.match.params.id} />
             </Sticky>
             {/* 자식페이지에서 margin 겹침현상을 없애기 위해 padding 으로 변경함. 40px은 <HeaderSectionTab /> 의 height 이다 */}
             <div>
-                <Route path="/home/1" component={TodaysDeal} />
-                <Route path="/home/2" component={DeadlineGoods} />
-                <Route path="/home/3" component={BestDeal} />
-                <Route path="/home/4" component={FavoriteGoods} />
+                <Suspense fallback={''}>
+                    <Switch>
+                        <Route path="/home/1" component={TodaysDeal} />
+                        <Route path="/home/2" component={BlyTime} />
+                        <Route path="/home/3" component={TimeSale} />
+                        <Route path="/home/4" component={DeadlineGoods} />
+                        <Route path="/home/5" component={BestDeal} />
+                        <Route path="/home/6" component={NewestGoods} />
+                        <Route path="/home/7" component={FavoriteGoods} />
+                        <Route component={Error}/>
+                    </Switch>
+                </Suspense>
             </div>
-            <Hr/>
-            <Footer/>
+
+            {/*<Footer/>*/}
 
             {
                 false && !localStorage.getItem('eventNewPopup') && (  //이벤트팝업 오픈하고 싶으면 false -> true로

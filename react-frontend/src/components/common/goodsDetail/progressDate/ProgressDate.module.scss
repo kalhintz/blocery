@@ -1,0 +1,54 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.textDanger{
+  color: red!important;
+}
+
+.wrap{margin: 16px;}
+.container{
+  border: 1px solid #24855b;
+}
+.header{background-color: #24855b; color: white; padding: 9px 14px; font-size: 14px;}
+.body{padding: 16px 22px;}
+.body .proBox{display: flex; position: relative;}
+.body .proBox .item{flex-grow:1; position: relative;}
+.body .proBox .item .bar{width: 100%; height: 6px; background-color: #efefef;}
+.body .proBox .item .bar.selected {background-color: #24855b;}
+//.body .proBox .bar:first-child{border-radius: 4px 0 0 4px;}
+//.body .proBox .bar:last-child{border-radius: 0 4px 4px 0;}
+.body .proBox .item .date{position: absolute; top: 15px; right:-9px; font-size: 10px; }
+.body .proBox .circle{
+  position: absolute;
+  left: 0%;
+  top: -7px;
+  width: 18px;
+  height: 18px;
+  background: $color-b2c-green;
+  border: 3px solid #24855b;
+  border-radius: 100%;
+  transform: translateX(-50%);
+  animation: aniScale 1.5s cubic-bezier(1, 0.18, 0.06, 0.99) infinite;
+}
+
+.roundLeft{
+  border-radius: 4px 0 0 4px;
+}
+.roundRight{
+  border-radius: 0 4px 4px 0;
+}
+
+
+@keyframes aniScale{
+  50%{background-color: white; }
+}
+
+/* 가격박스 */
+.priceBox{display: flex; margin-top: 25px; height: 58px;}
+.priceBox .item{flex-grow:1; text-align: center; border-left: 1px solid #efefef; display: flex; flex-direction: column; justify-content: center; line-height: 15px;}
+.priceBox .item:last-child{border-right: 1px solid #efefef;}
+
+.priceBox .item .text:nth-child(1){color: #c2c2c2; font-size: 10px;}
+.priceBox .item .text:nth-child(2){color: #929292; font-size: 10px;}
+.priceBox .item .text:nth-child(3){color: black; font-size: 12px;}
+

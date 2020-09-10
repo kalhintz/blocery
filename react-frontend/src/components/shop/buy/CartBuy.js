@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-import { Buy } from '../../../components/shop/buy';
-import { getGoodsByGoodsNo } from '../../../lib/goodsApi'
-import { getConsumer, getCartListByConsumerNo } from '../../../lib/shopApi'
+import { Buy } from '~/components/shop/buy';
+import { getGoodsByGoodsNo } from '~/lib/goodsApi'
+import { getConsumer, getCartListByConsumerNo } from '~/lib/shopApi'
+import ComUtil from '~/util/ComUtil'
 
 export default class CartBuy extends Component {
 
@@ -22,11 +23,13 @@ export default class CartBuy extends Component {
         // 제이든이 만든 장바구니에서 주문내역으로 담는 관련 작업은 다음 이슈때 처리 예정
         // 장바구니에서 구매했을 경우 장바구니테이블에서 선택한 것들만 가져오기
         let { data:cartList } = await getCartListByConsumerNo(consumerNo);
-        let goodsList = Object.assign([], this.state.goods);
+        let goodsList = []
         const result = cartList.map( async (item) => {
             let { data:goods } = await getGoodsByGoodsNo(item.goodsNo);
             goods.orderCnt = item.qty;
-            goodsList.push(goods);
+
+            if(goods.remainedCnt > 0 && ComUtil.utcToTimestamp(goods.saleEnd) > ComUtil.utcToTimestamp(new Date()) && !goods.saleStopped)
+                goodsList.push(goods);
         });
 
         //console.log("goodsList",goodsList);
@@ -45,6 +48,8 @@ export default class CartBuy extends Component {
         */
 
     }
+
+
     render() {
         if(!this.state.goods && !this.state.consumer) return null;
         return(

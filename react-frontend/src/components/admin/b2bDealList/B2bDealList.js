@@ -17,17 +17,20 @@ export default class B2bDealList extends Component {
             isOpen: false,
             orderSeq: null,
             columnDefs: [
-                {headerName: "주문일련번호", field: "dealSeq", sort:"desc"},
-                {headerName: "주문상태", field: "dealStatus"},
-                {headerName: "판매자번호", field: "sellerNo"},
-                {headerName: "상품명", field: "goodsNm", width: 150},
+                {headerName: "주문일련번호", field: "dealSeq", sort:"desc", width: 150},
+                {headerName: "주문상태", field: "dealStatus", width: 80},
+                {headerName: "판매자번호", field: "sellerNo", width: 90},
+                {headerName: "상품명", field: "dealDetailName", width: 250},
+                {headerName: "상품금액", field: "currentPrice", width: 100},
+                {headerName: "배송비", field: "deliveryFee", width: 80},
+                {headerName: "총주문금액", field: "orderPrice", width: 100},
                 {headerName: "송장번호", field: "trackingNumber"},
-                {headerName: "일시", field: "orderDate"},
+                {headerName: "주문일시", field: "orderDate"},
                 {headerName: "주문자", field: "consumerNm"},
-                {headerName: "주문수량", field: "orderCnt"},
-                {headerName: "이메일", field: "consumerEmail"},
-                {headerName: "전화번호", field: "consumerPhone"},
-
+                {headerName: "이메일", field: "consumerEmail", width: 150},
+                {headerName: "주문자전화번호", field: "consumerPhone"},
+                {headerName: "수령자명", field: "receiverName", width: 80},
+                {headerName: "수령자전화번호", field: "receiverPhone"},
             ],
             defaultColDef: {
                 width: 120,
@@ -55,6 +58,8 @@ export default class B2bDealList extends Component {
             alert('응답이 실패 하였습니다');
             return;
         }
+
+        console.log(data);
 
         data.map(({dealSeq, consumerOkDate, payStatus, trackingNumber}, index) => {
             const deal = {

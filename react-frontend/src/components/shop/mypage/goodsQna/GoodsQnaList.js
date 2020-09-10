@@ -1,17 +1,31 @@
 import React, { Component, Fragment } from 'react'
-import { ShopXButtonNav, Hr, HeaderTitle } from '~/components/common'
+import { ShopXButtonNav, HeaderTitle } from '~/components/common'
 
 import { faComments, faFrown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {IconReload} from '~/components/common/icons'
 
 import { getGoodsByGoodsNo } from '~/lib/goodsApi'
 import { getGoodsQna } from '~/lib/shopApi'
-import {getLoginUserType} from "../../../../lib/loginApi";
-import {Webview} from "../../../../lib/webviewApi";
-import ComUtil from "../../../../util/ComUtil";
+import {getLoginUserType} from "~/lib/loginApi";
+import {Webview} from "~/lib/webviewApi";
+import ComUtil from "~/util/ComUtil";
+import {Server} from "~/components/Properties";
 
-import {Server} from "../../../Properties";
+import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed } from '~/styledComponents/shared/Layouts';
+import { Badge, HrThin, HrHeavy } from '~/styledComponents/mixedIn';
+import { color } from '~/styledComponents/Properties'
+import styled, { css } from 'styled-components'
+import {getValue} from '~/styledComponents/Util'
+import Skeleton from '~/components/common/cards/Skeleton'
 
+const Answer = styled(Div)`
+    font-size: ${getValue(12)};
+    line-height: ${getValue(18)};
+    background-color: ${color.background};
+    padding: ${getValue(10)}};
+`;
+// border-bottom: 1px solid ${color.light};
 export default class GoodsQnaList extends Component {
     constructor(props) {
         super(props);
@@ -65,56 +79,46 @@ export default class GoodsQnaList extends Component {
         const data = this.state.qnaList
         return(
             <Fragment>
-                <ShopXButtonNav history={this.props.history} historyBack>상품문의</ShopXButtonNav>
-                <HeaderTitle sectionLeft={<span>{(data)?'총 '+ data.length + '건':''}</span>}></HeaderTitle>
-                <div>
+                <ShopXButtonNav underline history={this.props.history} historyBack>상품문의</ShopXButtonNav>
+                <Flex fontSize={14} m={16}>
+                    <Div bold>총 <Span fg='green'>{(data)?data.length + '개':'0개'}</Span> 문의</Div>
+                </Flex>
+                <Div>
                     {
-                        (data && data.length !== 0) ?
-                            data.map(({goodsNo, goodsName, goodsQue, goodsQueDate, goodsQnaStat, goodsAns, goodsAnsDate, producerName, goodsImages}, index) => {
-                            return(
-                                <div className='mb-3 f6'>
-                                    <div className='m-2 d-flex'>
-                                        <div className='flex-grow-1'>{ComUtil.utcToString(goodsQueDate)}</div>
-                                        <div className='text-right text-danger font-weight-bold'>{ (goodsQnaStat) === 'success' ? '답변완료' : '답변준비중'}</div>
-                                    </div>
-                                    <hr className='m-0' />
-                                    <div className='m-2 d-flex' onClick={this.toggle.bind(this, index)}>
-                                        <div className='mr-2' onClick={this.moveToGoodsDetail.bind(this, goodsNo)}>
-                                            <img style={{width:70, height:70}} src={Server.getThumbnailURL()+goodsImages[0].imageUrl} />
-                                        </div>
-                                        <div>
-                                            <div className='text-secondary'>{goodsName}</div>
-                                            <div className='text-dark' style={{whiteSpace:'pre-line'}}>{goodsQue}</div>
-                                        </div>
-                                    </div>
-                                    {
-                                        (this.state.isVisible && goodsQnaStat === 'success' && this.state.index === index)&& (
-                                            <Fragment>
-                                                <div className='bg-light p-2 d-flex'>
-                                                    <FontAwesomeIcon className='mr-2 ml-2' icon={faComments} size='lg' />
-                                                    <div  style={{whiteSpace:'pre-line'}}>{goodsAns}</div>
-                                                </div>
-                                            </Fragment>
-                                        )
-                                    }
-                                    {
-                                        (this.state.isVisible && goodsQnaStat === 'ready' && this.state.index === index) && (
-                                            <Fragment>
-                                                <div className='text-center p-2 d-flex'>
-                                                    <FontAwesomeIcon className='mr-2 ml-2' icon={faFrown} size='lg' />
-                                                    판매자의 답변을 기다리고 있습니다
-                                                </div>
-                                            </Fragment>
-                                        )
-                                    }
-                                    <Hr/>
-                                </div>
-                            )}
-                        )
-                            :
-                            <div className='w-100 h-100 d-flex justify-content-center align-items-center p-5 text-dark'>{(data===undefined)?'':'상품문의 내역이 없습니다.'}</div>
+                        !data ? <Skeleton count={5}/> :
+                            data.length <= 0 ? <div className='w-100 h-100 d-flex justify-content-center align-items-center p-5 text-dark'>{(data===undefined)?'':'상품문의 내역이 없습니다.'}</div> :
+                                data.map(({goodsNo, goodsName, goodsQue, goodsQueDate, goodsQnaStat, goodsAns, goodsAnsDate, producerName, goodsImages}, index) => (
+                                    <Div m={16}>
+                                        <Flex bg={'background'}>
+                                            <Div m={10} width={36} height={36} flexShrink={0} onClick={this.moveToGoodsDetail.bind(this, goodsNo)}>
+                                                <Img src={Server.getThumbnailURL()+goodsImages[0].imageUrl} alt={'사진'} />
+                                            </Div>
+                                            <Div>
+                                                <Div fg={'dark'} fontSize={12}>{goodsName}</Div>
+                                            </Div>
+                                        </Flex>
+                                        <Div fontSize={14} mb={8} mt={8} onClick={this.toggle.bind(this, index)}>{goodsQue}</Div>
+                                        <Flex mt={8} onClick={this.toggle.bind(this, index)}>
+                                            <Div fontSize={12} fg={'dark'}>{ComUtil.utcToString(goodsQueDate, 'YYYY.MM.DD HH:mm')}</Div>
+                                            <Right>{(goodsQnaStat) === 'success' ? <Badge fg={'white'} bg={'green'}>답변완료</Badge> : <Badge fg={'white'} bg={'secondary'}>대기</Badge>}</Right>
+                                        </Flex>
+                                        {
+                                            (this.state.isVisible && goodsQnaStat === 'success' && this.state.index === index)&& (
+                                                <Answer mt={16}>
+                                                    <Flex>
+                                                        <IconReload />
+                                                        <Div mb={4} fg='adjust'>판매자 답변</Div>
+                                                    </Flex>
+                                                    <Div mb={7} ml={18}>{goodsAns}</Div>
+                                                    <Div ml={18} fontSize={12} fg={'dark'}>{ComUtil.utcToString(goodsAnsDate, 'YYYY.MM.DD HH:mm')}</Div>
+                                                </Answer>
+                                            )
+                                        }
+                                        <HrThin mt={15} />
+                                    </Div>
+                                ))
                     }
-                </div>
+                </Div>
 
             </Fragment>
         )

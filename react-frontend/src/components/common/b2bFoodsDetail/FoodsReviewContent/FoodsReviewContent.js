@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react'
 import ComUtil from '~/util/ComUtil'
 import FoodsReviewItem from './FoodsReviewItem'
-import { NoSearchResultBox, IconStarGroup, HeaderTitle, ModalButton } from '~/components/common'
+import { NoSearchResultBox, IconStarGroup, HeaderTitle, ModalButton, ImageGalleryModal } from '~/components/common'
 import MoreButton from '../MoreButton'
 import {Server} from '~/components/Properties'
 
@@ -17,10 +17,10 @@ const FoodsReviewContent = ({foodsReviews, totalCount, isVisibleStar, onMoreClic
                 row.push(
                     <div key={'foodsReviewContent'+index}>
                         <hr className='m-0'/>
-                        <div  className='p-1 ml-2'>
+                        <div  className='m-3'>
                             <span className='d-flex align-items-center text-secondary f6 mb-1 mt-2'>
-                                <img className='mr-1' style={{width: 30, height: 30}}
-                                     src={Server.getThumbnailURL() + foodsReview.goodsImages[0].imageUrl}/>
+                                <img className='mr-1 rounded' style={{width: 40, height: 40, objectFit: 'cover'}}
+                                     src={Server.getThumbnailURL() + foodsReview.goodsImages[0].imageUrl} alt={'상품사진'} />
                                 <span className='ml-2'>{foodsReview.goodsNm}</span>
                             </span>
                         </div>

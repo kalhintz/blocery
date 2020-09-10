@@ -1,0 +1,94 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.green{
+  color: $color-b2c-green;
+}
+
+/*최상단 배경*/
+.topBg{
+  width: 100%;
+}
+/*필터바*/
+.bar{
+  padding: 23px 16px;
+  display: flex;
+  align-items: center;
+  background-color: white;
+}
+.bar .left{
+  font-size: $f18;
+  font-weight: bold;
+}
+.bar .right{
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  font-size: $f14;
+  color: #929292;
+  line-height: $f14;
+}
+.center {
+  padding: 30px 10px;
+  text-align: center;
+}
+
+.right > div{
+  padding: 0 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.right > div:first-child{
+  padding-left: 0;
+}
+.right > div:last-child{
+  padding-right: 0;
+  border-right: 0;
+}
+
+.right .line{
+  border-right: 1px solid $color-b2c-light;
+  height: $f14;
+}
+
+
+.right img{
+  margin-right: 6px;
+}
+
+//
+//.list{
+//  display: flex;
+//  flex-wrap: wrap;
+//  margin: calc(16px / 2);
+//  /*   padding-top: 0; */
+//}
+//.itemOuter{
+//  width: 50%;
+//  padding: calc(16px / 2);
+//  padding-top: 0;
+//  padding-bottom: 16px;
+//  /*   border: 1px solid black; */
+//}
+//.itemInner{
+//  border: 1px solid red;
+//}
+///* .list .itemOuter > a{height: 100%;} */
+//
+///* 이미지 커버 */
+//.list .itemOuter > div:nth-child(1){
+//  width: 100%;
+//}
+//
+//.list .itemOuter img{
+//  width: 100%;
+//  min-height: 152px;
+//  height: 100%;
+//  display: block;
+//  object-fit: cover;
+//}
+//
+//
+//
+//

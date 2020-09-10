@@ -1,11 +1,14 @@
 import React, { Fragment, useState, useEffect, lazy, Suspense, useRef } from 'react'
 import Swiper from 'react-id-swiper'
+import axios from 'axios';
 
 //icon
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle as faCheckCircleSol } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle as faCheckCircleReg  } from '@fortawesome/free-regular-svg-icons'
 import { ViewStream, CheckBoxOutlineBlank, ViewArray} from '@material-ui/icons'
 import { Webview } from '~/lib/webviewApi'
+import { Badge, Button } from 'reactstrap'
 
 import ComUtil from '~/util/ComUtil'
 import { B2bConst } from '~/components/Properties'
@@ -59,6 +62,7 @@ const FindSeller = (props) => {
 
     const [loading, setLoading] = useState(true)
     const [viewIndex, setViewIndex] = useState(0)               //뷰어 아이콘
+    const [currentAddress, setCurrentAddress] = useState('')
 
     const {x, y} = ComUtil.getParams(props)
 
@@ -68,11 +72,20 @@ const FindSeller = (props) => {
     }, [])
 
     useEffect(()=>{
+        setFindSellerInfo()
+
+    }, [buyerNo, category, directDelivery, waesangDeal])
+
+
+    async function setFindSellerInfo() {
         //checkLogin()을 통해 로그인여부 판별이 되었다면 조회
         if(buyerNo !== undefined){
-            searchSellers()
+            await searchSellers()
         }
-    }, [buyerNo, category, directDelivery, waesangDeal])
+
+        if(x && y)
+            await getCurrentAddress()
+    }
 
     async function checkLogin(){
         const user = await getB2bLoginUser()
@@ -126,6 +139,22 @@ const FindSeller = (props) => {
         setLoading(false)
     }
 
+    async function getCurrentAddress() {
+
+        // https://developers.kakao.com/docs/restapi/local#좌표-주소-변환  참고
+        let {data:result} = await axios(window.location.protocol + '//dapi.kakao.com/v2/local/geo/coord2address.json', { method: "get",
+            params: {
+                x: x,
+                y: y
+            },
+            headers: {
+                Authorization: 'KakaoAK 5c9eb7aee19951a92e98756e53175121'  // Lydia 개인 카카오 아이디로 발급받은 application key
+            }
+
+        });
+        setCurrentAddress(result.documents[0].address.address_name)
+    }
+
 
     //카테고리클릭
     function onCategoryClick(name){
@@ -150,7 +179,8 @@ const FindSeller = (props) => {
     }
 
     function moveSellerDetailPage(sellerNo){
-        Webview.openPopup('/b2b/sellerDetail?sellerNo='+sellerNo, true)
+        //Webview.openPopup('/b2b/sellerDetail?sellerNo='+sellerNo, true)
+        props.history.push('/b2b/sellerDetail?sellerNo='+sellerNo)
     }
 
     function moveFoodsDetailPage(foodsNo){
@@ -203,6 +233,18 @@ const FindSeller = (props) => {
         },
     }
 
+    const CurrentAddressText = () => {
+        let content;
+        if (!x && !y) //좌표가 없으면 서울시청으로 검색
+            content = <div className='lead f5 font-weight-bold'> 서울시청 기준으로 검색 </div>
+        else if (!currentAddress) // kakao api 에러로 현 주소를 못 가져온 경우
+            content = <div className='lead f5 font-weight-bold'> 현재 위치로 검색 </div>
+        else
+            content = <div className='lead f5 font-weight-bold'> {currentAddress} </div>
+
+        return content
+    }
+
     return(
         <div>
             <B2bShopXButtonNav isVisibleXButton={false} isVisibleCart>
@@ -211,27 +253,22 @@ const FindSeller = (props) => {
 
             <div style={Style.sticky} className='bg-white'>
                 <div className='p-3' >
-                    {(!x && !y) &&  //좌표가 없으면 서울시청으로 검색
-                        <div className='mb-2 lead f5 font-weight-bold'>
-                            서울시청 기준으로 검색
-                        </div>
-                    }
-                    {(x && y) &&
-                        <div className='mb-2 lead f5 font-weight-bold'>
-                            현재 위치로 검색
-                        </div>
-                    }
+                    <div className='d-flex align-items-center mb-3'>
+                        <CurrentAddressText/>
+                        <Button size='sm' className='ml-auto' onClick={setFindSellerInfo}>현위치로 재검색</Button>
+                        {/*<Badge className='mb-3 ml-2 mt-1'>현위치로 재검색</Badge>*/}
+                    </div>
 
                     <div className='small text-secondary'>
                     <span onClick={onDirectDeliveryClick} className='mr-2 cursor-pointer'>
                         <FontAwesomeIcon size={'lg'}
-                                         icon={faCheckCircle}
+                                         icon={directDelivery ? faCheckCircleSol : faCheckCircleReg}
                                          className={classNames('mr-1', directDelivery && 'text-primary')} />
                         직배송 가능
                     </span>
-                    <span onClick={onWaesangDealClick} className='cursor-pointer'>
+                        <span onClick={onWaesangDealClick} className='cursor-pointer'>
                         <FontAwesomeIcon size={'lg'}
-                                         icon={faCheckCircle}
+                                         icon={waesangDeal ? faCheckCircleSol : faCheckCircleReg}
                                          className={classNames('mr-1', waesangDeal && 'text-primary')} />
                         외상거래 가능
                     </span>
@@ -282,19 +319,19 @@ const FindSeller = (props) => {
                     (viewIndex === 0 && sellers.length > 0 && sellerFoodsList.length > 0 ) && (
                         <div className='mb-3'>
 
-                                <Swiper {...swipeOptions}>
-                                    {
-                                        //TODO: 인기상품, 등등 나타낼 것이 있다면 사용..
-                                        sellerFoodsList.map((item, index) => (
-                                            <div key={'sellerFoodsList'+index}>
-                                                <SubTitle>{item.name}</SubTitle>
-                                                <FoodsList data={item.foodsList} onClick={moveFoodsDetailPage} />
-                                                {/*<FoodsList data={foodsList}  />*/}
-                                            </div>
-                                        ))
-                                    }
-                                </Swiper>
-                            </div>
+                            <Swiper {...swipeOptions}>
+                                {
+                                    //TODO: 인기상품, 등등 나타낼 것이 있다면 사용..
+                                    sellerFoodsList.map((item, index) => (
+                                        <div key={'sellerFoodsList'+index}>
+                                            <SubTitle>{item.name}</SubTitle>
+                                            <FoodsList data={item.foodsList} onClick={moveFoodsDetailPage} />
+                                            {/*<FoodsList data={foodsList}  />*/}
+                                        </div>
+                                    ))
+                                }
+                            </Swiper>
+                        </div>
                     )
                 }
 

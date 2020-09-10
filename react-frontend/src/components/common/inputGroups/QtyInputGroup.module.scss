@@ -1,60 +1,20 @@
 @import "Color.module.scss";
-@import "Text.module.scss";
+@import "Font.module.scss";
 
-$borderColor: #DDDFE1;
 
-$borderRadius: 5px;
-
-/* 버튼 테두리 div */
-.btnWrap {
-  display: flex;
-  border: 1px solid $borderColor;
-  width: 150px;
-  border-radius: $borderRadius;
-
-  /* - 버튼 div */
-  & > div:nth-child(1){
-    border-top-left-radius: $borderRadius;
-    border-bottom-left-radius: $borderRadius;
-  }
-
-  /* + 버튼 div */
-  & > div:nth-child(3){
-    border-top-right-radius: $borderRadius;
-    border-bottom-right-radius: $borderRadius;
-  }
+.wrap{display: flex; width: 100%;}
+.button{width: 42px; height: 42px; background-color: #ffffff; display: flex; align-items: center; justify-content: center;}
+.wrap > input{border-radius: 0!important; height: 42px; width: calc(100% - 42px - 42px); border: 1px solid #e1e1e1; border-left: 0; border-right: 0; text-align: center; font-size: $f14; font-weight: bold;}
+.button{border: 1px solid #e1e1e1; cursor: pointer;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Opera and Firefox */
 }
-
-/* 인풋 div */
-.inp {
-  width: 80px;
-  border-left: 1px solid $borderColor;
-  border-right: 1px solid #DDDFE1;
-
-  /* 인풋 */
-  & > input {
-    width: 100%;
-    text-align: center;
-    height: 25px;
-    border: 0;
-  }
-}
-
-/* 버튼 div */
-.btn {
-  background: #F6F7F7;
-  color: gray;
-  width: 35px;
-  height: 25px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  /* 버튼 클릭 */
-  &:active {
-    background-color: #d7d7d7;
-    color: white;
-  }
-}
-
+.button > svg{font-size: 20px; color: $color-b2c-dark; font-weight: bold;}
+.button:active{background-color: $color-b2c-light;}
+.wrap > div:first-child{border-top-left-radius: 3px; border-bottom-left-radius: 3px;}
+.wrap > div:last-child{border-top-right-radius: 3px; border-bottom-right-radius: 3px;}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
+    <defs>
+        <style>
+            .prefix__cls-3{fill:none;stroke:#000;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+        </style>
+    </defs>
+    <g id="prefix__ic_navi_home" transform="translate(.916 .083)">
+        <path id="prefix__사각형_4492" d="M0 0H30V30H0z" data-name="사각형 4492" transform="translate(-.916 -.083)" style="opacity:0;fill:#fff"/>
+        <g id="prefix__house-black-silhouette-without-door" transform="translate(4.084 4.917)">
+            <path id="prefix__사각형_1141" d="M0 0H20.528V20.528H0z" data-name="사각형 1141" style="opacity:0"/>
+            <path id="prefix__패스_2257" d="M-2903.281-1929.815v12.433h-22.129v-16.97l10.816-6.714 11.313 6.714v3.561" class="prefix__cls-3" data-name="패스 2257" transform="translate(2924.487 1939.448)"/>
+            <path id="prefix__패스_2258" d="M-2911.382-1918.955v-8.319h-6.96v5.178" class="prefix__cls-3" data-name="패스 2258" transform="translate(2925.292 1941.021)"/>
+        </g>
+    </g>
+</svg>

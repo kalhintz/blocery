@@ -199,7 +199,7 @@ class SellerDetail extends React.Component{
 
         return (
             <Fragment>
-                <B2bShopXButtonNav close isVisibleXButton={true}>
+                <B2bShopXButtonNav historyBack history={this.props.history} isVisibleXButton={true}>
                     {seller.farmName}
                 </B2bShopXButtonNav>
                 <Container fluid>
@@ -279,7 +279,7 @@ class SellerDetail extends React.Component{
                                     <InfoRow name={'배송유형'} value={seller.directDelivery ? '직배송' : '택배배송'} />
                                     <InfoRow name={'외상거래여부'} value={seller.waesangDeal ? '가능' : '불가능'} />
                                     <InfoRow name={'주문마감시간'} value={seller.orderEndTime} />
-                                    <InfoRow name={'출고지'} value={`${seller.warehouseAddr || ''} ${seller.warehouseAddrDetail || ''} ${seller.warehouseZipNo || ''}`} />
+                                    <InfoRow name={'출고지'} value={`${seller.warehouseZipNo || ''} ${seller.warehouseAddr || ''} ${seller.warehouseAddrDetail || ''} `} />
                                     {
                                         seller.directDelivery ? (
                                             <div>

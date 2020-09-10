@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import Textarea from 'react-textarea-autosize'
 import moment from 'moment-timezone'
-import { Server } from '~/components/Properties'
 import { Webview } from '~/lib/webviewApi'
 import ComUtil from '~/util/ComUtil'
 import { BlockChainSpinner, ShopXButtonNav, ModalConfirm, ModalWithNav } from '~/components/common/index'
@@ -12,15 +11,16 @@ import { BlockChainSpinner, ShopXButtonNav, ModalConfirm, ModalWithNav } from '~
 import { exchangeWon2BLCT, exchangeBLCT2Won } from "~/lib/exchangeApi"
 import { CANCEL_FEE_13TO5, CANCEL_FEE_4TO3, CANCEL_FEE_2TO1, CANCEL_FEE_MAX } from '~/lib/exchangeApi'
 
-import { addBlctOrderCancel, addPgOrderCancel, getOrderDetailByOrderSeq } from '~/lib/shopApi'
+import { addBlctOrderCancel, addPgOrderCancel, getOrderDetailByOrderSeq, getOrderWrapListByOrderSeq, addPgWrapOrderCancel, addBlctWrapOrderCancel } from '~/lib/shopApi'
 import { scOntCancelOrderBlct } from '~/lib/smartcontractApi';
 import { getGoodsByGoodsNo } from '~/lib/goodsApi'
 import { getServerToday } from '~/lib/commonApi'
 
 import Style from './OrderDetail.module.scss'
-import TextStyle from '~/styles/Text.module.scss'
 import { ToastContainer, toast } from 'react-toastify'     //토스트
 import 'react-toastify/dist/ReactToastify.css'
+
+import OrderCancelItem from './OrderCancelItem'
 
 import classnames from 'classnames'
 
@@ -37,7 +37,8 @@ export default class OrderCancel extends Component {
 
             orderSeq: orderSeq,
             orderInfo: {},
-            goodsInfo: {},
+            wrapOrderList : [],  // producerWrapDelivered가 true인 경우에만 group리스트를 모두 넣어주고, 아닌 경우 해당 orderDetail 1개만 리스트에 넣음.
+            goodsInfo: {},          // 주문목록에서 선택된 주문에 해당하는 상품의 정보를 저장하는 필드로 directGoods여부를 판단할 때에만 사용중 (묶음배송에 영향 없음)
 
             chainLoading: false,
             serverToday: {},
@@ -47,7 +48,10 @@ export default class OrderCancel extends Component {
             cancelReasonDetail:null,
 
             isCancelFeeInfoOpen: false,
-            refundBlctWon: -1
+            refundBlctWon: -1,
+            totalCardPrice: 0,  // 묶음배송일때를 대비해서 모든 취소상품의 카드결제 합
+            totalBlct: 0,   // 묶음배송일때를 대비해서 모든 취소상품의 BLCT 합
+            producerWrapDelivered: false // 생산자 묶음배송 취소여부
         }
 
         this.cancelFeeTitle="";
@@ -80,14 +84,44 @@ export default class OrderCancel extends Component {
     }
 
     getOrderDetailInfo = async () => {
-        const orderDetail = await getOrderDetailByOrderSeq(this.state.orderSeq);
-        const goodsInfo = await getGoodsByGoodsNo(orderDetail.data.goodsNo);
-        const refundWon = await this.getRefundBlctWon(orderDetail.data);
+        const {data:orderDetail} = await getOrderDetailByOrderSeq(this.state.orderSeq);
+
+        // 묶음배송시 List를 만드는데, 1개 취소의 경우에도 List에 1개만 넣어서 동일하게 처리함.
+        let wrapOrderList = []
+        if(orderDetail.producerWrapDelivered) {
+            let {data:list} = await getOrderWrapListByOrderSeq(this.state.orderSeq);
+            wrapOrderList = list;
+
+        } else {
+            wrapOrderList.push(orderDetail);
+        }
+
+        // 주문취소할 전체 상품의 구매한 cardPrice와 blctToken의 합
+        let totalCardPrice = 0;
+        let totalBlct = 0;
+        wrapOrderList.map((orderDetail) => {
+            totalCardPrice = totalCardPrice + orderDetail.cardPrice;
+            totalBlct = totalBlct + orderDetail.blctToken;
+        })
+
+        const goodsInfo = await getGoodsByGoodsNo(orderDetail.goodsNo);
+        let refundWon = 0;
+
+        // 총 환불금액은 묶음배송의 경우 즉시상품만 가능하기에 취소수수료 없이 전체 환불금액으로 처리
+        if(orderDetail.producerWrapDelivered) {
+            refundWon = await exchangeBLCT2Won(totalBlct);
+        } else {
+            refundWon = await this.getRefundBlctWon(orderDetail);
+        }
 
         this.setState({
-            orderInfo: orderDetail.data,
+            orderInfo: orderDetail,
             goodsInfo: goodsInfo.data,
-            refundBlctWon: refundWon
+            refundBlctWon: refundWon,
+            totalCardPrice: totalCardPrice,
+            totalBlct: totalBlct,
+            wrapOrderList: wrapOrderList,
+            producerWrapDelivered: orderDetail.producerWrapDelivered
         });
     };
 
@@ -108,11 +142,27 @@ export default class OrderCancel extends Component {
 
     // 주문취소 클릭시
     onPayCancel = async (isConfirmed) => {
-        const orderDetail = Object.assign({},this.state.orderInfo);
+        if(!isConfirmed) {
+            return;
+        }
+
+        // const orderDetail = Object.assign({},this.state.orderInfo);
+        const wrapOrderList = Object.assign([],this.state.wrapOrderList);
+        const orderDetail = wrapOrderList[0];
+
         let payMethod = orderDetail.payMethod;    //결제구분(blct, card)
 
-        let imp_uid = orderDetail.impUid;         //PG고유번호
-        let merchant_uid = orderDetail.orderSeq;  //주문일련번호
+        let imp_uid = orderDetail.impUid;         //PG고유번호 (여러건의 주문이라도 한번에 결제하면 모두 동일함)
+        // let merchant_uid = orderDetail.orderSeq;  //주문일련번호
+
+        let merchant_uid_list = []  // 묶음배송 취소할 수 있기에 orderSeq 리스트로 구성 (1개인 경우 1개만)
+        let totalBlctToken = 0      // 묶음배송 취소 시에는 orderDetail의 토큰 합 (1개인 경우 1개만)
+        let cancelCardPrice = 0
+        wrapOrderList.map( orderDetail => {
+            merchant_uid_list.push(orderDetail.orderSeq)
+            totalBlctToken = totalBlctToken + orderDetail.blctToken;
+            cancelCardPrice = cancelCardPrice + orderDetail.cardPrice;
+        })
 
         if(payMethod !== "blct"){
             if(imp_uid === null){
@@ -121,96 +171,107 @@ export default class OrderCancel extends Component {
             }
         }
 
-        if(isConfirmed) {
+        if(payMethod === "blct"){
+            //블록체인스피너 chainLoading=true
+            this.setState({chainLoading: true});
+            this.notify('주문취소중.', toast.info);
 
+            // !!!!! 취소수수료는 주문취소가 1개일 때에만 가능함 (wrapOrderList 첫번째 주문건으로 계산함) - 묶음배송취소때문에 이렇게 처리함.
+            // 예상 배송 시작일 기준
+            // 취소수수료 15일 전: 100% 환불
+            // CANCEL_FEE_13TO5  //배송시작일 14~10일전 취소수수료 단위%
+            // CANCEL_FEE_4TO3   //배송시작일 9~6일전
+            // CANCEL_FEE_2TO1   //배송시작일 5~2일전
+            // CANCEL_FEE_MAX    //1일전~배송시작일 이후 MAX 취소수수료 단위%
+            //let orderBlctToken = exchangeWon2BLCT(orderDetail.orderPrice);
+            let cancelBlctTokenFee = this._deliveryCancelFeeWonOrBlct(orderDetail); // BLCT로 먼저 계산
+            let cancelFee = await exchangeBLCT2Won(cancelBlctTokenFee); //parseInt(cancelBlctTokenFee * BLCT_TO_WON);
+            //console.log('BLCT Cacel Fee in BLCT, 원환산',cancelBlctTokenFee,  cancelFee);
 
-            if(payMethod === "blct"){
-                //블록체인스피너 chainLoading=true
-                this.setState({chainLoading: true});
-                this.notify('주문취소중.', toast.info);
+            //blct취소시엔 미사용: let cancelAmount = orderDetail.orderPrice - cancelFee;
 
-                // 예상 배송 시작일 기준
-                // 취소수수료 15일 전: 100% 환불
-                // CANCEL_FEE_13TO5  //배송시작일 14~10일전 취소수수료 단위%
-                // CANCEL_FEE_4TO3   //배송시작일 9~6일전
-                // CANCEL_FEE_2TO1   //배송시작일 5~2일전
-                // CANCEL_FEE_MAX    //1일전~배송시작일 이후 MAX 취소수수료 단위%
-                //let orderBlctToken = exchangeWon2BLCT(orderDetail.orderPrice);
-                let cancelBlctTokenFee = this._deliveryCancelFeeWonOrBlct(orderDetail); // BLCT로 먼저 계산
-                let cancelFee = await exchangeBLCT2Won(cancelBlctTokenFee); //parseInt(cancelBlctTokenFee * BLCT_TO_WON);
-                //console.log('BLCT Cacel Fee in BLCT, 원환산',cancelBlctTokenFee,  cancelFee);
+            //console.log("블록체인 기록시도: cancelFee",cancelFee);
+            //console.log("블록체인 기록시도: cancelBlctTokenFee",cancelBlctTokenFee);
 
-                //blct취소시엔 미사용: let cancelAmount = orderDetail.orderPrice - cancelFee;
+            // 취소 BLCT 및 BLS 토큰 반환 로직 필요 (BLCT구매)
+            //this.notify('주문취소가 완료되어 블록체인에 기록 중입니다.', toast.warn);
 
-                //console.log("블록체인 기록시도: cancelFee",cancelFee);
-                //console.log("블록체인 기록시도: cancelBlctTokenFee",cancelBlctTokenFee);
+            let {data : cancelresult} = await scOntCancelOrderBlct(totalBlctToken, cancelBlctTokenFee, cancelFee, false);
+            console.log("scOntCancelOrderBlct", cancelresult);
 
-                // 취소 BLCT 및 BLS 토큰 반환 로직 필요 (BLCT구매)
-                //this.notify('주문취소가 완료되어 블록체인에 기록 중입니다.', toast.warn);
-                let {data : cancelresult} = await scOntCancelOrderBlct(merchant_uid, orderDetail.blctToken, cancelBlctTokenFee, cancelFee, false);
-                console.log("scOntCancelOrderBlct", cancelresult);
-
-                if(cancelresult){
-                    //성공일경우(200)
-                    let data = {
-                        orderGroupNo: orderDetail.orderGroupNo,
-                        orderSeq: orderDetail.orderSeq
-                    };
-                    //주문취소수수료(기본0원)
-                    data['cancelFee']=cancelFee;
-                    data['cancelBlctTokenFee']=cancelBlctTokenFee;
-                    //주문취소사유 및 취소상세사유
-                    console.log(this.state)
-                    data['cancelReason']=this.state.cancelReason;
-                    data['cancelReasonDetail']=this.state.cancelReasonDetail;
-                    this.blctPayCancel(orderDetail, data);
-                }
-                else{
-                    //실패
-                    toast.dismiss();
-                    this.notify('주문취소가 실패하였습니다.', toast.info);
-                    this.setState({chainLoading: false});
-                }
-
-            }
-
-            if(payMethod === "card") {
-                //블록체인스피너 chainLoading=true
-                this.setState({chainLoading: true});
-                this.notify('주문취소중.', toast.info);
-
-                // 예상 배송 시작일 기준
-                // 취소수수료 2주 전: 100% 환불
-                // CANCEL_FEE_13TO5  //배송시작일 14~10일전 취소수수료 단위%
-                // CANCEL_FEE_4TO3   //배송시작일 9~6일전
-                // CANCEL_FEE_2TO1   //배송시작일 5~2일전
-                // CANCEL_FEE_MAX    //1일전~배송시작일 이후 MAX 취소수수료 단위%
-                let cancelFee = this._deliveryCancelFeeWonOrBlct(orderDetail);  //원
-                let cancelBlctTokenFee = await exchangeWon2BLCT(cancelFee);  //Blct환산: 기록용
-                let cancelAmount = orderDetail.orderPrice - cancelFee;
-
-                //console.log("cancelFee",cancelFee);
-                //console.log("cancelBlctTokenFee",cancelBlctTokenFee);
-                //console.log("cancelAmount",cancelAmount);
-                //return false;
+            if(cancelresult){
+                //성공일경우(200)
                 let data = {
-                    impUid: imp_uid,
-                    merchantUid: merchant_uid
+                    orderGroupNo: orderDetail.orderGroupNo,
+                    orderSeqList: merchant_uid_list
                 };
                 //주문취소수수료(기본0원)
                 data['cancelFee']=cancelFee;
                 data['cancelBlctTokenFee']=cancelBlctTokenFee;
-                //취소수수료가 0 이상일 경우 파라미터 세팅(주문취소금액)
-                //if(cancelFee > 0){
-                //주문취소금액 파라미터 생성 (부분취소금액) == PG부분취소금액
-                data['amount']=cancelAmount;
-                //}
                 //주문취소사유 및 취소상세사유
+                console.log(this.state)
                 data['cancelReason']=this.state.cancelReason;
                 data['cancelReasonDetail']=this.state.cancelReasonDetail;
-
-                this.payCancel(orderDetail, data);
+                this.blctPayCancel(wrapOrderList, data);
             }
+            else{
+                //실패
+                toast.dismiss();
+                this.notify('주문취소가 실패하였습니다.', toast.info);
+                this.setState({chainLoading: false});
+            }
+
+        }
+
+        if(payMethod === "card" || payMethod === "cardBlct" ) {
+            //블록체인스피너 chainLoading=true
+            this.setState({chainLoading: true});
+            this.notify('주문취소중.', toast.info);
+
+            // 예상 배송 시작일 기준
+            // 취소수수료 2주 전: 100% 환불
+            // CANCEL_FEE_13TO5  //배송시작일 14~10일전 취소수수료 단위%
+            // CANCEL_FEE_4TO3   //배송시작일 9~6일전
+            // CANCEL_FEE_2TO1   //배송시작일 5~2일전
+            // CANCEL_FEE_MAX    //1일전~배송시작일 이후 MAX 취소수수료 단위%
+            let cancelFee = this._deliveryCancelFeeWonOrBlct(orderDetail);  //원
+            let cancelBlctTokenFee = 0;//20200316  await exchangeWon2BLCT(cancelFee);  //Blct환산: 기록용
+            let cancelAmount = orderDetail.orderPrice - cancelFee;
+
+            if(this.state.producerWrapDelivered) {
+                console.log("생산자 묶음배송 전체취소")
+                cancelAmount = cancelCardPrice;
+            }
+
+            //cardBlct 취소 amount = cardPrice  ( cardBlct는 1건만 구매할 수 있기에 생산자 묶음배송과 무관함)
+            if (payMethod === "cardBlct" ) {
+                if (orderDetail.directGoods)
+                    cancelAmount = orderDetail.cardPrice;
+                else
+                    cancelAmount = orderDetail.cardPrice  - cancelFee;  //20200316 예약상품 cardBlct 취소 추가, 예약상품일경우만 취소수수료 발생..
+            }
+            // console.log("cancelFee", cancelFee, this.state.orderInfo.directGoods);
+            // console.log("cancelBlctTokenFee", cancelBlctTokenFee);
+            console.log("merchant_uid_list", merchant_uid_list);
+
+            let data = {
+                impUid: imp_uid,
+                merchantUid: merchant_uid_list[0],
+                wrapMerchantUid: merchant_uid_list   // 주문취소 후 DB를 update 해줘야 하기에 orderSeq를 리스트로 보내야 함....
+            };
+            //주문취소수수료(기본0원)
+            data['cancelFee']=cancelFee;
+            data['cancelBlctTokenFee']=cancelBlctTokenFee;
+            //취소수수료가 0 이상일 경우 파라미터 세팅(주문취소금액)
+            //if(cancelFee > 0){
+            //주문취소금액 파라미터 생성 (부분취소금액) == PG부분취소금액
+            data['amount']=cancelAmount;
+            //}
+            //주문취소사유 및 취소상세사유
+            data['cancelReason']=this.state.cancelReason;
+            data['cancelReasonDetail']=this.state.cancelReasonDetail;
+
+            this.payCancel(wrapOrderList, data);
         }
     };
 
@@ -308,25 +369,30 @@ export default class OrderCancel extends Component {
     };
 
     //BLCT 주문 취소 : 블록체인 기록성공시 호출 됨.
-    blctPayCancel = async (orderDetail, data) => {
+    blctPayCancel = async (wrapOrderList, data) => {
         let cancelFee = data.cancelFee;
         let cancelBlctTokenFee = data.cancelBlctTokenFee;
 
         //console.log("db 기록시도: cancelFee",cancelFee);
         //console.log("db 기록시도: cancelBlctTokenFee",cancelBlctTokenFee);
 
-        let {data:res} = await addBlctOrderCancel(data);
+        let {data:res} = await addBlctWrapOrderCancel(data);
 
         //주문취소성공
         if(res.resultStatus==="success"){
             toast.dismiss();
             this.notify('주문취소가 완료되었습니다', toast.warn);
-            orderDetail.payStatus = "cancelled";
-            orderDetail.cancelFee = cancelFee;
-            orderDetail.cancelBlctTokenFee = cancelBlctTokenFee;
+
+            // 현재 묶음배송 취소는 즉시상품에만 적용되기에 취소수수료가 0원이라 문제가 없지만 추후 예약상품에 묶음배송이 반영된다면 취소수수료 로직에 오류생김 (2020.04.16. lydia)
+            wrapOrderList.map( (orderDetail) => {
+                orderDetail.payStatus = "cancelled";
+                orderDetail.cancelFee = cancelFee;
+                orderDetail.cancelBlctTokenFee = cancelBlctTokenFee;
+            })
 
             this.setState({
-                orderInfo: orderDetail,
+                orderInfo: wrapOrderList[0],
+                wrapOrderList: wrapOrderList,
                 chainLoading: false  //블록체인스피너 chainLoading=false
             });
 
@@ -339,9 +405,14 @@ export default class OrderCancel extends Component {
         if(res.resultStatus==="befcancelled"){
             toast.dismiss();
             this.notify('이미 주문취소가 되어있습니다.', toast.info);
-            orderDetail.payStatus = "cancelled";
+
+            wrapOrderList.map( (orderDetail) => {
+                orderDetail.payStatus = "cancelled"
+            })
+
             this.setState({
-                orderInfo: orderDetail,
+                orderInfo: wrapOrderList[0],
+                wrapOrderList: wrapOrderList,
                 chainLoading: false  //블록체인스피너 chainLoading=false
             });
 
@@ -360,22 +431,26 @@ export default class OrderCancel extends Component {
     }
 
     // PG 주문 취소 : 주문완료페이지에서 결제검증후 BLS 처리
-    payCancel = async (orderDetail, data) => {
+    payCancel = async (wrapOrderList, data) => {
         //this.notify('주문취소중.', toast.info);
         let cancelFee = data.cancelFee;
         let cancelBlctTokenFee = data.cancelBlctTokenFee;
-        let {data:res} = await addPgOrderCancel(data);
+        let {data:res} = await addPgWrapOrderCancel(data);
 
         //주문취소성공
         if(res.resultStatus==="success"){
             toast.dismiss();
 
-            // 취소 BLCT 및 BLS  반환 로직 필요 (신용카드구매)
-            orderDetail.payStatus = "cancelled";
-            orderDetail.cancelFee = cancelFee;
-            orderDetail.cancelBlctTokenFee = cancelBlctTokenFee;
+            wrapOrderList.map((orderDetail) => {
+                // 취소 BLCT 및 BLS  반환 로직 필요 (신용카드구매)
+                orderDetail.payStatus = "cancelled";
+                orderDetail.cancelFee = cancelFee;
+                orderDetail.cancelBlctTokenFee = cancelBlctTokenFee;
+            })
+
             this.setState({
-                orderInfo: orderDetail,
+                orderInfo: wrapOrderList[0],
+                wrapOrderList: wrapOrderList,
                 chainLoading: false  //블록체인스피너 chainLoading=false
             });
 
@@ -389,9 +464,13 @@ export default class OrderCancel extends Component {
         if(res.resultStatus==="befcancelled"){
             toast.dismiss();
             this.notify('이미 주문취소가 되어있습니다.', toast.info);
-            orderDetail.payStatus = "cancelled";
+            wrapOrderList.map((orderDetail) => {
+                orderDetail.payStatus = "cancelled";
+            })
+
             this.setState({
-                orderInfo: orderDetail,
+                orderInfo: wrapOrderList[0],
+                wrapOrderList: wrapOrderList,
                 chainLoading: false //블록체인스피너 chainLoading=false
             });
 
@@ -413,11 +492,11 @@ export default class OrderCancel extends Component {
     getPayMethodNmSwitch = (payMethod) => {
         switch(payMethod) {
             case 'blct':
-                return 'BLCT토큰결제';
+                return 'BLY토큰결제';
             case 'card':
                 return '카드결제';
             default:
-                return '카드결제';
+                return '카드+BLY토큰결제';
         }
     };
 
@@ -450,13 +529,11 @@ export default class OrderCancel extends Component {
             this.notify("취소 사유를 선택해 주시기 바랍니다.", toast.info);
             return
         }else{
-            let orderDetail = Object.assign({},this.state.orderInfo);
-            orderDetail.cancelReason = v_CancelReason;
-            orderDetail.cancelReasonDetail = v_CancelReasonDetail;
 
             this.setState({
                 orderCancelView: true,
-                orderInfo: orderDetail
+                cancelReason : v_CancelReason,
+                cancelReasonDetail : v_CancelReasonDetail
             })
         }
 
@@ -601,62 +678,26 @@ export default class OrderCancel extends Component {
                                 <h5>상품정보</h5>
                             </Col>
                             <Col xs="8">
-                                <h6 align='right'>주문일련번호 : {orderDetail.orderSeq}</h6>
+                                {
+                                    this.state.producerWrapDelivered ? (
+                                        <h6 align='right'>주문일련번호 : {orderDetail.orderGroupNo}</h6>
+                                    ) : (
+                                        <h6 align='right'>주문일련번호 : {orderDetail.orderSeq}</h6>
+                                    )
+                                }
                             </Col>
                         </Row>
-                        <Row>
-                            <Col style={{padding: 0, margin: 0}}>
-                                <div className={Style.wrap}>
-                                    <section className={Style.sectionDate}>
-                                        <div>{ComUtil.utcToString(orderDetail.orderDate)}</div>
-                                        {
-                                            (orderPayStatus === 'cancelled') ? <div className="text-right">취소완료</div> :
-                                                (orderDetail.consumerOkDate) ? <div className="text-right">구매확정</div> :
-                                                    <div>
-                                                        {
-                                                            (orderDetail.trackingNumber) ?
-                                                                <div className="text-right">배송중</div>
-                                                                :
-                                                                (orderDetail.expectShippingStart) ?
-                                                                    <div className="text-right">{ComUtil.utcToString(orderDetail.expectShippingStart, "MM.DD")}
-                                                                        ~ {ComUtil.utcToString(orderDetail.expectShippingEnd, "MM.DD")} 발송예정
-                                                                    </div>
-                                                                    :
-                                                                    <div className="text-right">발송예정</div>
-                                                        }
-                                                    </div>
-                                        }
-                                    </section>
-                                    <section className={Style.sectionContent}>
-                                        <div className={Style.img}>
-                                            <img className={Style.goodsImg}
-                                                 src={Server.getThumbnailURL() + orderDetail.orderImg}/>
-                                        </div>
-                                        <div className={Style.content}>
-                                            <div className={'d-flex'}>
-                                                <div>{orderDetail.itemName}</div>
-                                                <div className={'ml-2 mr-2'}>/</div>
-                                                <div>{orderDetail.farmName}</div>
-                                            </div>
-                                            <div
-                                                className={TextStyle.textMedium}>{orderDetail.goodsNm} {orderDetail.packAmount}{orderDetail.packUnit}</div>
-                                            <div className={classnames('d-flex', TextStyle.textMedium)}>
-                                                <small>
-                                                    <span
-                                                        className={'text-danger'}>{ComUtil.addCommas(orderDetail.orderPrice)}</span>원
-                                                    (<span
-                                                    className={'text-danger'}>{ComUtil.addCommas(orderDetail.blctToken)}</span>BLCT)
-                                                </small>
-                                                <div className='ml-2 mr-2'>|</div>
-                                                <small>
-                                                    <div>수량 : {orderDetail.orderCnt}개</div>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </section>
-                                </div>
-                            </Col>
-                        </Row>
+                        {
+                            this.state.wrapOrderList.map((orderDetail, index) => {
+                                return (
+                                    <Row>
+                                        <Col style={{padding: 0, margin: 0}}>
+                                            <OrderCancelItem key={'cancelItem'+index} orderDetail={orderDetail}/>
+                                        </Col>
+                                    </Row>
+                                )
+                            })
+                        }
                         <Row>
                             <Col style={{padding: 0, margin: 0}}>
                                 <hr className={Style.hrBold}/>
@@ -698,10 +739,12 @@ export default class OrderCancel extends Component {
                             </Col>
                             <Col xs="8" className={'text-right'}>
                                 <small>
-                                    {ComUtil.addCommas(orderDetail.orderPrice)} 원
-                                    ({ComUtil.addCommas(orderDetail.blctToken)} BLCT) <br/>
+                                    {/*{ComUtil.addCommas(this.state.totalCardPrice)} 원*/}
+                                    {/*({ComUtil.addCommas(this.state.totalBlct)} BLY) <br/>*/}
+                                    {ComUtil.addCommas(orderDetail.orderPrice)} 원 <br/>
                                     <span
-                                        className={'text-danger'}>(-){ComUtil.addCommas(cancelFeeWonOrBlct)}</span>{(orderPayMethod === 'blct') ? ' BLCT' : ' 원'}
+                                        className={'text-danger'}>(-){ComUtil.addCommas(cancelFeeWonOrBlct)}</span> 원
+                                    {/*{(orderPayMethod === 'blct') ? ' BLY' : ' 원'}*/}
                                 </small>
                             </Col>
                         </Row>
@@ -724,17 +767,20 @@ export default class OrderCancel extends Component {
                             <Row>
                                 <Col xs="5"><h6>총 환불 예정금액</h6></Col>
                                 <Col xs="7" className={classnames('text-right')}>
-                                    {
-                                        orderPayMethod === "blct" ?
-                                            <span>
-                                               {ComUtil.addCommas(orderDetail.blctToken - cancelFeeWonOrBlct)} BLCT <small>({ComUtil.addCommas(this.state.refundBlctWon)}
-                                                원)</small>
-                                            </span>
-                                            :
-                                            <span>
-                                                {ComUtil.addCommas(orderDetail.orderPrice - cancelFeeWonOrBlct)} 원
-                                            </span>
-                                    }
+                                    {/*{*/}
+                                        {/*orderPayMethod === "blct" ?*/}
+                                            {/*<span>*/}
+                                               {/*{ComUtil.addCommas(this.state.totalBlct - cancelFeeWonOrBlct)} BLY <small>({ComUtil.addCommas(this.state.refundBlctWon)}*/}
+                                                {/*원)</small>*/}
+                                            {/*</span>*/}
+                                            {/*:*/}
+                                            {/*<span>*/}
+                                                {/*{ComUtil.addCommas(this.state.totalCardPrice - cancelFeeWonOrBlct)} 원*/}
+                                            {/*</span>*/}
+                                    {/*}*/}
+                                    <span>
+                                        {ComUtil.addCommas(orderDetail.orderPrice - cancelFeeWonOrBlct)} 원
+                                    </span>
                                 </Col>
                             </Row>
                         }
@@ -752,15 +798,20 @@ export default class OrderCancel extends Component {
                                         {
                                             orderPayMethod === "blct" ?
                                                 <span>
-                                                BLCT 현재 시세 환불 / {ComUtil.addCommas(orderDetail.blctToken - cancelFeeWonOrBlct)}
-                                                    BLCT ({ComUtil.addCommas(this.state.refundBlctWon)}
+                                                BLY결제 취소 / {ComUtil.addCommas(this.state.totalBlct - cancelFeeWonOrBlct)}
+                                                    BLY ({ComUtil.addCommas(this.state.refundBlctWon)}
                                                     원)
-                                            </span>
-                                                :
-                                                <span>
-                                                결제카드 취소 / {ComUtil.addCommas(orderDetail.orderPrice - cancelFeeWonOrBlct)}
-                                                    원
-                                            </span>
+                                                </span>
+                                                :  orderPayMethod === "card" ?
+                                                    <span>
+                                                        카드결제 취소 / {ComUtil.addCommas(this.state.totalCardPrice - cancelFeeWonOrBlct)}
+                                                        원
+                                                    </span>
+                                                    : //cardBlct //혹시 예약상품일 경우는 - cancelFeeWonOrBlct (취소수수료 차감)
+                                                    <span>
+                                                    카드+BLY결제 취소 / {ComUtil.addCommas(orderDetail.cardPrice-cancelFeeWonOrBlct)}원 + {ComUtil.addCommas(orderDetail.blctToken)}BLY
+                                                    </span>
+
                                         }
                                     </small>
                                 </Col>
@@ -794,7 +845,7 @@ export default class OrderCancel extends Component {
                                             cancelFeeWonOrBlct?
                                                 <span> <span className={'text-danger'}>{ComUtil.addCommas(cancelFeeWonOrBlct)}</span>
                                                     {
-                                                        (orderPayMethod === 'blct') ? ' BLCT, ' : ' 원, '
+                                                        (orderPayMethod === 'blct') ? ' BLY, ' : ' 원, '
                                                     }
                                                     <span className={'text-danger'}>수수료 부과</span><br/></span>
 

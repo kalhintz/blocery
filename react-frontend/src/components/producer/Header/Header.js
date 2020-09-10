@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {Nav, Navbar, NavbarBrand, NavItem } from 'reactstrap'
-import { MarketBlyLogoWhite } from '~/components/common'
+import { MarketBlyMainLogo } from '~/components/common/logo'
 
 function Header(){
     return (
-        <Navbar color="info" expand="sm" sticky="top" className={'shadow-none pt-1 pb-1'}>
+        <Navbar color="white" expand="sm" sticky="top" className={'shadow-none pt-1 pb-1'}>
             {/*<NavbarToggler onClick={this.toggle} />*/}
 
             <NavbarBrand tag={Link} to={'/producer/home'} className={'d-flex align-items-center'}>
-                <MarketBlyLogoWhite/>
+                <MarketBlyMainLogo style={{height: 40}} />
             </NavbarBrand>
 
             <Nav className="ml-auto" navbar>

@@ -24,13 +24,7 @@ import CurrencyInput from '~/components/common/inputs/CurrencyInput'
 
 import { TERMS_OF_DELIVERYFEE } from '~/lib/bloceryConst'
 
-// import '../../../styles/react_dates_overrides.css'
-
-import 'codemirror/lib/codemirror.css';
-import 'tui-editor/dist/tui-editor.min.css';
-import 'tui-editor/dist/tui-editor-contents.min.css';
-import { Editor } from '@toast-ui/react-editor'
-
+import TuiEditor from '~/components/common/toastUI/TuiEditor'
 
 let validatedObj = {}
 
@@ -54,8 +48,6 @@ let bindData = {
 }
 
 export default class DirectGoodsReg extends Component {
-
-    editorRef = React.createRef();
 
     constructor(props) {
         super(props);
@@ -131,8 +123,6 @@ export default class DirectGoodsReg extends Component {
             clearPassPhrase: true,
 
         }
-
-
     }
 
     //input name에 사용
@@ -228,8 +218,11 @@ export default class DirectGoodsReg extends Component {
 
         //업데이트
         const goods = await this.search()
-        console.log({goods})
 
+
+        //타임세일중 상품 수정시 타임세일가로 바인딩 되지 않도록 방어코드
+        goods.currentPrice = goods.defaultCurrentPrice
+        console.log({goods})
         //품종세팅
         this.setItemKinds(goods.itemNo)
 
@@ -238,7 +231,9 @@ export default class DirectGoodsReg extends Component {
         //goodsContent 분리되었으므로 다시 가져오기, 가끔 data가 없을경우 fileName이 null이나 0인 경우가 있어서 제외
         if (!state.goods.goodsContent && state.goods.goodsContentFileName != 0) {
             let {data:goodsContent} = await getGoodsContent(state.goods.goodsContentFileName)
-            state.goods.goodsContent = goodsContent
+            if(goodsContent) {
+                state.goods.goodsContent = goodsContent
+            }
             //console.log('goodsContent await:', goodsContent, state.goods.goodsContentFileName)
         }
 
@@ -344,6 +339,15 @@ export default class DirectGoodsReg extends Component {
         this.setState({goods})
     }
 
+    onContentImageChange = (images) => {
+
+        const goods = Object.assign({}, this.state.goods)
+        goods.contentImages = images
+
+        this.setValidatedObj({goods})
+        this.setState({goods})
+    }
+
     //재배방법
     onCultivationNmClick = (item) => {
         const goods = Object.assign({}, this.state.goods)
@@ -428,8 +432,6 @@ export default class DirectGoodsReg extends Component {
 
     isPassedValidation = () => {
         const state = Object.assign({}, this.state)
-        //에디터의 내용을 state에 미리 저장 후 밸리데이션 체크
-        state.goods.goodsContent = this.editorRef.current.getInstance().getValue()
 
         //밸리데이션 체크
         this.setValidatedObj(state)
@@ -474,15 +476,12 @@ export default class DirectGoodsReg extends Component {
     //저장(DB에 selectedStepPrice 가 없어져서, 사용자가 선택한 단계와는 상관없이 단계별 값이 있는 마지막 )
     save = async (goods) => {
 
-        //상품상세
-        goods.goodsContent = this.editorRef.current.getInstance().getValue()
-
         //확정 전까지 재고수량 동기화
         if(!goods.confirm){
             goods.remainedCnt = goods.packCnt;
         }
 
-        console.log({saveGoods: goods})
+        // console.log({saveGoods: goods})
 
         //상품이미지의 imageNo로 정렬
         ComUtil.sortNumber(goods.goodsImages, 'imageNo', false)
@@ -947,6 +946,13 @@ export default class DirectGoodsReg extends Component {
         this.setState(state)
     }
 
+    //상품 컨텐츠 온체인지 (tui-editor)
+    onChangeGoodsContent = (editorHtml) => {
+        const goods = Object.assign({}, this.state.goods)
+        goods.goodsContent = editorHtml;
+        this.setState({goods});
+    }
+
     render() {
 
         if(!this.state.isDidMounted) return <BlocerySpinner/>
@@ -1029,6 +1035,18 @@ export default class DirectGoodsReg extends Component {
                                     {/*<SingleImageUploader images={goods.goodsImages} defaultCount={10} onChange={this.onGoodsImageChange} />*/}
                                     {/*<ImageUploader onChange={this.onGoodsImageChange} multiple={true} limit={10}/>*/}
                                     <Fade in={validatedObj.goodsImages ? true : false} className="text-danger small mt-1" >{validatedObj.goodsImages}</Fade>
+                                </FormGroup>
+                                <h6>상세이미지업로드(소비자에게 노출되지 않는 이미지 입니다)</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>이미지{star}</Label>
+                                    <SingleImageUploader
+                                        images={goods.contentImages}
+                                        defaultCount={10}
+                                        isShownMainText={false}
+                                        onChange={this.onContentImageChange}
+                                        isShownCopyButton={true}
+                                        isNoResizing={true}
+                                    />
                                 </FormGroup>
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>상품명{star}</Label>
@@ -1275,55 +1293,10 @@ export default class DirectGoodsReg extends Component {
                                 <Row>
                                     <Col>
                                         <h6>상품상세설명{star}</h6>
-
-                                        {
-                                            /*
-
-                                                Documentation :
-                                                    https://ui.toast.com/tui-editor/
-                                                    https://nhn.github.io/tui.editor/api/latest/ToastUIEditor.html
-                                                    https://docs.toast.com/ko/Open%20Source/ToastUI%20Editor/ko/opensource-guide/
-
-                                                속성 설명
-                                                height: Height in string or auto ex) 300px | auto
-                                                initialValue: Initial value. Set Markdown string
-                                                initialEditType: Initial type to show markdown | wysiwyg
-                                                previewType: Preview style of Markdown mode tab | vertical
-                                                usageStatistics: Let us know the hostname. We want to learn from you how you are using the editor. You are free to disable it. true | false
-                                            */
-                                        }
-                                        <Editor
-                                            previewStyle="vertical" //tab | vertical
-                                            // viewer={true}
-                                            height={800}       //"auto" | {800} 숫자로 해야 내부 scroll이 자동으로 생김.
-                                            initialEditType="wysiwyg" //markdown wysiwyg
-                                            initialValue={goods.goodsContent}
-                                            ref={this.editorRef}
-                                            toolbarItems={[
-                                                'heading',
-                                                'bold',
-                                                'italic',
-                                                'strike',
-                                                'divider',
-                                                'hr',
-                                                'quote',
-                                                'divider',
-                                                'ul',
-                                                'ol',
-                                                'task',
-                                                'indent',
-                                                'outdent',
-                                                'divider',
-                                                'table',
-                                                'image',
-                                                //'link',
-                                                'divider',
-                                                'code',
-                                                'codeblock',
-                                                'divider',
-                                            ]}
+                                        <TuiEditor
+                                            editorHtml={goods.goodsContent}
+                                            onChange={this.onChangeGoodsContent}
                                         />
-
                                         <FormGroup>
                                             <Fade in={validatedObj.goodsContent ? true : false} className="text-danger small mt-1" >{validatedObj.goodsContent}</Fade>
                                         </FormGroup>
@@ -1366,7 +1339,7 @@ export default class DirectGoodsReg extends Component {
                 {/* 결제비번 입력 모달 */}
                 <Modal isOpen={this.state.modalType === 'pay' && this.state.modal} toggle={this.toggle} className={this.props.className} centered>
                     <ModalHeader toggle={this.modalToggle}> 블록체인비밀번호 입력</ModalHeader>
-                    <ModalBody>
+                    <ModalBody className={'p-0'}>
                         {/* clearPassPhrase 초기화, onChange 결과값 세팅 */}
                         <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhrase}></PassPhrase>
                     </ModalBody>

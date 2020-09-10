@@ -1,38 +1,49 @@
 @import "Color.module.scss";
+@import "Font.module.scss";
 .wrap {
   display: flex;
+  flex-wrap: nowrap;
+  overflow: auto;
   width: 100%;
-  //position: fixed;
-  height: 40px;
+  height: 2.5rem;
   background-color: rgba(255, 255, 255, 0.9);
-  font-size: 14px;
-  //z-index: 2;
-  font-weight: 400;
-  border-bottom: 0.5px solid #cecece;
+  border-bottom: 0.5px solid #f6efee;
   //box-shadow: 1px 1px 7px $color-shadow;
 }
 
 .tab {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  justify-content: flex-end;
+  //flex-grow: 1;
   padding: 4px 5px 0px 5px;
 
   //탭 타이틀
   & :nth-child(1) {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    //height: 100%;
+    ////display: flex;
+    //align-items: center;
+    //justify-content: center;
+    //padding: 0.5em 0.5em;
+    ////font-weight: lighter;
+    //color: $color-light;
   }
   //탭 밑줄 라인
   & :nth-child(2) {
-    height: 4px;
+    height: 3px;
   }
 }
 
-.active {
-  background-color: #555555;
+.tab:first-child{
+  margin-left: 10px;
+}
+.tab:last-child{
+  margin-right: 10px;
+}
+
+.underLineActive {
+  background-color: black;
   //background-color: $color-info;
   animation-name: aniActive;
   animation-duration: 0.3s;
@@ -51,12 +62,22 @@
 }
 
 .link {
-  color: black;
+  color: #929292;
   text-decoration: none !important;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0em 0.5em;
+  font-size: $f16;
 }
 .link:active {
   color: black;
 }
 .link:hover {
   color: black;
+}
+
+.active {
+  color: black;
+  font-weight: bold;
 }

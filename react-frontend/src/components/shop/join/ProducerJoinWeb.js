@@ -1004,7 +1004,7 @@ export default class ProducerJoinWeb extends Component{
                 {/* 블록체인 비밀번호용 modal */}
                 <Modal isOpen={this.state.modalPassPhrase} centered>
                     <ModalHeader toggle={this.modalToggle}>블록체인 비밀번호</ModalHeader>
-                    <ModalBody>
+                    <ModalBody className={'p-0'}>
                         <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhrase}></PassPhrase>
                     </ModalBody>
                     <ModalFooter>
@@ -1016,7 +1016,7 @@ export default class ProducerJoinWeb extends Component{
                 {/* 블록체인 비밀번호 확인용 modal */}
                 <Modal isOpen={this.state.modalPassPhraseCheck} centered>
                     <ModalHeader toggle={this.modalToggleCheck}>블록체인 비밀번호 확인</ModalHeader>
-                    <ModalBody>
+                    <ModalBody className={'p-0'}>
                         <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhraseCheck}></PassPhrase>
                     </ModalBody>
                     <ModalFooter>

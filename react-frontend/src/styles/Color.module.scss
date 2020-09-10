@@ -4,7 +4,7 @@
 //@import 'bootstrap/dist/css/bootstrap.min.css'
 //@import "node_modules/bootstrap/scss/bootstrap.scss";
 
-$color-info: #17a2b8;
+$color-info: #43835E;
 $color-info-light: #13aabd;
 $color-warning: #ffc107;
 $color-dark: #343a40;
@@ -27,10 +27,14 @@ $color-noti: #dc3545;
 $color-secondary-light: #e2e3e5;
 $color-secondary-light-border: #d6d8db;
 
-//$color-secondary
+/* b2c 디자인에서 쓰이는 새로 도입된 색상 */
+$color-b2c-default: #ffffff;
+$color-b2c-bg: #f8f8f8;
+$color-b2c-light: #e1e1e1;
+$color-b2c-gray: #c2c2c2;
+$color-b2c-dark: #929292;
+$color-b2c-black: #000000;
+$color-b2c-adjust: #929eb5;
+$color-b2c-green: #24855b;
 
-$text-small: small;
-
-
-//#e2e3e5
-//#d6d8db
+$color-b2c-danger: #ff6060;

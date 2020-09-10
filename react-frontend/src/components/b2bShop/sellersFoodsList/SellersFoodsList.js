@@ -119,7 +119,7 @@ const SellersFoodsList = (props) => {
             />
             <hr className='mt-0 mb-2'/>
             {
-                foodsList.length <= 0 ? <NoSearchResultBox>조회된 내용이 없습니다</NoSearchResultBox> : (
+                (!loading && foodsList.length <= 0) ? <NoSearchResultBox>조회된 내용이 없습니다</NoSearchResultBox> : (
                     <div className='mb-2 ml-2'>
                         <Container>
                             <Row>

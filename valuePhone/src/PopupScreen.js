@@ -2,7 +2,6 @@ import React  from 'react';
 import { View, Text, Button, SafeAreaView, BackHandler, Platform } from 'react-native';
 import { Server } from './Properties';
 import WebView from 'react-native-webview';
-import DeviceInfo from 'react-native-device-info';
 import ComUtil from "./ComUtil";
 import queryString from 'query-string';
 
@@ -120,7 +119,13 @@ export default class PopupScreen extends React.Component {
 
         console.log('###################### Popup: onAndroidBackPress:');
         this.props.navigation.goBack(); //popup안에서 back으로만 이동.
-        this.props.navigation.state.params.onPopupClose(JSON.stringify({})); //부모(Home or Popup) callback
+
+        //this.props.navigation.state.params.onPopupClose(JSON.stringify({})); //부모(Home or Popup) callback
+        this.props.navigation.state.params.onPopupClose(JSON.stringify({
+            param: {
+                isRefresh: false
+            }
+        })); //부모(Home or Popup) callback
 
         return true;
         // if (this.webView.canGoBack && this.webView.ref) {
@@ -245,7 +250,7 @@ export default class PopupScreen extends React.Component {
             <View style={{flex: 1}}>
                 {Platform.select({
                     android: () => <WebView
-                        userAgent = {'BloceryApp-Android:'+ DeviceInfo.getUserAgent()}
+                        userAgent = {'BloceryAppQR-Android'}
                         source={{uri: this.state.url}}
                         key={this.state.key}
                         ref={(webView) => {
@@ -268,7 +273,7 @@ export default class PopupScreen extends React.Component {
                             <WebView style={{flex: 1}}
                                 // iOS WebView 는 AppDelegate.m 에서 설정 https://stackoverflow.com/questions/36590207/set-user-agent-with-webview-with-react-native
                                 // iOS WKWebView 는 여기서 설정된 것 사용
-                                     userAgent = {'BloceryApp-iOS:'+ DeviceInfo.getUserAgent()}
+                                     userAgent = {'BloceryApp-iOS'}
 
                                      useWebKit={true}
                                      sharedCookiesEnabled={true}

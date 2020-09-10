@@ -4,6 +4,7 @@ import Buy from './Buy'
 import BuyFinish from './BuyFinish'
 import BuyOrder from './BuyOrder'
 import InputAddress from './InputAddress'
+import MultiGiftBuy from './MultiGiftBuy'
 
 export {
     DirectBuy,
@@ -11,5 +12,6 @@ export {
     Buy,
     BuyFinish,
     BuyOrder,
-    InputAddress
+    InputAddress,
+    MultiGiftBuy
 }

@@ -1,0 +1,23 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.btnWhite{
+  background-color: $color-b2c-default!important;
+  color: $color-b2c-black!important;
+  border-radius: 5px!important;
+  border: 1px solid $color-b2c-light!important;
+}
+
+.outline{border: 1px solid $color-b2c-black!important;}
+
+.btnGreen{
+  background-color: $color-b2c-green!important;
+  color: $color-b2c-default!important;
+  font-size: 16px!important;
+  font-weight: bold!important;
+}
+
+.input{
+  border-radius: 5px!important;
+  border: 1px solid $color-b2c-light!important;
+}

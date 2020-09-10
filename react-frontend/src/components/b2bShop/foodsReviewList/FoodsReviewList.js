@@ -6,7 +6,7 @@ import { Server } from '../../Properties'
 import HeaderBox from './HeaderBox'
 import WaitingItem from './WaitingItem'
 import FoodsReviewItem from './FoodsReviewItem'
-import { useSelector, useDispatch, connect } from 'react-redux'
+import { connect } from 'react-redux'
 import * as actions  from '../../../reducers/FoodsReviewReducer'
 function FoodsReviewList(props){
 
@@ -38,13 +38,13 @@ function FoodsReviewList(props){
                 break
             case 'DELETE' :
                 if(window.confirm('해당 상품후기를 삭제하시겠습니까?\n' + '상품후기 삭제 후 다시 작성하실 수 있습니다.'))
-                    props.deleteFoodsReview(payload.foodsNo)
+                    props.deleteFoodsReview(payload.dealSeq, payload.foodsNo)
                 break
         }
     }
 
     function openPopup(paramObj){
-        Webview.openPopup(`/b2b/foodsReview?${queryString.stringify(paramObj)}`, true)
+        Webview.openPopup(`/b2b/foodsReview?${queryString.stringify(paramObj)}`)
     }
 
     useEffect(() => {
@@ -76,7 +76,7 @@ function FoodsReviewList(props){
                             <WaitingItem
                                 key={'waitingGoodsReview'+index}
                                 {...waitingGoodsReview}
-                                imgUrl={Server.getThumbnailURL() + waitingGoodsReview.goodsImages[0].imageUrl}
+                                imgUrl={waitingGoodsReview.goodsImages[0]? Server.getThumbnailURL() + waitingGoodsReview.goodsImages[0].imageUrl : ''}
                                 onClick={onStarClick}
                             />
                         ))
@@ -111,7 +111,7 @@ function FoodsReviewList(props){
     return(
         <Fragment>
             <Sticky>
-                <B2bShopXButtonNav history={props.history} back>상품후기</B2bShopXButtonNav>
+                <B2bShopXButtonNav history={props.history} historyBack>상품후기</B2bShopXButtonNav>
                 <div className='d-flex bg-white cursor-pointer' style={{boxShadow: '1px 1px 2px gray'}}>
                     <HeaderBox text={`작성대기목록${props.waitingList && props.waitingList.length > 0 ? '('+props.waitingList.length+')' : ''}`} tabId={tabId} active={tabId === '1'} onClick={onHeaderClick.bind(this, '1')}/>
                     <HeaderBox text={`작성목록${props.writtenList && props.writtenList.length > 0 ? '('+props.writtenList.length+')' : ''}`} tabId={tabId} active={tabId === '2'} onClick={onHeaderClick.bind(this, '2')}/>
@@ -136,7 +136,7 @@ function mapDispatchToProps(dispatch) {
     return {
         searchWaitingList: () => dispatch(actions.searchWaitingList()),
         searchWrittenList: () => dispatch(actions.searchWrittenList()),
-        deleteFoodsReview: (foodsNo) => dispatch(actions.deleteFoodsReview(foodsNo))
+        deleteFoodsReview: (dealSeq, foodsNo) => dispatch(actions.deleteFoodsReview(dealSeq, foodsNo))
     }
 }
 export default connect(mapStateToProps, mapDispatchToProps)(FoodsReviewList)

@@ -17,6 +17,8 @@ export const setMissionClear = (missionNo) => axios(Server.getRestAPIHost() + '/
 export const scOntGetConsumerMissionEventBlctHistory = () => axios(Server.getRestAPIHost() + '/missionEventBlctHistory', { method: "get",  withCredentials: true, credentials: 'same-origin' })
 
 
-// blctBountyHistory 조회
+// blctBountyHistory 조회 (로그인한 consumer에 해당하는 데이터만 조회)
 export const scOntGetBlctBountyHistory = () => axios(Server.getRestAPIHost() + '/blctBountyHistory', { method: "get",  withCredentials: true, credentials: 'same-origin' })
 
+// 모든 blctBountyHistory 조회
+export const getAllBlctBountyHistory = () => axios(Server.getRestAPIHost() + '/getAllBlctBountyHistory', { method: "get",  withCredentials: true, credentials: 'same-origin' })

@@ -38,7 +38,7 @@ const SellerProfileCard = (props) => {
                             <img
                                 className={classNames('position-absolute rounded-circle border-white', Style.imageFace)}
                                 style={{width: 100, height: 100, bottom: -50, zIndex:1, objectFit: 'cover', backgroundColor: '#d6d8db'}}
-                                src={profileImageUrl} />
+                                src={profileImageUrl}  alt={'사진'}/>
                             {/*</div>*/}
                         </div>
                     </Col>

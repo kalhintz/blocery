@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="42.299" height="47.259" viewBox="0 0 42.299 47.259">
+    <defs>
+        <filter id="prefix__패스_13792" width="30.409" height="32.705" x="0" y="14.554" filterUnits="userSpaceOnUse">
+            <feOffset dy="3"/>
+            <feGaussianBlur result="blur" stdDeviation="1.5"/>
+            <feFlood flood-opacity=".161"/>
+            <feComposite in2="blur" operator="in"/>
+            <feComposite in="SourceGraphic"/>
+        </filter>
+        <filter id="prefix__패스_13794" width="30.409" height="32.705" x="11.889" y="14.554" filterUnits="userSpaceOnUse">
+            <feOffset dy="3"/>
+            <feGaussianBlur result="blur-2" stdDeviation="1.5"/>
+            <feFlood flood-opacity=".161"/>
+            <feComposite in2="blur-2" operator="in"/>
+            <feComposite in="SourceGraphic"/>
+        </filter>
+    </defs>
+    <g id="prefix__ic_medal_g" transform="translate(-36.092)">
+        <g transform="translate(36.09)">
+            <path id="prefix__패스_13792-2" d="M48.712 221.248l-9.12 17.182 8.282-.765 4.008 7.288L61 227.771z" data-name="패스 13792" transform="translate(-35.09 -205.19)" style="fill:#e95454"/>
+        </g>
+        <g id="prefix__그룹_9392" data-name="그룹 9392" transform="translate(36.096 .004)">
+            <path id="prefix__패스_13794-2" d="M222.09 221.248l9.12 17.182-8.281-.765-4.008 7.288-9.12-17.182z" data-name="패스 13794" transform="translate(-193.41 -205.19)" style="fill:#ed6362"/>
+        </g>
+        <circle id="prefix__타원_897" cx="15.238" cy="15.238" r="15.238" data-name="타원 897" transform="translate(42.003)" style="fill:#ffcc5b"/>
+        <path id="prefix__패스_13797" d="M133.461 75.193a10.876 10.876 0 1110.877-10.876 10.89 10.89 0 01-10.877 10.876z" data-name="패스 13797" transform="translate(-76.22 -49.079)" style="fill:#ffdb70"/>
+        <text id="prefix___1" data-name="1" transform="translate(52.953 21)" style="fill:#d6990b;font-size:14px;font-family:NotoSansCJKkr-Bold,Noto Sans CJK KR;font-weight:700;letter-spacing:-.02em">
+            <tspan x="0" y="0">1</tspan>
+        </text>
+    </g>
+</svg>

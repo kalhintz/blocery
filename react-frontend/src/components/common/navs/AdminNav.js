@@ -57,10 +57,10 @@ const AdminNav = ({type, id, subId}) => {
             { /* 서브 */ }
             <div className='d-flex p-0 m-0'>
                 {
-                    subMenuList.map(menu => {
+                    subMenuList.map((menu,index) => {
                         const url = `/admin/${menu.type}/${menu.parentId}/${menu.id}`
                         return (
-                                <Link style={{fontSize:'12px'}} className={classNames('d-flex justify-content-center align-items-center p-2 m-1', menu.id === subId ? 'bg-dark text-white' : 'text-dark')} to={url}>{menu.name}</Link>
+                                <Link key={'adminNavLink'+index} style={{fontSize:'12px'}} className={classNames('d-flex justify-content-center align-items-center p-2 m-1', menu.id === subId ? 'bg-dark text-white' : 'text-dark')} to={url}>{menu.name}</Link>
                         )
                     })
                 }

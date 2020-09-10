@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 13 13">
+    <defs>
+        <style>
+            .prefix__cls-2{fill:#b9b9b9}
+        </style>
+    </defs>
+    <g id="prefix__ic_arrow_down_g" transform="translate(-195 -20.242)">
+        <path id="prefix__사각형_4171" d="M0 0H13V13H0z" data-name="사각형 4171" transform="translate(195 20.242)" style="opacity:0;fill:#b9b9b9"/>
+        <path id="prefix__사각형_423" d="M0 0H1.919V8.317H0z" class="prefix__cls-2" data-name="사각형 423" transform="rotate(-45 127.947 -223.726)"/>
+        <path id="prefix__사각형_424" d="M0 0H1.919V8.317H0z" class="prefix__cls-2" data-name="사각형 424" transform="rotate(-135 107.387 -26.424)"/>
+    </g>
+</svg>

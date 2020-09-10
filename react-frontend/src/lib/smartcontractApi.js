@@ -11,6 +11,16 @@ import { Server } from "~/components/Properties";
  * BLCT 전송관련
  */
 
+
+export const getManagerBlctBalance = () =>
+     axios(Server.getRestAPIHost() + '/ont/getBalanceOfManagerBlct',
+            {   method:"get",
+                withCredentials: true,
+                credentials: 'same-origin'
+            }
+        );
+
+
 // Logic Contract에서 Manager의 Blct 전송 (simple 관리자 용)
 export const scOntTransferManagerBlct = (account, amount) =>
     axios(Server.getRestAPIHost() + '/ont/transferManagerBlct',
@@ -47,8 +57,19 @@ export const scOntUserSendBlctToManager = (account, amount) =>
         }
     )
 
+export const scOntManagerSendBlctToManager = (email, amount) =>
+    axios(Server.getRestAPIHost() + '/ont/sendManagerToManager',
+        {   method:"post",
+            withCredentials: true,
+            credentials: 'same-origin',
+            params: {
+                email: email,
+                amount: amount
+            }
+        }
+    )
 
-export const scOntTransferManagerBlctToMany = (eventTitle, eventSubTitle, emailList, amount) =>
+export const scOntTransferManagerBlctToMany = (eventTitle, eventSubTitle, emailList, amount, sendKakao) =>
     axios(Server.getRestAPIHost() + '/ont/transferMangerTokenToMany',
         {
             method:"post",
@@ -58,10 +79,58 @@ export const scOntTransferManagerBlctToMany = (eventTitle, eventSubTitle, emailL
                 eventTitle: eventTitle,
                 eventSubTitle: eventSubTitle,
                 emailList: emailList,
+                amount: amount,
+                sendKakao: sendKakao
+            }
+        }
+    );
+
+export const scOntTransferManagerTokenToManyAccount = (eventTitle, eventSubTitle, accountList, amount) =>
+    axios(Server.getRestAPIHost() + '/ont/transferManagerTokenToManyAccount',
+        {
+            method:"post",
+            withCredentials: true,
+            credentials: 'same-origin',
+            data: {
+                eventTitle: eventTitle,
+                eventSubTitle: eventSubTitle,
+                accountList: accountList,
+                amount: amount,
+                sendKakao: false
+            }
+        }
+    );
+
+// 여러 account에 manager의 토큰 전송하기 (코박 이벤트 지급용)
+export const scOntTransferManagerBlctToManyAccounts = (accountList, amount) =>
+    axios(Server.getRestAPIHost() + '/ont/scOntTransferManagerBlctToManyAccounts',
+        {
+            method:"post",
+            withCredentials: true,
+            credentials: 'same-origin',
+            data: {
+                accountList: accountList,
                 amount: amount
             }
         }
     );
+
+// 임시
+export const scOntTransferUserBlctFromMany = (emailList, amount) =>
+    axios(Server.getRestAPIHost() + '/ont/transferUserTokenFromMany',
+        {
+            method:"post",
+            withCredentials: true,
+            credentials: 'same-origin',
+            data: {
+                eventTitle: '',
+                eventSubTitle: '',
+                emailList: emailList,
+                amount: amount
+            }
+        }
+    );
+
 
 /**
  * Logic관련
@@ -101,31 +170,27 @@ export const scOntGetManagerTotalDeposit = () =>
 
 
 // 소비자의 blct로 주문하기
-export const scOntOrderGoodsBlct = (orderSeqNo, producer, goodsNo, blctAmount, price, depositBlct, ordersParam) =>
+export const scOntOrderGoodsBlct = (orderSeqNo, blctAmount, price, ordersParam) =>
     axios(Server.getRestAPIHost() + '/ont/orderGoodsBlct',
         {   method:"post",
             withCredentials: true,
             credentials: 'same-origin',
             data: {
                 orderSeqNo: orderSeqNo,
-                producer: producer,
-                goodsNo: goodsNo,
                 blctAmount: blctAmount,
                 price: price,
-                depositBlct: depositBlct,
                 orders: ordersParam
             }
         }
     );
 
 // 주문취소
-export const scOntCancelOrderBlct = (orderNo, goodsPriceBlct, cancelBlctFee, cancelFee, isNotDelivery) =>
+export const scOntCancelOrderBlct = (goodsPriceBlct, cancelBlctFee, cancelFee, isNotDelivery) =>
     axios(Server.getRestAPIHost() + '/ont/cancelOrderBlct',
         {   method:"post",
             withCredentials: true,
             credentials: 'same-origin',
             data: {
-                orderSeqNo: orderNo,
                 cancelFee: cancelFee,
                 isNotDelivery: isNotDelivery,
                 goodsPriceBlct: goodsPriceBlct,

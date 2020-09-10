@@ -10,7 +10,7 @@ import { getLoginUser } from '../../../lib/loginApi'
 import { getOrderByOrderNo, getOrdersByOrderGroupNo } from '../../../lib/shopApi'
 import { Webview } from '../../../lib/webviewApi'
 import { BLCT_TO_WON } from "../../../lib/exchangeApi"
-import Style from './Style.module.scss'
+import Style from './Buy.module.scss'
 import { BlockChainSpinner, ShopXButtonNav } from '../../common'
 import { getProducerByProducerNo } from '../../../lib/producerApi';
 
@@ -18,6 +18,14 @@ import { ToastContainer, toast } from 'react-toastify'     //토스트
 import 'react-toastify/dist/ReactToastify.css'
 
 import classNames from 'classnames'
+
+
+import {Div, Right, Flex, Span, Img, Sticky, Fixed} from '~/styledComponents/shared/Layouts'
+import {Button as Btn} from '~/styledComponents/shared/Buttons'
+import {Header} from '~/styledComponents/mixedIn/Headers'
+import {HrThin, HrHeavy} from '~/styledComponents/mixedIn/Hrs'
+import DetailPaymentInfoCard from './DetailPaymentInfoCard'
+
 export default class BuyFinish extends Component {
 
     constructor(props) {
@@ -220,6 +228,11 @@ export default class BuyFinish extends Component {
             });
         }
 
+
+        setTimeout(()=>{
+            console.log({state: this.state})
+
+        }, 10000)
     }
 
     //array의 첫번째 이미지 썸네일 url 리턴
@@ -257,19 +270,19 @@ export default class BuyFinish extends Component {
 
         //결재실패화면
         let failed_render_comp = <Fragment>
-                                    <ShopXButtonNav home> {this.state.headTitle} </ShopXButtonNav>
-                                    <div className={'text-center pt-3'}>
-                                        { this.state.error_msg }
-                                    </div>
-                                    <hr/>
-                                    <div className={'d-flex p-1'}>
-                                        <div className={'flex-grow-1 p-1'}>
-                                            <Button color='dark' block onClick={this.onContinueClick}> 계속 쇼핑하기 </Button>
-                                        </div>
-                                    </div>
+            <ShopXButtonNav home underline> {this.state.headTitle} </ShopXButtonNav>
+            <div className={'text-center pt-3'}>
+                { this.state.error_msg }
+            </div>
+            <hr/>
+            <div className={'d-flex p-1'}>
+                <div className={'flex-grow-1 p-1'}>
+                    <Button color='dark' block onClick={this.onContinueClick}> 계속 쇼핑하기 </Button>
+                </div>
+            </div>
 
-                                    <ToastContainer/>
-                                </Fragment>;
+            <ToastContainer/>
+        </Fragment>;
 
         if(this.state.imp_success){
 
@@ -277,103 +290,88 @@ export default class BuyFinish extends Component {
             {
                 return(
                     <Fragment>
-                        <ShopXButtonNav home> {this.state.headTitle} </ShopXButtonNav>
-
-                        {/* 상품 정보 */}
-                        {/*<hr className = {Style.hrBold}/>*/}
-                        <div className={'text-center pt-3'}>
-                            상품 구매가 <span className={Style.textInfoC}>정상적으로 완료</span> 되었습니다.
-                            {/*<br/>감사합니다. */}
-                        </div>
-                        {/*<hr className = {Style.hrBold}/>*/}
-
-                        <div className={'text-center font-weight-bold pt-3'}> 주문번호 {this.state.orderGroup.orderGroupNo}</div>
-                        {/*<Col xs={'7'} className={Style.textBoldS}> {this.state.order.orderNo} </Col>*/}
-
-                        <hr/>
-
-                        {/* 상품정보 */}
-                        <div className={'pl-2 pt-2 pb-0 text-dark'}>
-                            상품정보
-                        </div>
+                        <ShopXButtonNav home underline> {this.state.headTitle} </ShopXButtonNav>
+                        <Flex flexDirection="column" justifyContent='center' height={'120px'} bg="white" borderBottom="1">
+                            <Div fontSize={15} bold>상품 구매가 <Span fg='green'>정상적으로</Span> 완료되었습니다.</Div>
+                            <Div fontSize={14} fg='dark'>주문번호 : {this.state.orderGroup.orderGroupNo}</Div>
+                        </Flex>
+                        <Header fontSize={14}>
+                            <Div bold>상품정보</Div>
+                        </Header>
                         {
-                            map(this.state.orders, (order,idx) => {
-                                return (
-                                    <div className="d-flex p-2" key={'orderGoodsList'+idx}>
-                                        <div className="p-3">
-                                            <img className={Style.img} src={this.getFirstImgUrl(order.orderImg)} />
-                                        </div>
-                                        <div className="p-2 d-flex flex-column justify-content-center flex-grow-1" style={{fontSize:'0.8rem'}}>
-                                            <div>
-                                                주문일련번호 : {order.orderSeq}
-                                            </div>
-                                            <div>
-                                                {order.goodsNm} {order.packAmount + ' ' + order.packUnit}
-                                            </div>
-                                            <div className="font-weight-bold">
-                                                수량 : {order.orderCnt} 개 <br/>
-                                                금액 : {ComUtil.addCommas(order.orderPrice)} 원 ({ComUtil.addCommas(order.blctToken)} BLCT)
-                                            </div>
+                            map(this.state.orders, (order,idx) =>
+                                <Flex key={'orderGoods'+idx} m={16} bg='white' alignItems='flex-start'>
+                                    <Div width={63} height={63} mr={14} flexShrink={0}>
+                                        <Img cover src={this.getFirstImgUrl(order.orderImg)} alt="상품이미지" />
+                                    </Div>
+                                    <Div fontSize={12} fg='dark'>
+                                        <Div mb={7} fontSize={14} fg={'black'}>{order.goodsNm}</Div>
+                                        <Div>주문일련번호 : {order.orderSeq}</Div>
+                                        <Div>수량 : {ComUtil.addCommas(order.orderCnt)}개</Div>
+                                        <Div>금액 : {ComUtil.addCommas(order.orderPrice)} 원 {(order.payMethod.startsWith('card'))? '': '(' + ComUtil.addCommas(order.blctToken) +'BLY)'}</Div>
+                                        <Div>배송예정 :
                                             {
                                                 order.expectShippingStart ?
-                                                    <div>
-                                                        배송예정: {ComUtil.utcToString(order.expectShippingStart)} ~&nbsp;
-                                                        {ComUtil.utcToString(order.expectShippingEnd)}
-                                                    </div>
-                                                    :
-                                                    <div>배송예정: 구매 후 3일 이내</div>
+                                                    ` ${ComUtil.utcToString(order.expectShippingStart)} ~ ${ComUtil.utcToString(order.expectShippingEnd)}` :
+                                                    ` 구매 후 3일 이내`
                                             }
-                                        </div>
-                                    </div>
-                                );
-                            })
+                                        </Div>
+                                    </Div>
+                                </Flex>
+                            )
                         }
 
-                        <div className={'pl-2 pt-2 pb-0 text-dark'}>
-                            최종 결제 내역
-                        </div>
 
-                        <div className="p-2">
-                            <Table bordered>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <Row>
-                                                <Col xs={'4'} className={'small'}>
-                                                    총 상품 가격<br/>
-                                                    총 배송비<br/>
-                                                </Col>
-                                                <Col xs={'8'} className={'small text-right'}>
-                                                    {ComUtil.addCommas(this.state.orderGroup.totalOrderPrice - this.state.orderGroup.totalDeliveryFee)} 원 <br/>
-                                                    {ComUtil.addCommas(this.state.orderGroup.totalDeliveryFee)} 원 <br/>
-                                                </Col>
-                                            </Row>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <Row>
-                                                <Col xs={'4'} className={'font-weight-bold'}>최종 결제금액 </Col>
-                                                <Col xs={'8'} className={'text-right'}>
-                                                    <span className="text-danger font-weight-bold">{ComUtil.addCommas(this.state.orderGroup.totalOrderPrice)}</span> 원(<span className="text-danger">{ComUtil.addCommas(this.state.orderGroup.totalBlctToken)}</span> BLCT) <br/>
-                                                    <span className="text-secondary" style={{fontSize:'0.8rem'}}>1 BLCT = { this.state.blctToWon } 원</span>
-                                                </Col>
-                                            </Row>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </Table>
-                        </div>
+                        <Header bold>
+                            <Div fontSize={14}>최종결제내역</Div>
+                        </Header>
 
-                        <div className={'d-flex p-1'}>
-                            <div className={'flex-grow-1 p-1'}>
-                                <Button color='dark' block onClick={this.onConfirmClick}> 구매내역 확인 </Button>
-                            </div>
-                            <div className={'flex-grow-1 p-1'}>
-                                <Button color='dark' block onClick={this.onContinueClick}> 계속 쇼핑하기 </Button>
-                            </div>
-                        </div>
+                        <Div m={16}>
+                            <Flex mb={7} fontSize={12}>
+                                <Div fg='adjust'>총 상품가격</Div>
+                                <Right>
+                                    {ComUtil.addCommas((this.state.orderGroup.payMethod === 'cardBlct')? this.state.orders[0].orderPrice-this.state.orderGroup.totalDeliveryFee
+                                        :this.state.orderGroup.totalOrderPrice - this.state.orderGroup.totalDeliveryFee)}
+                                        &nbsp;원
+                                </Right>
+                            </Flex>
+                            <Flex mb={15} fontSize={12}>
+                                <Div fg='adjust'>총 배송비</Div>
+                                <Right>
+                                    {ComUtil.addCommas(this.state.orderGroup.totalDeliveryFee)} 원
+                                </Right>
+                            </Flex>
+                            <HrThin mb={15}/>
+                            <Flex mb={4} fontSize={16} bold>
+                                <Div>최종 결제 금액</Div>
+                                <Right bold fg='green'>{ComUtil.addCommas(this.state.orderGroup.totalCurrentPrice + this.state.orderGroup.totalDeliveryFee)} 원</Right>
+                            </Flex>
+                            <Div fontSize={12} fg='adjust' bold>
+                                1 BLY = {this.state.blctToWon} 원
+                            </Div>
+                        </Div>
 
+                        <DetailPaymentInfoCard
+                            blctToWon={this.state.blctToWon}
+                            won={
+                                this.state.orderGroup.payMethod === 'card' ? this.state.orderGroup.totalOrderPrice
+                                    : this.state.orderGroup.payMethod === 'blct' ? 0
+                                    : this.state.orderGroup.totalOrderPrice
+                            }
+                            // blct={(this.state.selectedPayMethod === 'cardBlct' || this.state.selectedPayMethod === 'blct') ? ComUtil.addCommas(ComUtil.roundDown(this.state.cardBlctUseToken, 2)) : 0}
+                            blct={
+                                this.state.orderGroup.payMethod === 'card' ? 0
+                                    : this.state.orderGroup.payMethod === 'blct' ? this.state.orderGroup.totalBlctToken
+                                    : this.state.orderGroup.totalBlctToken
+                            }
+                        />
+
+                        {/* empty box */}
+                        <Div height={52}></Div>
+                        <Fixed bottom={0} width='100%' height={52} fontSize={16} zIndex={1}>
+                            <Btn fg='white' bg='adjust' bold width={'50%'} height={'100%'} rounded={0} onClick={this.onConfirmClick}>구매내역 확인</Btn>
+                            <Btn fg='white' bg='green' bold width={'50%'} height={'100%'} rounded={0} onClick={this.onContinueClick}>계속 쇼핑하기</Btn>
+                        </Fixed>
                         <ToastContainer/>
                     </Fragment>
                 )

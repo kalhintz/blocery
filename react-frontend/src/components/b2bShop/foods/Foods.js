@@ -58,7 +58,7 @@ export default class Foods extends Component {
                     <Col className={'p-0'}>
                         <div className='position-relative'>
                             <div className='d-flex position-absolute p-1' style={{top: 0, left: 0, zIndex: 5}}>
-                                <B2bShopOnlyXButtonNav back history={this.props.history} style={{filter: 'drop-shadow(2px 2px 2px #343a40)', fontSize: '2rem'}}/>
+                                <B2bShopXButtonNav historyBack history={this.props.history} style={{filter: 'drop-shadow(2px 2px 2px #343a40)', fontSize: '2rem'}}/>
                             </div>
                             <div className='d-flex position-absolute p-3' style={{top: 0, right: 0, zIndex: 5}}>
                                 <B2bCartLink showShadow={true}/>

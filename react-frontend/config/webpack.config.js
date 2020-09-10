@@ -480,6 +480,10 @@ module.exports = function(webpackEnv) {
       ],
     },
     plugins: [
+      new webpack.ProvidePlugin({
+          'window.Quill': ['react-quill', 'Quill'],
+          'Quill': 'quill'
+      }),
       // Generates an `index.html` file with the <script> injected.
       new HtmlWebpackPlugin(
         Object.assign(

@@ -1,0 +1,15 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.item{
+  display: flex;
+  align-items: flex-start;
+  margin: 24px 16px;
+
+  position: relative;
+}
+
+.content{
+  padding-left: 15px;
+  flex-grow: 1;
+}

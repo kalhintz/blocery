@@ -242,7 +242,7 @@ export default class FoodsReviewList extends Component {
                 width: 30, height: 30, paddingRight: '1px'
             };
             return (
-                <img src={src_url} style={style}/>
+                <img src={src_url} style={style} alt={'사진'}/>
             )
         });
     }

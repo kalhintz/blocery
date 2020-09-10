@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+    <defs>
+        <style>
+            .prefix__cls-3{fill:#fff}.prefix__cls-2{fill:#a8a8a8}
+        </style>
+    </defs>
+    <g id="prefix__ic_share_on" transform="translate(-2 -1.917)">
+        <path id="prefix__사각형_4491" d="M0 0H20V20H0z" data-name="사각형 4491" transform="translate(2 1.917)" style="opacity:0;fill:#fff"/>
+        <g id="prefix__share" transform="translate(4.44 3.609)">
+            <path id="prefix__패스_13956" d="M120.417 102.14a.726.726 0 01-.361-1.358l8.992-5.127a.727.727 0 01.719 1.263l-8.992 5.126a.728.728 0 01-.358.095zm0 0" class="prefix__cls-2" data-name="패스 13956" transform="translate(-117.252 -92.78)"/>
+            <path id="prefix__패스_13957" d="M129.428 278.129a.722.722 0 01-.359-.1l-8.992-5.127a.727.727 0 01.719-1.263l8.992 5.126a.727.727 0 01-.36 1.359zm0 0" class="prefix__cls-2" data-name="패스 13957" transform="translate(-117.273 -263.651)"/>
+            <circle id="prefix__타원_923" cx="3" cy="3" r="3" class="prefix__cls-3" data-name="타원 923" transform="translate(8.56 .308)"/>
+            <circle id="prefix__타원_924" cx="3" cy="3" r="3" class="prefix__cls-3" data-name="타원 924" transform="translate(.561 5.309)"/>
+            <circle id="prefix__타원_925" cx="3" cy="3" r="3" class="prefix__cls-3" data-name="타원 925" transform="translate(8.561 10.309)"/>
+            <path id="prefix__패스_13953" d="M312.966 7.268a3.634 3.634 0 113.634-3.634 3.639 3.639 0 01-3.634 3.634zm0-5.815a2.18 2.18 0 102.18 2.18 2.183 2.183 0 00-2.18-2.179zm0 0" class="prefix__cls-2" data-name="패스 13953" transform="translate(-301.28)"/>
+            <path id="prefix__패스_13954" d="M312.966 359.268a3.634 3.634 0 113.634-3.634 3.639 3.639 0 01-3.634 3.634zm0-5.815a2.18 2.18 0 102.18 2.18 2.183 2.183 0 00-2.18-2.179zm0 0" class="prefix__cls-2" data-name="패스 13954" transform="translate(-301.28 -342.01)"/>
+            <path id="prefix__패스_13955" d="M3.634 183.268a3.634 3.634 0 113.634-3.634 3.638 3.638 0 01-3.634 3.634zm0-5.814a2.18 2.18 0 102.18 2.18 2.183 2.183 0 00-2.18-2.18zm0 0" class="prefix__cls-2" data-name="패스 13955" transform="translate(0 -171.005)"/>
+        </g>
+    </g>
+</svg>

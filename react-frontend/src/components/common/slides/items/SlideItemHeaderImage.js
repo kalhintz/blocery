@@ -1,33 +1,59 @@
-import React, { Fragment, useState, useEffect } from 'react'
-import Style from './SlideItemHeaderImage.module.scss'
+import React, { Fragment, useState, useEffect, useRef } from 'react'
+import Css from './SlideItemHeaderImage.module.scss'
 import classNames from 'classnames'
 import { TimeText } from '~/components/common'
+import { AiFillClockCircle } from "react-icons/ai";
+import { Server } from "../../../Properties";
 
 function SlideImage(props){
-    const { imageUrl, imageWidth, imageHeight, saleEnd, discountRate, remainedCnt = 0, onClick = () => null } = props
-    const imageBoxStyle = {
-        width: imageWidth,
-        height: imageHeight
+    const { size = 'sm', imageUrl, imageWidth, imageHeight, saleEnd, discountRate, blyReview, remainedCnt = 0, onClick = () => null,
+
+    showTimeText = false
+    } = props
+
+    //sold out 크기
+    let  type;
+    let blyReviewType;
+    if(size === 'sm'){
+        type = Css.typeSm
+        blyReviewType = Css.blyReviewSm
+    }else if(size === 'md'){
+        type = Css.typeMd
+        blyReviewType = Css.blyReviewMd
+    }else if(size === 'lg'){
+        type = Css.typeLg
+        blyReviewType = Css.blyReviewLg
     }
+    else if(size === 'xl'){
+        type = Css.typeXl
+        blyReviewType = Css.blyReviewXl
+    }
+    else if(size === 'xxl'){
+        type = Css.typeXxl
+        blyReviewType = Css.blyReviewXxl
+    }
+
+    const blyReviewUrl = Server.getImageURL() + 'JleRBdtW6CR7.png'
+
     return(
-        <div className={classNames(Style.imageBox, 'cursor-pointer')} style={imageBoxStyle} onClick={onClick}>
+        <div className={classNames(Css.container, type)}
+             style={{width: imageWidth, height: imageHeight}}
+        >
+
             {
-                (discountRate && discountRate > 0) ? <div className={Style.discountLayer}>{Math.round(discountRate, 0)}%</div> : null
+                showTimeText && <div className={Css.timeTextLayer}>
+                    <AiFillClockCircle size={16} />
+                    <div>예약구매</div>
+                    <div><TimeText date={saleEnd} formatter={'[D-]DD HH[:]mm[:]ss'}/></div>
+                </div>
             }
-            <img className={Style.image} src={imageUrl} />
+
             {
-                saleEnd && (
-                    <div className={Style.timeLayer}>
-                        <span className='f2'>
-                            <TimeText date={saleEnd} formatter={'DD[일 ]HH[:]mm[:]ss'}/>
-                        </span>
-                        <small> 남음</small>
-                    </div>
-                )
+                props.blyReview && <img className={classNames(Css.blyReview, blyReviewType)} src={`${blyReviewUrl}`} alt="블리리뷰" />
             }
-            {
-                remainedCnt <= 0 && <div className={classNames( Style.soldOut)}>SOLD OUT</div>
-            }
+
+            <img className={Css.img} src={`${imageUrl}`} alt="상품사진" />
+            { remainedCnt <= 0 && <div className={Css.mask}>SOLD OUT</div> }
         </div>
     )
 }

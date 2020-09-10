@@ -1,0 +1,55 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.textGray{color: $color-b2c-adjust;}
+.textBlack{color: $color-b2c-black;}
+.blctContainer a, input{box-sizing: border-box;}
+.blctContainer{padding: 23px 18px; background: #f8f8f8; border-radius: 10px;}
+
+.blctContainer > div{display: flex; align-items: center; color: black; font-size: 14px; display: flex; align-items: center;}
+.blctContainer > div:nth-child(1){margin-bottom: 3px;}
+.blctContainer > div:nth-child(2){margin-bottom: 26px;}
+.blctContainer > div:nth-child(3){margin-bottom: 3px;}
+
+.blctContainer > div > div:nth-child(1){color: #929eb5;}
+.blctContainer > div> div:nth-child(2){margin-left: auto;}
+
+.borderDanger{
+  border: 2px solid $color-b2c-danger;
+}
+
+.inputGroup > div:nth-child(1){flex-grow: 1; margin-right: 6px; position: relative;}
+.inputGroup .clear{
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  border-radius: 100%;
+  background-color: $color-b2c-light;
+  //border: 1px solid $color-b2c-light;
+  width: 23px;
+  height: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+//.inputGroup > div:nth-child(2){flex-shrink: 0; flex-basis: 30px; margin-right: 6px;}
+.inputGroup > div:nth-child(2){flex-shrink: 0; flex-basis: 91px; border-radius: 100%; border: 1px solid $color-b2c-light; background-color: $color-b2c-default;}
+/* .inputGroup > div:nth-child(2){width: 91px;} */
+.vMiddle{display: flex; align-items: center;}
+
+
+
+.paymentInfo{padding: 16px; border: 1px solid whitesmoke; margin: 16px; border-radius: 3px;
+  background-image: linear-gradient(to bottom right, white, whitesmoke);
+  box-shadow: 1px 1px 2px rgba(0,0,0, 0.8);
+}
+.paymentInfo > div{
+  display: flex;
+  margin-bottom: 6px;
+}
+.paymentInfo > div:last-child{margin-bottom: 0;}
+.paymentInfo > div > div:nth-child(1){font-size: 12px;}
+.paymentInfo > div > div:nth-child(2){margin-left: auto; font-size: 14px;}
+.paymentInfo small{color: gray;}

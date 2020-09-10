@@ -1,0 +1,74 @@
+/* 공통 */
+.leftRound{
+  border-top-left-radius: 25px;
+}
+/* 페이지 */
+.grandTitleBox{
+  display: flex;
+  margin: 0px 21px 12px 21px;
+  align-items: center;
+  font-family: SeoulHangangL;
+}
+//기획전 타이틀
+.grandTitleBox > div:nth-child(1){
+  font-size: 27px;
+
+}
+//아이콘 ->
+.grandTitleBox > a{
+  margin-left: auto;
+}
+
+.backgroundBox{
+  background: url("../../../../../images/background/boxes-1834416_1920@2x.jpg");
+  background-repeat:no-repeat;
+  background-size:100% 100%;
+  height: 100vmin;
+}
+.cornerRoundedBox{
+  margin-top: -30vmin;
+  background-color: white;
+  position: relative;
+}
+.contentBox{
+  padding: 29px 20px 0px 20px;
+}
+.greenTitleLayer{
+  font-size: 14px;
+  font-family: NotoSansKR;
+  font-weight: 500;
+  color: #ffffff;
+  padding: 3px 5px;
+  position: absolute;
+  background-color: #24855b;
+  top: calc(-29px / 2);
+  left: 20px;
+}
+.titleLarge{
+  font-size: 27px;
+  font-family: SeoulHangangL;
+  line-height: 35px;
+  margin-bottom: 31px;
+}
+.titleLarge > b{
+  font-family: seoulHangangB;
+}
+
+.flexRow{
+  display: flex;
+  cursor: pointer;
+}
+.flexRow{
+  margin-bottom: 21px;
+}
+.flexRow:last-child{
+  margin-bottom: 0;
+}
+//이미지 레이아웃
+.flexRow > div:first-child{
+  margin-right: 8px;
+}
+//컨텐츠 레이아웃
+//.flexRow > div:last-child{
+//  margin-bottom: 0;
+//}

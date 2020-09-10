@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
-import { resetPassword, setCurrentPriceOfAllValidGoods, setNotDeliveryOrder, sendWarnShippingStart, sendNotiDelayShipping, setOrderDetailConfirm } from '~/lib/adminApi'
-import { getLoginAdminUser } from '~/lib/loginApi'
+import { resetPassword, setCurrentPriceOfAllValidGoods, setNotDeliveryOrder, sendWarnShippingStart, sendNotiDelayShipping,
+    setOrderDetailConfirm, updateConsumerOkDateForBatch, setPayoutAmountBatch, setOrderDetailConfirmBatchOrderSeq, transferTempProducerBlctToEzfarm } from '~/lib/adminApi'
+import { isTokenAdminUser } from '~/lib/loginApi'
 import { BlockChainSpinner, Spinner } from '~/components/common'
 
 export default class SimpleAdmin extends Component{
@@ -15,8 +16,8 @@ export default class SimpleAdmin extends Component{
     }
 
     async componentDidMount() {
-        let user = await getLoginAdminUser();
-        if (!user || user.email.indexOf('ezfarm') < 0) {
+        let {data:result} = await isTokenAdminUser();
+        if (!result) {
             //admin은 웹전용이라서, window로 이동하는 것이 더 잘됨. //this.props.history.push('/admin');
             window.location = '/admin/login';
         }
@@ -75,6 +76,22 @@ export default class SimpleAdmin extends Component{
         console.log('자동구매확정 배치 테스트 건수 : ', result);
     }
 
+
+    onSetPayoutAmountBatch = async() => {
+        let {data:result} = await setPayoutAmountBatch();
+        alert(result + "완료되었습니다");
+    }
+
+    onSetConsumerOkDate = async() => {
+        let {data:result} = await setOrderDetailConfirmBatchOrderSeq(this.consumerOkDateOrderSeq.value);
+        alert(result + "완료되었습니다");
+    }
+
+    onTransferTempProducerBlctToEzfarm = async() => {
+        let {data:result} = await transferTempProducerBlctToEzfarm(this.tempProducerYear.value, this.tempProducerMonth.value);
+        alert(result + "완료되었습니다");
+    }
+
     render() {
         return (
             <div>
@@ -93,12 +110,10 @@ export default class SimpleAdmin extends Component{
                        ref = {(input) => {this.resetPassword = input}}
                 />
                 <button onClick = {this.onResetPassword}> 비밀번호 초기화   </button>
-                <br/>
                 <br/><br/>
 
                 2. 상품 판매 가격 설정 (일배치 로직이 적용되기 전에 등록된 상품 중 판매개시된 상품에 대해 상품 판매 가격 설정)<br/>
                 <button onClick = {this.onSetCurrentPriceOfAllValidGoods}> 상품 판매 가격 설정 </button>
-                <br/>
                 <br/><br/>
 
                 3. 미배송 주문 배치 처리 (테스트 또는 미배송 주문 배치중 오류로 재시도할 경우 수행)<br/>
@@ -106,23 +121,51 @@ export default class SimpleAdmin extends Component{
                 - 미배송 주문이 많은 경우 블록체인 기록에 많은 시간이 소요될 수 있습니다.<br/>
                 - 미배송 배치가 끝난 후 남은 미배송 보증금 정산 처리가 수행됩니다. <br/>
                 <button onClick = {this.onSetNotDeliveryOrder}> 미배송 주문 배치 시작 </button>
-                <br/>
                 <br/><br/>
 
                 4. 생산자에게 발송 임박 상품 정보 알림과 이메일을 보냅니다.<br/>
                 <button onClick = {this.onSendWarnShippingStart}> 발송 임박 상품 정보 알림 보내기 </button>
-                <br/>
                 <br/><br/>
 
-                5. 배송종료일이 지나고 미배송확정 이전까지의 배치를 테스트합니다. (배송종료일에서 1일 7일 13일 경과시 아침 9시에 푸쉬 알림)<br/>
-                <button onClick = {this.onSendShoppingDelay}> 미배송 진행중 알림 보내기 </button>
-                <br/>
-                <br/><br/>
 
-                6. 송장번호 입력 후 14일까지 소비자가 구매확정을 안할 시 자동구매확정 배치를 테스트합니다.<br/>
-                <button onClick = {this.onSetOrderDetailConfirm}> 자동구매확정 </button>
+                6. payoutAmount를 구매시로 변경하면서 생긴 데이터 오류 update Batch
+                <div className='d-flex mt-2'>
+                    <button onClick = {this.onSetPayoutAmountBatch}> batch 실행 </button>
+                </div>
                 <br/>
-                <br/><br/>
+
+                7. 자동구매확정 안된 데이터 오류 update Batch (orderSeq 해당하는 3일 지난 데이터 구매확정)
+                <div className='d-flex mt-2'>
+                    <input className='w-25' type="text" placeholder="orderSeq"
+                           ref = {(input) => {this.consumerOkDateOrderSeq = input}}
+                    />
+                    <button onClick = {this.onSetConsumerOkDate}> batch 실행 </button>
+                </div>
+                <br/>
+
+                8. tempProducer에서 외부 ezfarm 계좌로 송금 실패시 다시 전송
+                <div className='d-flex mt-2'>
+                    <input className='w-25' type="text" placeholder="year"
+                           ref = {(input) => {this.tempProducerYear = input}}
+                    />
+                    <input className='w-25' type="text" placeholder="month"
+                           ref = {(input) => {this.tempProducerMonth = input}}
+                    />
+                    <button onClick = {this.onTransferTempProducerBlctToEzfarm}> 해당월의 tempProducerBlct 송금 </button>
+                </div>
+                <br/>
+
+
+
+                {/*5. 배송종료일이 지나고 미배송확정 이전까지의 배치를 테스트합니다. (배송종료일에서 1일 7일 13일 경과시 아침 9시에 푸쉬 알림)<br/>*/}
+                {/*<button onClick = {this.onSendShoppingDelay}> 미배송 진행중 알림 보내기 </button>*/}
+                {/*<br/>*/}
+                {/*<br/><br/>*/}
+
+                {/*6. 송장번호 입력 후 14일까지 소비자가 구매확정을 안할 시 자동구매확정 배치를 테스트합니다.<br/>*/}
+                {/*<button onClick = {this.onSetOrderDetailConfirm}> 자동구매확정 </button>*/}
+                {/*<br/>*/}
+                {/*<br/><br/>*/}
 
             </div>
         )

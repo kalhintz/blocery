@@ -1,5 +1,9 @@
 import ConsumerList from './ConsumerList'
+import StoppedConsumer from './StoppedConsumer'
 
-export default
-    ConsumerList
+export {
+    ConsumerList,
+    StoppedConsumer
+}
+
 

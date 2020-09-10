@@ -1,0 +1,43 @@
+.grandTitleBox{
+  padding: 16px 20px;
+  font-family: SeoulHangangL;
+}
+.flexRow{
+  display: flex;
+  align-items: center;
+}
+//예약상품 텍스트
+.smallTitle{
+  font-size: 19px;
+}
+.largeTitle{
+  font-size: 27px;
+}
+// -> 아이콘
+.flexRow a{
+  margin-left: auto;
+}
+
+
+.grandTitle > div:nth-child(1){
+  font-family: SeoulHangangL;
+  font-size: 19px;
+}
+//마감임박 텍스트
+.grandTitle > div:nth-child(2){
+  font-family: SeoulHangangL;
+  font-size: 27px;
+}
+
+
+.slide{
+  width: 247px;
+  margin-bottom: 35px;
+  cursor: pointer;
+}
+.slide:first-child{
+  margin-left: 20px;
+}
+.slide:last-child{
+  margin-right: 20px;
+}

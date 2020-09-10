@@ -34,7 +34,7 @@ export default class HintPassPhrase extends Component {
     render() {
         return(
             <Fragment>
-                <ShopXButtonNav back history={this.props.history}>결제 비밀번호 관리</ShopXButtonNav>
+                <ShopXButtonNav underline back history={this.props.history}>결제 비밀번호 관리</ShopXButtonNav>
                 <Container fluid>
                 <p></p>
                     <div>
@@ -42,7 +42,7 @@ export default class HintPassPhrase extends Component {
                         <div style={{outline:'black solid thin', fontSize:'50px'}} className={'text-center mt-3'}>{this.state.hintFront}****</div>
                         <br/>
                         <div className={'text-center m-2'}>결제 비밀번호 확인이 어려울 경우</div>
-                        <div className={'text-center m-2'}><span style={{color:'#007bff'}}>info@blocery.io</span>로 추가문의해 주시기 바랍니다.</div>
+                        <div className={'text-center m-2'}><span style={{color:'#007bff'}}>cs@blocery.io</span>로 추가문의해 주시기 바랍니다.</div>
                     </div>
 
                 </Container>

@@ -37,7 +37,7 @@ export default class ProducerLogin extends Component {
 
         // input ERROR check
         let data = {};
-        data.email = event.target[0].value;
+        data.email = event.target[0].value.trim();
         data.valword = event.target[1].value;
         data.userType = 'producer'
 
@@ -97,6 +97,7 @@ export default class ProducerLogin extends Component {
             });
 
         if (!this.state.fadeError) { //로그인 성공이면
+
             this.closePopup();
         }
 
@@ -246,7 +247,7 @@ export default class ProducerLogin extends Component {
                     <br/>
                 </Container>
                 {
-                    this.state.isOpen && this.state.type === 'id' && <ModalPopup title={'알림'} content={'가입 시 입력하신 이름을 적어 고객센터로(info@blocery.io) 메일을 보내주시면 답신 드리도록 하겠습니다.'} onClick={this.onClose}></ModalPopup>
+                    this.state.isOpen && this.state.type === 'id' && <ModalPopup title={'알림'} content={'가입 시 입력하신 이름을 적어 고객센터로(cs@blocery.io) 메일을 보내주시면 답신 드리도록 하겠습니다.'} onClick={this.onClose}></ModalPopup>
                 }
                 {
                     this.state.isOpen && this.state.type === 'pw' &&

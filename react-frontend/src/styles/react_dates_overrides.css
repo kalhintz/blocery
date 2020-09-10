@@ -5,9 +5,9 @@
 
 /* withPortal 구문의 모달 팝업이 최상단으로 항상 나오도록 함 */
 .DateRangePicker_picker__portal {
-    z-index: 99 !important;
+    z-index: 9999 !important;
 }
 
 .SingleDatePicker_picker__portal {
-    z-index: 99 !important;
+    z-index: 9999 !important;
 }

@@ -152,13 +152,13 @@ export default class ModifyConsumerInfo extends Component {
     }
 
     onWithdraw = () => {
-        alert('info@blocery.io로 탈퇴 신청을 해주세요.')
+        alert('cs@blocery.io로 탈퇴 신청을 해주세요.')
     }
 
     render() {
         return (
             <Fragment>
-                <ShopXButtonNav history={this.props.history} historyBack>개인정보 수정</ShopXButtonNav>
+                <ShopXButtonNav underline history={this.props.history} historyBack>개인정보 수정</ShopXButtonNav>
                 <Container fluid>
                     <p></p>
                     <div>

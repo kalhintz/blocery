@@ -15,8 +15,8 @@ import classNames from 'classnames';
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+import "ag-grid-community/src/styles/ag-grid.scss";
+import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 import Style from './BlctHistory.module.scss'
 import { getLoginUserType, getLoginUser } from "~/lib/loginApi";

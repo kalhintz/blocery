@@ -68,6 +68,7 @@ const NewestOfWeekness = (props) => {
                                     imageUrl={Server.getThumbnailURL() + goods.goodsImages[0].imageUrl}
                                     discountRate={Math.round(goods.discountRate)}
                                     remainedCnt={goods.remainedCnt}
+                                    blyReview={goods.blyReviewConfirm}
                                 />
                                 <SlideItemContent
                                     className={'p-2'}

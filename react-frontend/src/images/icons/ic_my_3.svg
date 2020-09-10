@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">
+    <defs>
+        <style>
+            .prefix__cls-2{stroke:#000;stroke-width:.2px}
+        </style>
+    </defs>
+    <g id="prefix__ic_my_3" transform="translate(7.281 -2.977)">
+        <path id="prefix__사각형_948" d="M0 0H26V26H0z" data-name="사각형 948" transform="translate(-7.281 2.977)" style="fill:#fff;opacity:0"/>
+        <g id="prefix__그룹_9486" data-name="그룹 9486" transform="translate(-15.12 -4.805)">
+            <path id="prefix__패스_13942" d="M235.563 352a.9.9 0 10.9.9.9.9 0 00-.9-.9z" class="prefix__cls-2" data-name="패스 13942" transform="translate(-214.587 -326.99)"/>
+            <path id="prefix__패스_13943" d="M20.976 10.667a10.309 10.309 0 1010.309 10.309 10.321 10.321 0 00-10.309-10.309zm0 19.722a9.413 9.413 0 119.413-9.413 9.423 9.423 0 01-9.413 9.413z" class="prefix__cls-2" data-name="패스 13943"/>
+            <path id="prefix__패스_13944" d="M189.58 106.667a2.955 2.955 0 00-2.913 2.988.448.448 0 10.9 0 2.058 2.058 0 012.017-2.092 2.032 2.032 0 012.017 2.042 2.082 2.082 0 01-2.017 2.042.448.448 0 00-.448.448v2.64a.448.448 0 00.9 0v-2.228a2.977 2.977 0 002.465-2.9 2.929 2.929 0 00-2.921-2.94z" class="prefix__cls-2" data-name="패스 13944" transform="translate(-168.604 -91.966)"/>
+        </g>
+    </g>
+</svg>

@@ -44,7 +44,7 @@ const AddressCard = (props) => {
                 <AddressSearchButton onChange={onChange} className={'mr-2 flex-shrink-0'} buttonRef={props.buttonRef}/>
                 <Input placeholder={'주소'} value={props.address} readOnly={readOnlyAddress} onChange={onAddressChange}/>
             </div>
-            <Input placeholder={'상세주소'} value={props.addressDetail} block readOnly={readOnlyAddressDetail} onChange={onAddressDetailChange} />
+            <Input placeholder={'상세주소[호수까지 입력요망]'} value={props.addressDetail} block readOnly={readOnlyAddressDetail} onChange={onAddressDetailChange} />
         </div>
     )
 }

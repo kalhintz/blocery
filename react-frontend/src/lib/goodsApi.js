@@ -56,8 +56,22 @@ export const copyGoodsByGoodsNo = (goodsNo) => axios(Server.getRestAPIHost() + '
 //상품상세 가져오기
 export const getGoodsContent = (goodsContentFileName) => axios(Server.getRestAPIHost() + '/goodsContent', { method: "get", params:{ goodsContentFileName: goodsContentFileName}, withCredentials: true, credentials: 'same-origin' })
 
+//블리리뷰 가져오기
+export const getBlyReview = (blyReviewFileName) => axios(Server.getRestAPIHost() + '/blyReview', { method: "get", params:{ blyReviewFileName: blyReviewFileName}, withCredentials: true, credentials: 'same-origin' })
 
 //생산자 용도... ///////////////
+//생산자별 판매 상품 조회
 export const getProducerGoods = () => axios(Server.getRestAPIHost() + '/goods/producerGoods', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
+//검색필터 적용된 상품 조회
+export const getProducerFilterGoods = (itemNo, directGoods, confirm, saleStopped, saleEnd, remainedCnt, salePaused) =>
+    axios(Server.getRestAPIHost() + '/goods/producerFilterGoods', {
+        method: "get",
+        params: {itemNo: itemNo, directGoods: directGoods, confirm: confirm, saleStopped: saleStopped, saleEnd: saleEnd, remainedCnt: remainedCnt, salePaused: salePaused},
+        withCredentials: true,
+        credentials: 'same-origin'
+    })
+
+//판매 일시중지/판매재개
+export const updateSalePaused = (goodsNo, salePaused) => axios(Server.getRestAPIHost() + '/goods/salePaused', { method:"put", params:{ goodsNo: goodsNo, salePaused: salePaused}, withCredentials: true, credentials: 'same-origin' })
 

@@ -1,15 +1,61 @@
 import React from 'react'
+import {withRouter} from 'react-router-dom'
 import Style from './ShopXButtonNav.module.scss'
 import PropTypes from 'prop-types'
 import { Webview } from '~/lib/webviewApi'
 import { XButton, CartLink } from '~/components/common'
 import classNames from 'classnames'
+import styled, {css} from 'styled-components'
+import {Div, Flex} from '~/styledComponents/shared'
+
+import {color} from '~/styledComponents/Properties'
+
+// const NavContainer = (props) =>
+//     <Flex fontSize={20} position={'relative'} justifyContent={'center'} height={'56px'}>
+//         {props.children}
+//     </Flex>
+
+//네이게이션 껍데기
+const NavContainer = styled(Flex)`
+    justify-content: center;
+    height: 56px;
+    font-size: 20px;
+    position: relative;
+    background-color: ${color.white};
+    ${props => props.underline && css`
+        border-bottom: 1px solid ${color.light};        
+    `};
+    
+    ${props => props.fixed && css`
+      position: -webkit-sticky; /* Safari */
+      position: sticky;
+      top: 0;
+      z-index: 40; 
+    `};
+`;
+
+//뒤로가기 버튼 위치
+const BackArrowLayer = styled(Div)`
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+`;
 
 
+//장바구니 아이콘 위치
+const CartLayer = styled(Div)`
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+`;
 
 const ShopXButtonNav = (props) => {
 
-    const {history, children, home, close, backClose, backCloseToMypageOrderList, backToMypage, back, historyBack, forceBackUrl, isVisibleCart, isVisibleXButton } = props
+    const {history, children, home, close, backClose, backCloseToMypageOrderList, backToMypage, back, historyBack, forceBackUrl, isVisibleCart, isVisibleXButton,
+        underline, fixed
+    } = props
 
     /**
      * 현재 4가지 props 존재
@@ -77,25 +123,50 @@ const ShopXButtonNav = (props) => {
     }
 
     return(
-        <div className={classNames(Style.wrap, props.fixed && Style.fixed)}>
+        <NavContainer underline={underline} fixed={fixed}>
             {
                 //home(버튼은 close와 동일), close, back 처리.
-                isVisibleXButton && getXButton()
+                isVisibleXButton && <BackArrowLayer>{getXButton()}</BackArrowLayer>
                 // backClose ?  <XButton back onClick={onCloseClick}/> :
                 //     (home ? <XButton close onClick={onHomeClick}/> : (close ? <XButton close onClick={onCloseClick}/> : <XButton back onClick={onBackClick}/>) )
             }
-            <div className={Style.name}>{children}</div>
-
+            {children}
             {/* 카트 아이콘 표시여부 */}
             {
                 isVisibleCart && (
-                    <div className={Style.cart}>
+                    <CartLayer>
                         <CartLink/>
-                    </div>
+                    </CartLayer>
                 )
             }
-        </div>
+        </NavContainer>
     )
+
+    // return(
+    //     <div className={
+    //         classNames(
+    //             Style.wrap,
+    //             props.fixed && Style.fixed,
+    //             underline && Style.underline
+    //         )}>
+    //         {
+    //             //home(버튼은 close와 동일), close, back 처리.
+    //             isVisibleXButton && getXButton()
+    //             // backClose ?  <XButton back onClick={onCloseClick}/> :
+    //             //     (home ? <XButton close onClick={onHomeClick}/> : (close ? <XButton close onClick={onCloseClick}/> : <XButton back onClick={onBackClick}/>) )
+    //         }
+    //         <div className={Style.name}>{children}</div>
+    //
+    //         {/* 카트 아이콘 표시여부 */}
+    //         {
+    //             isVisibleCart && (
+    //                 <div className={Style.cart}>
+    //                     <CartLink/>
+    //                 </div>
+    //             )
+    //         }
+    //     </div>
+    // )
 }
 
 ShopXButtonNav.propTypes = {
@@ -113,4 +184,4 @@ ShopXButtonNav.defaultProps = {
 }
 
 
-export default ShopXButtonNav
+export default withRouter(ShopXButtonNav)

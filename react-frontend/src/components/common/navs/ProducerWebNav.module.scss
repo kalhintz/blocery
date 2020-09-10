@@ -1,0 +1,57 @@
+@import "Color.module.scss";
+
+$bg-basic: #3a3f51;
+$bg-active: #32374A;
+
+$bg-sub: #2F3343;
+$bg-sub-active: #333748;
+
+$text: #B4B6BD;
+$text-active: white;
+
+.wrap {
+  height: calc(100vh - 50px);
+}
+
+.main {
+  display: flex;
+  padding: 1em;
+  align-items: center;
+  color: $text;
+  cursor: pointer;
+  transition: 0.3s;
+  background-color: $bg-basic;
+}
+
+.main:hover {
+  background-color: $bg-active;
+  color: $text-active;
+}
+.mainActive {
+  background-color: $bg-active;
+  color: $text-active;
+}
+
+.mainLeftBox {
+  display: flex;
+  align-items: center;
+}
+
+
+.sub {
+  background-color: $bg-sub;
+  display: flex;
+  padding: 1em 0em 1em 45px;
+  color: rgb(180, 182, 189);
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.3s;
+}
+.sub:hover {
+  background-color: $bg-sub-active;
+  color: $text-active;
+}
+.subActive {
+  background-color: $bg-sub-active;
+  color: $text-active;
+}

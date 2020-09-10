@@ -68,7 +68,7 @@ export default class BuyerCenter extends Component {
                     <p className='text-center font-weight-bold'>1:1 문의</p>
                     <p className='text-center m-3'>회원님들의 소중한 의견에 귀 기울여 <br/> 신속하고 정확하게 답변 드리도록 하겠습니다.</p>
                     <p className='text-center'>
-                        <a href="mailto:info@blocery.io" data-rel="external" className='text-primary'><u>info@blocery.io</u></a>
+                        <a href="mailto:cs@blocery.io" data-rel="external" className='text-primary'><u>cs@blocery.io</u></a>
                     </p>
                 </div>
                 <hr/>

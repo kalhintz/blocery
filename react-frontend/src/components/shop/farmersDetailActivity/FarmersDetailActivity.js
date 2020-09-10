@@ -5,6 +5,7 @@ import { getConsumerGoodsByProducerNoSorted } from '~/lib/goodsApi'
 import { getFarmDiaryBykeys, getRegularShop, addRegularShop, delRegularShopByProducerNoAndConsumerNo } from '~/lib/shopApi'
 import { Container, Row, Col, Badge } from 'reactstrap'
 import { Hr, XButton, FarmersVisitorSummaryCard, ProducerProfileCard, FarmDiaryCard, SlideItemHeaderImage, SlideItemContent } from '~/components/common'
+import { B2cBackHeader } from '~/components/common/headers'
 import classNames from 'classnames'
 import { Webview } from "../../../lib/webviewApi";
 import { Link } from 'react-router-dom'
@@ -87,8 +88,8 @@ const FarmersDetailActivity = (props) => {
         switch (type){
             //생산자 판매상품 이동
             case 'PRODUCERS_GOODS_LIST' :
-                // props.history.push(`/producersGoodsList?producerNo=${producerNo}`)
-                Webview.openPopup(`/producersGoodsList?producerNo=${producerNo}`, true)
+                props.history.push(`/producersGoodsList?producerNo=${producerNo}`)
+                // Webview.openPopup(`/producersGoodsList?producerNo=${producerNo}`, true)
                 break
             //생산자 생산일지 이동
             case 'PRODUCERS_FARMDIARY_LIST' :
@@ -101,8 +102,8 @@ const FarmersDetailActivity = (props) => {
                 props.history.push(`/goods?goodsNo=${payload.goodsNo}`)
                 break
             case 'PRODUCERS_FARMDIARY' :
-                // props.history.push(`/producersFarmDiary?diaryNo=${payload.diaryNo}`)
-                Webview.openPopup(`/producersFarmDiary?diaryNo=${payload.diaryNo}`, true)
+                props.history.push(`/producersFarmDiary?diaryNo=${payload.diaryNo}`)
+                // Webview.openPopup(`/producersFarmDiary?diaryNo=${payload.diaryNo}`, true)
                 break
         }
     }
@@ -181,19 +182,23 @@ const FarmersDetailActivity = (props) => {
         )
     }
 
+    if(!producer) return null
+
     return(
-        <div>
+        <div className={'position-relative'}>
+
+            <B2cBackHeader title={'상점정보'} history={props.history} />
 
             {/* X 버튼 */}
-            <div>
-                {/*<div style={{position: 'absolute', top: 0, left: 0, zIndex: 2}} onClick={()=>{Webview.closePopup()}}>*/}
-                <div style={{position: 'absolute', top: 0, left: 0, zIndex: 2}} onClick={()=>{props.history.goBack()}}>
-                    <XButton />
-                </div>
-            </div>
+            {/*<div>*/}
+                {/*/!*<div style={{position: 'absolute', top: 0, left: 0, zIndex: 2}} onClick={()=>{Webview.closePopup()}}>*!/*/}
+                {/*<div style={{position: 'absolute', top: 0, left: 0, zIndex: 2}} onClick={()=>{props.history.goBack()}}>*/}
+                    {/*<XButton />*/}
+                {/*</div>*/}
+            {/*</div>*/}
 
             {/* 방문자수, 단골수 카드*/}
-            <div style={{position: 'absolute', top: 10, right: 10, zIndex:2}}>
+            <div style={{position: 'absolute', top: 66, right: 10, zIndex:2}}>
                 <FarmersVisitorSummaryCard producerNo={producerNo} forceUpdateIndex={visitorCardForceUpdateIndex} />
             </div>
 
@@ -223,6 +228,7 @@ const FarmersDetailActivity = (props) => {
                                             imageUrl={Server.getImageURL() + goods.goodsImages[0].imageUrl}
                                             discountRate={Math.round(goods.discountRate)}
                                             remainedCnt={goods.remainedCnt}
+                                            blyReview={goods.blyReviewConfirm}
                                         />
                                         <SlideItemContent
                                             className={'p-2'}
@@ -230,7 +236,7 @@ const FarmersDetailActivity = (props) => {
                                             goodsNm={goods.goodsNm}
                                             currentPrice={goods.currentPrice}
                                             consumerPrice={goods.consumerPrice}
-                                            // discountRate={goods.discountRate}
+                                            discountRate={goods.discountRate}
                                         />
                                     </div>
                                 </Col>

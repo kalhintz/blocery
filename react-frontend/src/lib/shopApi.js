@@ -12,10 +12,10 @@ export const getConsumer = () => axios(Server.getRestAPIHost() + '/consumer', { 
 export const getConsumerByConsumerNo = (consumerNo) => axios(Server.getRestAPIHost() + '/consumer/consumerNo', { method: "get", params: {consumerNo: consumerNo}, withCredentials: true, credentials: 'same-origin' })
 
 // 소비자 정보 수정
-export const updateConsumerInfo = (data) => axios(Server.getRestAPIHost() + '/consumer', { method: "put", data:data, withCredentials: true, credentials: 'same=origin' })
+export const updateConsumerInfo = (data) => axios(Server.getRestAPIHost() + '/consumer', { method: "put", data:data, withCredentials: true, credentials: 'same-origin' })
 
 // 비밀번호 변경
-export const updateValword = (data) => axios(Server.getRestAPIHost() + '/consumer/valword', { method: "put", data:data, withCredentials: true, credentials: 'same=origin' })
+export const updateValword = (data) => axios(Server.getRestAPIHost() + '/consumer/valword', { method: "put", data:data, withCredentials: true, credentials: 'same-origin' })
 
 //택배사 조회(전체) : 소비자 배송 조회 용
 export const getTransportCompany = () => axios(Server.getRestAPIHost() + '/transportCompany', { method: "get", params: {}, withCredentials: true, credentials: 'same-origin' })
@@ -41,8 +41,14 @@ export const getOrdersByOrderGroupNo = (orderGroupNo) => axios(Server.getRestAPI
 // BLCT 주문 정보 취소
 export const addBlctOrderCancel = (data) => axios(Server.getRestAPIHost() + '/blctPayCancel', { method: "post", headers: { "Content-Type": "application/json" }, data: data, withCredentials: true, credentials: 'same-origin' })
 
+// BLCT 묶음배송 주문 정보 취소
+export const addBlctWrapOrderCancel = (data) => axios(Server.getRestAPIHost() + '/blctPayWrapCancel', { method: "post", headers: { "Content-Type": "application/json" }, data: data, withCredentials: true, credentials: 'same-origin' })
+
 // PG 주문 정보 취소 (아임포트 API)
 export const addPgOrderCancel = (data) => axios(Server.getRestAPIHost() + "/iamport/paycancel", { method: "post", headers: { "Content-Type": "application/json" }, data: data, withCredentials: true, credentials: 'same-origin' })
+
+// 묶음상품 PG 주문 정보 취소
+export const addPgWrapOrderCancel = (data) => axios(Server.getRestAPIHost() + "/iamport/payWrapCancel", { method: "post", headers: { "Content-Type": "application/json" }, data: data, withCredentials: true, credentials: 'same-origin' })
 
 // 장바구니 선택한 주문리스트 조회
 export const getCartListByConsumerNo = (consumerNo) => axios(Server.getRestAPIHost() + '/orderCartList', { method: "get", params: { consumerNo: consumerNo} , withCredentials: true, credentials: 'same-origin' })
@@ -50,20 +56,27 @@ export const getCartListByConsumerNo = (consumerNo) => axios(Server.getRestAPIHo
 // 주문정보 조회
 export const getOrderDetailByOrderSeq = (orderSeq) => axios(Server.getRestAPIHost() + '/order', { method: "get", params: { orderSeq: orderSeq} , withCredentials: true, credentials: 'same-origin' })
 
+// 주문번호가 속한 주문그룹의 모든 묶음배송 주문들 조회
+export const getOrderWrapListByOrderSeq = (orderSeq) => axios(Server.getRestAPIHost() + '/orderWrapList', { method: "get", params: { orderSeq: orderSeq} , withCredentials: true, credentials: 'same-origin' })
+
 // 소비자 주소록 등록/수정
 export const putAddress = (data) => axios(Server.getRestAPIHost() + '/putAddress', { method: "put", data:data , withCredentials: true, credentials: 'same-origin' })
 
 // 주문 - 기본배송지정보 수정(consumer Collection)
-export const updateDeliverInfo = (data) => axios(Server.getRestAPIHost() + '/deliverInfo', { method: "put", data:data, withCredentials: true, credentials: 'same=origin' })
+export const updateDeliverInfo = (data) => axios(Server.getRestAPIHost() + '/deliverInfo', { method: "put", data:data, withCredentials: true, credentials: 'same-origin' })
 
 // 주문 - 배송지정보 수정(order Collection)
-export const updateReceiverInfo = (data) => axios(Server.getRestAPIHost() + '/updateReceiverInfo', { method: "put", data:data, withCredentials: true, credentials: 'same=origin' })
+export const updateReceiverInfo = (data) => axios(Server.getRestAPIHost() + '/updateReceiverInfo', { method: "put", data:data, withCredentials: true, credentials: 'same-origin' })
 
 // 주문 - 소비자 구매확정 날짜 저장
-export const updateConsumerOkDate = (data) => axios(Server.getRestAPIHost() + '/shop/order/consumerOkDate', { method: "patch", data:data, withCredentials: true, credentials: 'same=origin' })
+export const updateConsumerOkDate = (data) => axios(Server.getRestAPIHost() + '/shop/order/consumerOkDate', { method: "patch", data:data, withCredentials: true, credentials: 'same-origin' })
 
 // 소비자별 주문정보 조회
 export const getOrderDetailListByConsumerNo = (consumerNo) => axios(Server.getRestAPIHost() + '/orderDetailListByConsumerNo', { method: "get", params: { consumerNo: consumerNo} , withCredentials: true, credentials: 'same-origin' })
+
+// 주문개수 조회 for New Mypage
+export const getOrderDetailCountForMypage = (consumerNo) => axios(Server.getRestAPIHost() + '/orderDetailCountForMypage', { method: "get" , withCredentials: true, credentials: 'same-origin' })
+
 
 // 리뷰 작성 대기목록 조회
 export const getWaitingGoodsReview = () => axios(Server.getRestAPIHost() + '/waitingGoodsReview', { method: "get", withCredentials: true, credentials: 'same-origin' })
@@ -132,4 +145,52 @@ export const getGoodsQnAByKeys = ({goodsNo, isPaging = false, limit = 10, page =
 // 소비자의 상품문의 등록()
 export const addGoodsQnA = (data) => axios(Server.getRestAPIHost() + '/goodsQnA', { method: "post", data: data, withCredentials: true, credentials: 'same-origin' })
 
+// 상품 찜리스트 조회
+export const getZzimList = (consumerNo) => axios(Server.getRestAPIHost() + '/zzimList', { method: "get", params:{consumerNo: consumerNo}, withCredentials: true, credentials: 'same-origin' })
 
+// 상품찜하기
+export const addZzim = (data) => axios(Server.getRestAPIHost() + '/zzim', { method: "post", data: data, withCredentials: true, credentials: 'same-origin' })
+
+// 상품찜 취소
+export const deleteZzim = (consumerNo, goodsNo) => axios(Server.getRestAPIHost() + '/zzim', { method: "delete", params:{consumerNo, goodsNo}, withCredentials: true, credentials: 'same-origin' })
+
+// 상품찜 여부 확인
+export const getZzim = (consumerNo, goodsNo) => axios(Server.getRestAPIHost() + '/zzim', { method: "get", params:{consumerNo, goodsNo}, withCredentials: true, credentials: 'same-origin' })
+
+// 타임세일 조회
+export const getTimeSaleList = () => axios(Server.getRestAPIHost() + '/b2cTimeSaleList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+//타임세일 진행중여부(배지용도)
+export const isTimeSaleBadge = () => axios(Server.getRestAPIHost() + '/isTimeSaleBadge', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+//마지막 타임세일본시간 저장. (로그인한 사용자에한함)
+//export const setLastSeenTimeSale = () => axios(Server.getRestAPIHost() + '/lastSeenTimeSale', { method: "post", withCredentials: true, credentials: 'same-origin' })
+
+// 블리타임 조회
+export const getBlyTimeList = () => axios(Server.getRestAPIHost() + '/b2cBlyTimeList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+// 블리타임 진행중여부(배지용도)
+export const isBlyTimeBadge = () => axios(Server.getRestAPIHost() + '/isBlyTimeBadge', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+
+//마지막 기획전 (배지용도,로그인한 사용자에한함)
+export const getLastMdPickNotSeen = () => axios(Server.getRestAPIHost() + '/lastMdPickNotSeen', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+//마지막 기획전본시간 저장. (로그인한 사용자에한함)
+export const setLastSeenMdPick = () => axios(Server.getRestAPIHost() + '/lastSeenMdPick', { method: "post", withCredentials: true, credentials: 'same-origin' })
+
+
+// 기획전 조회
+export const getMdPickListFront = () => axios(Server.getRestAPIHost() + '/shop/b2cMdPickList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+// 소비자 새로운 알림여부 조회
+export const isNewNotifiation = () => axios(Server.getRestAPIHost() + '/isNewNotifiation', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+// 소비자 KYC 정보 (세션정보 소비자번호로 KYC정보 가져옴)
+export const getConsumerKyc = () => axios(Server.getRestAPIHost() + '/consumer/kyc', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+//소비자 KYC 신청 등록 (ConsumerKyc 데이터) consumerNo값필수
+export const regConsumerKyc = (data) => axios(Server.getRestAPIHost() + '/consumer/regKyc', { method: "post", data:data, withCredentials: true, credentials: 'same-origin' })
+
+// 상품 공지 배너 조회
+export const getGoodsBannerList = () => axios(Server.getRestAPIHost() + '/shop/goodsBannerList', { method: "get", withCredentials: true, credentials: 'same-origin' })

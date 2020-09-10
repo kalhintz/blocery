@@ -1,5 +1,6 @@
 @import "Color.module.scss";
 @import "Text.module.scss";
+@import "Font.module.scss";
 $padding: .3em;
 
 .wrap {
@@ -74,4 +75,32 @@ $padding: .3em;
   width: 100%;
   height: 100%;
   text-align: center;
+}
+.alert{
+  /*   width: 100vw; */
+  margin: 4vmin 5vmin;
+  background-color: white;
+  text-decoration: none;
+  border-left: 4px solid $color-b2c-green;
+  padding: 10px 10px;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
+  display: block;
+}
+
+// 알림의 제목
+.alert > div:first-child {
+  margin-bottom: 7px;
+  font-size: $f12;
+}
+
+// 알림의 내용
+.alert > div:last-child {
+  line-height: 25px;
+  margin-bottom: 5px;
+}
+
+// 알림의 날짜
+.alert > span {
+  font-size: $f12;
+  color: $color-b2c-dark;
 }

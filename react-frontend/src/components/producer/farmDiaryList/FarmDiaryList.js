@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react'
 import Style from './FarmDiaryList.module.scss'
 import { Container, Row, Col, Button } from 'reactstrap'
 
-import DatePicker from 'react-date-picker'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import 'react-toastify/dist/ReactToastify.css'
 import { getLoginUser, getLoginUserType } from '~/lib/loginApi'
@@ -20,8 +19,8 @@ import { AgGridReact } from 'ag-grid-react';
 import { Server } from '../../Properties'
 
 //ag-grid
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+import "ag-grid-community/src/styles/ag-grid.scss";
+import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 export default class FarmDiaryList extends Component{
     constructor(props) {
@@ -63,7 +62,7 @@ export default class FarmDiaryList extends Component{
             const Style = {
                 width: 30, height: 30, paddingRight: '1px'
             }
-            return <img src={src} style={Style}/>
+            return <img src={src} style={Style} alt={'사진'}/>
         })
     }
 
@@ -145,8 +144,8 @@ export default class FarmDiaryList extends Component{
                 <div
                     id="myGrid"
                     style={{
-                        width: "100%",
-                        height: "450px"
+                        height: "calc(100vh - 180px)",
+                        width: "80vw"
                     }}
                     className="ag-theme-balham"
                 >

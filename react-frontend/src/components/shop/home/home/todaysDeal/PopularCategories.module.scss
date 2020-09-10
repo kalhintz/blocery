@@ -1,0 +1,44 @@
+@import "Color.module.scss";
+.grandTitleBox{
+  margin: 0px 20px 22px 20px;
+}
+.grandTitleBox > div:nth-child(1){
+  font-family: SeoulHangangL;
+  font-size: 22px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  letter-spacing: normal;
+}
+.grandTitleBox > div:nth-child(2){
+  font-family: NotoSansCJKkr;
+  font-size: 13px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  color: #929292;
+}
+.flexRow{
+  display: flex;
+  overflow: auto;
+}
+.card > div{
+  width: 76px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100%;
+  border: 1px solid $color-b2c-light;
+  cursor: pointer;
+}
+.card{
+  padding: 0px 3.5px 22px 3.5px;
+}
+.card:first-child{
+  padding-left: 20px;
+}
+.card:last-child{
+  padding-right: 20px;
+}

@@ -1,0 +1,9 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.farmInfo > li {
+  display: inline-block;
+  width: 50%;
+  vertical-align: top;
+  margin-top: 1em;
+}

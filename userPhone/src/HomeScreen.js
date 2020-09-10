@@ -1,12 +1,10 @@
 import React from 'react';
-import { ToastAndroid, View, SafeAreaView, BackHandler, Platform, Alert, Linking } from 'react-native';
+import { ToastAndroid, View, SafeAreaView, BackHandler, Platform, Alert, Linking, Clipboard } from 'react-native';
 import AsyncStorage from "@react-native-community/async-storage";
 import { Server } from './Properties';
 import BottomNavigation, {FullTab} from 'react-native-material-bottom-navigation';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import WebView from 'react-native-webview';
 import axios from 'axios';
-import DeviceInfo from 'react-native-device-info'
 import firebase from 'react-native-firebase';
 import SplashScreen from 'react-native-splash-screen';
 import ComUtil from "./ComUtil";
@@ -139,6 +137,7 @@ export default class HomeScreen extends React.Component {
         /* 여기가지 */
     }
 
+
     componentWillUnmount() {
 
         if (Platform.OS === 'android') {
@@ -185,23 +184,23 @@ export default class HomeScreen extends React.Component {
     goAppStoreAndExit = () => {
         let url = '';
         if (Platform.OS === 'android') {
-            // url = 'market://details?id=com.ezfarm.farmdiary';  // test용
             url = "market://details?id=com.blocery";
         } else {
-            url = 'itms-apps://itunes.apple.com/us/app/id${APP_STORE_LINK_ID}?mt=8';  // version2 에서는 url 확인해서 넣기
+            url = 'itms-apps://itunes.apple.com/us/app/%EB%A7%88%EC%BC%93%EB%B8%94%EB%A6%AC/id1471609293?l=ko&ls=1';
         }
 
         Linking.canOpenURL(url).then(supported => {
             console.log(supported);
-
-            if (Platform.OS === 'android')  // version2 에서는 url 유효하기에 제거
-                supported && Linking.openURL(url);
-
-            RNExitApp.exitApp();
+            supported && Linking.openURL(url);
+            if (Platform.OS === 'android') {
+                RNExitApp.exitApp();
+            } else {
+                setTimeout(() => {
+                    RNExitApp.exitApp();
+                }, 1000)
+            }
         }, (err) => console.log(err));
 
-        // Linking.openURL(url);
-        //
     }
 
     deleteWebviewCache = async() => {
@@ -257,21 +256,21 @@ export default class HomeScreen extends React.Component {
         }
     }
 
-    renderIcon = icon => ({ isActive }) => (
-        <Icon size={24} color='gray' name={icon} />
-    )
-
-    renderTab = ({ tab }) =>{
-        //renderTab 의 arguments 로 tab, isActive 를 받지만 isActive를 수동으로 제어하기 위해 state.pressedTabkey를 사용하도록 변경함
-        const isActive = this.state.pressedTabKey === tab.key
-        return <FullTab
-            isActive={isActive}
-            key={tab.key}
-            label={tab.label}
-            labelStyle={{ color: '#313131' }}
-            renderIcon={this.renderIcon(tab.icon)}
-        />
-    }
+    // renderIcon = icon => ({ isActive }) => (
+    //     <Icon size={24} color='gray' name={icon} />
+    // )
+    //
+    // renderTab = ({ tab }) =>{
+    //     //renderTab 의 arguments 로 tab, isActive 를 받지만 isActive를 수동으로 제어하기 위해 state.pressedTabkey를 사용하도록 변경함
+    //     const isActive = this.state.pressedTabKey === tab.key
+    //     return <FullTab
+    //         isActive={isActive}
+    //         key={tab.key}
+    //         label={tab.label}
+    //         labelStyle={{ color: '#313131' }}
+    //         renderIcon={this.renderIcon(tab.icon)}
+    //     />
+    // }
 
 
     getNewKey = () => {
@@ -279,9 +278,9 @@ export default class HomeScreen extends React.Component {
     }
 
 
-    sendInfoToWebView = async (tabKey) => {
-        this.changeTab(tabKey)
-    }
+    // sendInfoToWebView = async (tabKey) => {
+    //     this.changeTab(tabKey)
+    // }
 
     /* FCM ComUtil.js 에서 별도 구성함 */
     /*
@@ -357,17 +356,31 @@ export default class HomeScreen extends React.Component {
 
             //각 해당하는 탭으로 이동
             switch (notificationType){
-                case 'deliveryStart':
-                case 'goodsQnaAnswer':
-                case 'delayShippingGoods':
-                    await this.changeTab(TAB_KEY.MY_PAGE);
+                case 'deliveryStart': //배송시작
+                case 'producerCancelOrder': //생산자 주문취소
+                    await this.changeConsumerUrl( Server.getServerURL() + '/mypage?moveTo=orderList' ,TAB_KEY.MY_PAGE);
                     break;
 
                 case 'favoriteNewGoods':
-                case 'favoriteNewFarmDiary':
-                    await this.changeTab(TAB_KEY.HOME);
+                    await this.changeConsumerUrl( Server.getServerURL() + '/home/7' ,TAB_KEY.HOME);
+                    break;
+                case 'goodsQnaAnswer':
+                    await this.changeConsumerUrl( Server.getServerURL() + '/mypage?moveTo=goodsQnaList' ,TAB_KEY.MY_PAGE);
+                    break;
+                case 'noticePush': //공지사항을 푸시하는 경우
+                    await this.changeConsumerUrl( Server.getServerURL() + '/mypage?moveTo=noticeList' ,TAB_KEY.MY_PAGE);
                     break;
 
+                case 'favoriteNewFarmDiary': //생산일지
+                    //await this.changeTab(TAB_KEY.HOME);
+                    //break;
+                case 'delayShippingGoods':  //배송지연, 생산일지는 그냥 알림으로 이동
+                    //await this.changeTab(TAB_KEY.MY_PAGE);
+                    await this.changeConsumerUrl( Server.getServerURL() + '/mypage?moveTo=notificationList' ,TAB_KEY.MY_PAGE);
+                    break;
+
+
+                //생산자 --
                 case 'goodsQnaAsk':
                 case 'saleEndGoods':
                     await this.changeTab(TAB_KEY.CATEGORY);
@@ -389,6 +402,15 @@ export default class HomeScreen extends React.Component {
             }
         }
     };
+
+    changeConsumerUrl = async (uri, tabKey) => {
+        this.setState({
+            key: this.getNewKey(),
+            pressedTabKey: tabKey,
+            source: {uri: uri}
+        });
+    }
+
 
     // //유저타입이 맞는지 반환 - 미사용
     // userTypeOf = async (userType) => {
@@ -449,7 +471,7 @@ export default class HomeScreen extends React.Component {
     /* 여기까지 */
 
     // popup
-    goPopupScreen = (event) => {
+    goPopupScreen = async(event) => {
         //console.log({eventData: event.nativeEvent.data});
         if (!event.nativeEvent.data) {
             return; //empty URL - 왜 호출되는지..
@@ -513,8 +535,8 @@ export default class HomeScreen extends React.Component {
 
                     let tabs = this.getTabName(isProducer);
                     this.setState({
-                        tabs: tabs,
-                        key: this.getNewKey()
+                        tabs: tabs//,
+                        //무한루프문제로 막음  key: this.getNewKey()
                     });
 
                 });
@@ -529,10 +551,46 @@ export default class HomeScreen extends React.Component {
                 key: this.getNewKey()
             });
 
+        } else if(type === 'QRCODE_SCAN') {
+            this.props.navigation.navigate('Qrcode', {
+                onQrScanResult: this.qrcodeScanResult
+            });
+        } else if(type === 'CLIPBOARD_TEXT') {
+
+            this.copyFromClipboard();
+
+        } else if(type === 'CAMERA_PERMISSION') {
+
+            let data = await ComUtil.askCameraPermission();
+            const jsonData = JSON.stringify(data)
+            this.webView.ref.postMessage(jsonData)
+
         } else { //APP_LOG
             console.log(url); //url에 변수를 넣어서 찍기
         }
     };
+
+    copyFromClipboard = async() => {
+        let accountData = await Clipboard.getString();
+
+        let data = ({
+            accountFromPhone: accountData
+        })
+        console.log("copyFromClipboard : ", data);
+
+        const jsonData = JSON.stringify(data)
+        this.webView.ref.postMessage(jsonData)
+
+    }
+
+    qrcodeScanResult = (data) => {
+        console.log('HomeScreen qrcodeResult : ', data)
+
+        // { qrcodeResult: 'I love you' }  이렇게 들어오는 데이터 중에 value만 webView로 넘겨야 하는디.....
+        const jsonData = JSON.stringify(data)
+        this.webView.ref.postMessage(jsonData)
+
+    }
 
     popupClosed = (data) => {
 
@@ -557,7 +615,8 @@ export default class HomeScreen extends React.Component {
 
         const { url, param } = JSON.parse(data)
         console.log('#######################HomeScreen : popupClosed -' + url);
-        //
+        const isRefresh = (param && param.isRefresh) ? param.isRefresh : true;
+
         //페이지 Redirection : ClosePopupAndMovePage
         if (url) { //URL refresh
             const uri = {uri: Server.getServerURL() + url}
@@ -567,10 +626,11 @@ export default class HomeScreen extends React.Component {
             })
         } else {
             //팝업 닫을 때 refresh. : CLOSE_POPUP
-            this.setState({key: this.state.key + 1});// - 혹시 refresh 필요시. 호출
+            //this.setState({key: this.state.key + 1});// - 혹시 refresh 필요시. 호출
+            if (isRefresh) {
+                this.webView.ref.reload();
+            }
         }
-
-
         // else { //fronEnd로 전달.
         //     this.webView.ref.postMessage(data);
         // }
@@ -593,7 +653,7 @@ export default class HomeScreen extends React.Component {
                     android: () =>
                         <WebView
                             //source={{ uri: 'https://mobilehtml5.org/ts/?id=23' }}
-                            userAgent = {'BloceryApp-Android:'+ DeviceInfo.getUserAgent()}
+                            userAgent = {'BloceryAppQR-Android'}
                             key={this.state.key}
                             source={this.state.source}
                             ref={(webView) => {
@@ -608,13 +668,13 @@ export default class HomeScreen extends React.Component {
 
                     ios:  () =>
                         // https://facebook.github.io/react-native/docs/0.59/safeareaview
-                        <SafeAreaView style={{flex: 1, backgroundColor: 'rgb(23,162,184)'}}>
+                        <SafeAreaView style={{flex: 1, backgroundColor: 'rgb(255,255,255)'}}>
                             <WebView
                                 style={{flex: 1}}
                                 //source={{ uri: 'https://mobilehtml5.org/ts/?id=23' }}
                                 // iOS WebView 는 AppDelegate.m 에서 설정 https://stackoverflow.com/questions/36590207/set-user-agent-with-webview-with-react-native
                                 // iOS WKWebView 는 여기서 설정된 것 사용
-                                userAgent = {'BloceryApp-iOS:'+ DeviceInfo.getUserAgent()}
+                                userAgent = {'BloceryAppQR-iOS'}
                                 useWebKit={true}
                                 sharedCookiesEnabled={true}
                                 key={this.state.key}
@@ -631,11 +691,6 @@ export default class HomeScreen extends React.Component {
                         </SafeAreaView>
                 })()}
 
-                <BottomNavigation
-                    onTabPress={newTab => this.sendInfoToWebView(newTab.key)}
-                    renderTab={this.renderTab}
-                    tabs={this.state.tabs}
-                />
             </View>
 
         );

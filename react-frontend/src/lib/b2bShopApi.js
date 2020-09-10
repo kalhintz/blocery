@@ -90,10 +90,10 @@ export const addFoodsReview = (data) => axios(Server.getRestAPIHost() + '/b2b/fo
 export const updFoodsReview = (data) => axios(Server.getRestAPIHost() + '/b2b/foodsReview', { method: "put", data: data, withCredentials: true, credentials: 'same-origin' })
 
 // 리뷰 삭제 2. dealSeq->foodsNo
-export const delFoodsReview = (foodsNo) => axios(Server.getRestAPIHost() + '/b2b/foodsReview', { method: "delete", params:{foodsNo: foodsNo}, withCredentials: true, credentials: 'same-origin' })
+export const delFoodsReview = (dealSeq, foodsNo) => axios(Server.getRestAPIHost() + '/b2b/foodsReview', { method: "delete", params:{dealSeq: dealSeq, foodsNo: foodsNo}, withCredentials: true, credentials: 'same-origin' })
 
 // 리뷰 좋아요 카운트 증가 3. dealSeq->foodsNo
-export const likedFoodsReview = (foodsNo) => axios(Server.getRestAPIHost() + '/b2b/foodsReview/like', { method: "post", params:{foodsNo: foodsNo}, withCredentials: true, credentials: 'same-origin' })
+export const likedFoodsReview = (dealSeq, foodsNo) => axios(Server.getRestAPIHost() + '/b2b/foodsReview/like', { method: "post", params:{dealSeq: dealSeq, foodsNo: foodsNo}, withCredentials: true, credentials: 'same-origin' })
 
 // B2B에서
 // // 재배일지목록 조회(전체)

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">
+    <defs>
+        <clipPath id="prefix__clip-path">
+            <path id="prefix__사각형_4481" d="M0 0H22V21H0z" data-name="사각형 4481" style="fill:none"/>
+        </clipPath>
+    </defs>
+    <g id="prefix__ic_my_5" transform="translate(292 -583)">
+        <path id="prefix__사각형_6" d="M0 0H26V26H0z" data-name="사각형 6" transform="translate(-292 583)" style="fill:#ccc;opacity:0"/>
+        <g id="prefix__그룹_9491" data-name="그룹 9491" transform="translate(-507.425 554.547)">
+            <g id="prefix__그룹_9490" data-name="그룹 9490" transform="translate(217.425 30.453)">
+                <g id="prefix__그룹_9489" data-name="그룹 9489">
+                    <path id="prefix__패스_13949" d="M239.779 38.462l-7.046-1.024-3.151-6.385a.53.53 0 00-.951 0l-3.151 6.385-7.046 1.023a.531.531 0 00-.294.9l5.1 4.97-1.2 7.017a.53.53 0 00.77.559l6.3-3.313 6.3 3.313a.53.53 0 00.769-.559l-1.2-7.017 5.1-4.97a.53.53 0 00-.294-.9zm-5.744 5.309a.53.53 0 00-.153.469l1.069 6.233-5.6-2.942a.528.528 0 00-.494 0l-5.6 2.942 1.069-6.233a.529.529 0 00-.152-.469l-4.529-4.414 6.258-.909a.53.53 0 00.4-.29l2.8-5.671 2.8 5.671a.529.529 0 00.4.29l6.258.909zm0 0" data-name="패스 13949" transform="translate(-217.989 -30.779)"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
+    <defs>
+        <style>
+            .prefix__cls-2{stroke:#000;stroke-width:.3px}
+        </style>
+    </defs>
+    <g id="prefix__shopping-cart" transform="translate(2 3)">
+        <g id="prefix__그룹_8446" data-name="그룹 8446">
+            <g id="prefix__그룹_8445" data-name="그룹 8445">
+                <path id="prefix__사각형_4388" d="M0 0H30V30H0z" data-name="사각형 4388" transform="translate(-2 -3)" style="opacity:0"/>
+                <path id="prefix__패스_11043" d="M23.442 2.3H4.6v.165l-.236-.808A2.311 2.311 0 002.156 0H.575a.575.575 0 000 1.15h1.581a1.155 1.155 0 011.1.828l3.581 12.267L5 16.537a1.852 1.852 0 001.45 3.008h15.969a.575.575 0 000-1.15H6.45a.7.7 0 01-.548-1.14l1.848-2.309h11.275a2.31 2.31 0 002.081-1.32L25.117 5.1a1.867 1.867 0 00.176-.788v-.161A1.853 1.853 0 0023.442 2.3zm.7 2.014a.7.7 0 01-.067.3l-4.011 8.524a1.156 1.156 0 01-1.041.66H7.9L4.886 3.449h18.556a.7.7 0 01.7.7z" class="prefix__cls-2" data-name="패스 11043"/>
+                <path id="prefix__패스_11044" d="M87.632 384a2.3 2.3 0 102.3 2.3 2.3 2.3 0 00-2.3-2.3zm0 3.449a1.15 1.15 0 111.15-1.15 1.151 1.151 0 01-1.15 1.15z" class="prefix__cls-2" data-name="패스 11044" transform="translate(-80.734 -363.306)"/>
+                <path id="prefix__패스_11045" d="M343.632 384a2.3 2.3 0 102.3 2.3 2.3 2.3 0 00-2.3-2.3zm0 3.449a1.15 1.15 0 111.15-1.15 1.151 1.151 0 01-1.15 1.15z" class="prefix__cls-2" data-name="패스 11045" transform="translate(-322.938 -363.306)"/>
+            </g>
+        </g>
+    </g>
+</svg>

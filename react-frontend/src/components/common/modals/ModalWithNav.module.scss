@@ -40,15 +40,14 @@
       max-height: 35em;
       overflow: auto;
     }
-
-    //props.noPadding 일 경우
-    & .noPadding {
-      padding: 0;
-      margin: 0;
-    }
   }
 }
 
+//props.noPadding 일 경우
+.noPadding {
+  padding: 0;
+  margin: 0;
+}
 
 @keyframes modalAni {
   0%{opacity: 0;}

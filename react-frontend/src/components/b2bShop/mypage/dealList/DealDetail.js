@@ -245,7 +245,8 @@ export default class DealDetail extends Component {
                 {
                     this.state.loading && <BlocerySpinner/>
                 }
-                <B2bShopXButtonNav fixed history={this.props.history}  forceBackUrl={`/b2b/mypage/dealList?buyerNo=${dealDetail.buyerNo}`}> 주문 상세내역 </B2bShopXButtonNav>
+                <B2bShopXButtonNav fixed historyBack history={this.props.history}
+                > 주문 상세내역 </B2bShopXButtonNav>
                 <br />
                 <Container fluid>
                     <Row>
@@ -282,7 +283,7 @@ export default class DealDetail extends Component {
                                         return(
                                             <div key={index} className='d-flex pt-2 mb-1'>
                                                 <div className={classnames(Style.img, 'pr-2')} onClick={this.getFoodsInfo.bind(this, foodsNo)}>
-                                                    <img className={Style.goodsImg} src={Server.getThumbnailURL()+goodsImages[0].imageUrl} />
+                                                    <img className={Style.goodsImg} src={Server.getThumbnailURL()+goodsImages[0].imageUrl}  alt={'상품사진'}/>
                                                 </div>
                                                 <div>
                                                     <small><div className='font-weight-bold' onClick={this.getFoodsInfo.bind(this, foodsNo)}>{goodsNm}</div></small>
@@ -290,7 +291,7 @@ export default class DealDetail extends Component {
                                                     <small><div>수량 : {orderCnt}개</div></small>
                                                 </div>
                                             </div>
-                                            )
+                                        )
                                     })
                                 }
                             </div>
@@ -309,24 +310,24 @@ export default class DealDetail extends Component {
                                     </Row>
                                     :                               // 구매확정일이 없으면 배송중/상품준비중
                                     (dealDetail.trackingNumber ?     // 운송장번호 있으면 배송중
-                                        (
-                                            dealDetail.deliveryMethod === 'taekbae' ?
-                                                <Row style={{marginTop: '1em'}}>
-                                                    <Col xs={6}>
-                                                        <Button block outline color="secondary" onClick={this.deliveryTracking}>배송조회</Button>
-                                                    </Col>
-                                                    <Col xs={6}>
-                                                        <Button block outline color="secondary" onClick={this.contactSeller}>판매자 문의</Button>
-                                                    </Col>
-                                                </Row>
-                                                :
-                                                <Row style={{marginTop: '1em'}}>
-                                                    <Col xs={12}>
-                                                        <Button block outline color="secondary" onClick={this.contactSeller}>판매자 문의</Button>
-                                                    </Col>
-                                                </Row>
-                                        )
-                                        :                   // 운송장번호 없으면 상품준비중
+                                            (
+                                                dealDetail.deliveryMethod === 'taekbae' ?
+                                                    <Row style={{marginTop: '1em'}}>
+                                                        <Col xs={6}>
+                                                            <Button block outline color="secondary" onClick={this.deliveryTracking}>배송조회</Button>
+                                                        </Col>
+                                                        <Col xs={6}>
+                                                            <Button block outline color="secondary" onClick={this.contactSeller}>판매자 문의</Button>
+                                                        </Col>
+                                                    </Row>
+                                                    :
+                                                    <Row style={{marginTop: '1em'}}>
+                                                        <Col xs={12}>
+                                                            <Button block outline color="secondary" onClick={this.contactSeller}>판매자 문의</Button>
+                                                        </Col>
+                                                    </Row>
+                                            )
+                                            :                   // 운송장번호 없으면 상품준비중
                                             <Row style={{marginTop: '1em'}}>
                                                 <Col xs={12}>
                                                     {/*[주문취소버튼 활성 및 비활성]*/}
@@ -346,10 +347,10 @@ export default class DealDetail extends Component {
                         <Col xs="9"><h6> 배송지 정보 </h6></Col>
                         {/*수정 버튼*/}
                         {/*<Col xs="3">*/}
-                            {/*{*/}
-                                {/*deliveryMethod === 'direct' || dealPayStatus === 'cancelled' || dealPayStatus === 'failed' || dealDetail.trackingNumber ? null :*/}
-                                    {/*<Button outline size="sm" className="float-right" onClick={this.updateDeliveryInfo}>수정</Button>*/}
-                            {/*}*/}
+                        {/*{*/}
+                        {/*deliveryMethod === 'direct' || dealPayStatus === 'cancelled' || dealPayStatus === 'failed' || dealDetail.trackingNumber ? null :*/}
+                        {/*<Button outline size="sm" className="float-right" onClick={this.updateDeliveryInfo}>수정</Button>*/}
+                        {/*}*/}
                         {/*</Col>*/}
                     </Row>
                     <Row>
@@ -387,16 +388,16 @@ export default class DealDetail extends Component {
                     </Row>
                     {
                         dealPayCardName &&
-                            <Row>
-                                <Col xs="4">
-                                    <small>
-                                        결제카드
-                                    </small>
-                                </Col>
-                                <Col xs="8" className={'text-right'}>
-                                    <small>{dealPayCardName}</small>
-                                </Col>
-                            </Row>
+                        <Row>
+                            <Col xs="4">
+                                <small>
+                                    결제카드
+                                </small>
+                            </Col>
+                            <Col xs="8" className={'text-right'}>
+                                <small>{dealPayCardName}</small>
+                            </Col>
+                        </Row>
                     }
                     <Row>
                         <Col xs="4">
@@ -454,25 +455,25 @@ export default class DealDetail extends Component {
                     {
                         //주문취소시 총 환불금액 표시
                         (dealPayMethod === 'card' && dealPayStatus === "cancelled") &&
-                            <Row>
-                                <Col xs="8"><h6>총 환불금액</h6></Col>
-                                <Col xs="4" className={classnames('text-right', 'text-danger')}>
-                                    {
-                                        ComUtil.addCommas(ComUtil.toNum(dealDetail.orderPrice))
-                                    }
-                                    { ' 원' }
-                                </Col>
-                            </Row>
+                        <Row>
+                            <Col xs="8"><h6>총 환불금액</h6></Col>
+                            <Col xs="4" className={classnames('text-right', 'text-danger')}>
+                                {
+                                    ComUtil.addCommas(ComUtil.toNum(dealDetail.orderPrice))
+                                }
+                                { ' 원' }
+                            </Col>
+                        </Row>
                     }
                     {/*<ModalWithNav show={this.state.deliveryModal} title={'배송지 수정'} onClose={this.updateDeliveryCallback} noPadding>*/}
-                        {/*<UpdateAddress*/}
-                            {/*dealSeq={dealDetail.dealSeq}*/}
-                            {/*receiverZipNo={dealDetail.receiverZipNo}*/}
-                            {/*receiverAddr={dealDetail.receiverAddr}*/}
-                            {/*receiverAddrDetail={dealDetail.receiverAddrDetail}*/}
-                            {/*receiverPhone={dealDetail.receiverPhone}*/}
-                            {/*receiverName={dealDetail.receiverName}*/}
-                        {/*/>*/}
+                    {/*<UpdateAddress*/}
+                    {/*dealSeq={dealDetail.dealSeq}*/}
+                    {/*receiverZipNo={dealDetail.receiverZipNo}*/}
+                    {/*receiverAddr={dealDetail.receiverAddr}*/}
+                    {/*receiverAddrDetail={dealDetail.receiverAddrDetail}*/}
+                    {/*receiverPhone={dealDetail.receiverPhone}*/}
+                    {/*receiverName={dealDetail.receiverName}*/}
+                    {/*/>*/}
                     {/*</ModalWithNav>*/}
                 </Container>
                 <ToastContainer/>

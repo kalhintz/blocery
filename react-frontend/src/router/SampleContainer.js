@@ -2,8 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Route, Switch, Redirect } from 'react-router-dom'
 
 import { Header } from '../components/shop/header'
-import { Counter, ImageCompressor } from '../components/sample'
-
+import { ImageCompressor, KycImageUploader } from '../components/sample'
 
 class SampleContainer extends Component {
     constructor(props) {
@@ -14,8 +13,8 @@ class SampleContainer extends Component {
             <Fragment>
                 <Header/>
                 <Switch>
-                    <Route path='/sample/mobx' component={Counter} />
                     <Route path='/sample/imageCompressor' component={ImageCompressor} />
+                    <Route path='/sample/kycImage' component={KycImageUploader} />
                     <Route component={Error}/>
                 </Switch>
             </Fragment>

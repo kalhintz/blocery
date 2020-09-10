@@ -7,6 +7,15 @@ import { BlocerySpinner } from '~/components/common'
 import { getConsumerFavoriteGoods } from '~/lib/goodsApi'
 import ComUtil from '~/util/ComUtil'
 import { Server } from '~/components/Properties'
+
+import { GrandTitle } from '~/components/common/texts'
+import Css from './FavoriteGoods.module.scss'
+import {IconStore} from '~/components/common/icons'
+import {BodyFullHeight} from '~/components/common/layouts'
+import {LoginLinkCard} from '~/components/common/cards'
+import Footer from '../footer'
+
+
 const FavoriteGoods = (props) => {
 
     const [data, setData] = useState([])
@@ -22,6 +31,9 @@ const FavoriteGoods = (props) => {
                 search()
             }
         })
+
+        console.log('didMount 신상품')
+
     }, [])
 
     async function search() {
@@ -52,84 +64,79 @@ const FavoriteGoods = (props) => {
 
     if(!isLoggedIn){
         return(
-            <div className='d-flex justify-content-center align-items-center h-100 bg-secondary text-white m-2'
-                 style={{minHeight: 200}}
-            >
-                <span className='f2 mr-1' onClick={onLoginClick}><u>로그인</u></span><span>하여 단골농장을 추가하세요!</span>
-            </div>
+            <BodyFullHeight nav homeTabbar bottomTabbar>
+                {/*<div className='d-flex justify-content-center align-items-center h-100 bg-secondary text-white m-2'*/}
+                {/*style={{minHeight: 200}}*/}
+                {/*>*/}
+                {/*<span className='f2 mr-1' onClick={onLoginClick}><u>로그인</u></span><span>하여 단골농장을 추가하세요!</span>*/}
+                {/*</div>*/}
+
+
+                <LoginLinkCard regularList icon description={'로그인 하여 내 단골농장의 상품을 실시간 확인하세요!'} onClick={onLoginClick}/>
+
+            </BodyFullHeight>
         )
     }
+
 
     return (
         <Fragment>
 
             {
-                loading && <BlocerySpinner/>
+                // loading && <BlocerySpinner/>
             }
 
-            <HeaderTitle
-                sectionLeft={<div>총 {ComUtil.addCommas(count)}개 상품</div>}
+            <GrandTitle
+                smallText={'내 단골 생산자(농가)의'}
+                largeText={'실시간 상품'}
             />
 
-            <hr className='m-0'/>
+            {/*<HeaderTitle*/}
+            {/*sectionLeft={<div>총 {ComUtil.addCommas(count)}개 상품</div>}*/}
+            {/*/>*/}
 
-                {
-                    //margin 겹침 현상은 parent 객체에 아무 디자인 되지 않았을 경우 top, bottom 에서만 일어남. left, right 는 마짐겹친에 적용되지 않음
-                    data.map( goods => {
-                        return(
-                            <div key={'favoriteGoods'+goods.goodsNo}>
-                                <div className='d-flex m-2'>
+            {
+                //margin 겹침 현상은 parent 객체에 아무 디자인 되지 않았을 경우 top, bottom 에서만 일어남. left, right 는 마짐겹친에 적용되지 않음
+                data.map( goods => {
+                    return(
+                        <div key={'favoriteGoods'+goods.goodsNo}
+                             className={Css.item} onClick={onClick.bind(this, goods)}
+                        >
+                            <SlideItemHeaderImage
+                                size={'sm'}
+                                imageUrl={Server.getThumbnailURL() + goods.goodsImages[0].imageUrl}
+                                imageWidth={100}
+                                imageHeight={100}
+                                discountRate={Math.round(goods.discountRate)}
+                                remainedCnt={goods.remainedCnt}
+                                blyReview={goods.blyReviewConfirm}
+                            />
 
-                                    <SlideItemHeaderImage
-                                        onClick={onClick.bind(this, goods)}
-                                        imageUrl={Server.getThumbnailURL() + goods.goodsImages[0].imageUrl}
-                                        imageWidth={100}
-                                        imageHeight={100}
-                                        discountRate={Math.round(goods.discountRate)}
-                                        remainedCnt={goods.remainedCnt}
-                                    />
 
-                                    <div className='flex-grow-1'>
-                                        <SlideItemContent
-                                            className='ml-2'
-                                            onClick={onClick.bind(this, goods)}
-                                            directGoods={goods.directGoods}
-                                            goodsNm={goods.goodsNm}
-                                            currentPrice={goods.currentPrice}
-                                            consumerPrice={goods.consumerPrice}
-                                            // discountRate={goods.discountRate}
-                                        />
-                                        <div className='mt-2 ml-2 f6'
-                                             onClick={onClick.bind(this, goods, 'farmers')} >
-                                            <span>[{goods.level}등급]</span>
-                                            <span className='ml-1 font-weight-normal text-info'>
-                                                {goods.farmName}
-                                            </span>
-                                            <span className='ml-1'>
-                                                |
-                                            </span>
-                                            <span className='ml-1'>
-                                                총 {goods.goodsCount}개 상품
-                                            </span>
-                                            {/*<div style={{height: 20}} className='border-0 f6'>*/}
-                                                {/*<span className='mr-1'>총 99개 상품</span>*/}
-                                                {/*<span className='mr-1'>|</span>*/}
-                                                {/*<IconStarGroup score={6} />*/}
-                                            {/*</div>*/}
-                                        </div>
-                                    </div>
+                            <div className={Css.content}>
+                                <div className={Css.farmersInfo} onClick={onClick.bind(this, goods, 'farmers')} >
+                                    <div><IconStore style={{marginRight: 6}}/></div>
+                                    {/* goods.level 농가등 */}
+                                    <div>{goods.farmName}</div>
+                                    {/*<span className='ml-1'>총 {goods.goodsCount}개 상품</span>*/}
                                 </div>
-                                <hr/>
+                                <SlideItemContent
+                                    directGoods={goods.directGoods}
+                                    goodsNm={goods.goodsNm}
+                                    currentPrice={goods.currentPrice}
+                                    consumerPrice={goods.consumerPrice}
+                                    discountRate={goods.discountRate}
+                                />
                             </div>
 
-                        )
-                    })
-                }
 
 
+                        </div>
 
-
-
+                    )
+                })
+            }
+            <Footer/>
         </Fragment>
     )
 }

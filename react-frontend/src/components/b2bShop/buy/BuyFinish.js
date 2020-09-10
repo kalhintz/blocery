@@ -284,7 +284,7 @@ export default class BuyFinish extends Component {
                                 return (
                                     <div className="d-flex p-2" key={'dealGoodsList-'+idx}>
                                         <div className="p-3">
-                                            <img className={Style.img} src={this.getFirstImgUrl(deal.orderImg)} />
+                                            <img className={Style.img} src={this.getFirstImgUrl(deal.orderImg)} alt={'사진'} />
                                         </div>
                                         <div className="p-2 d-flex flex-column justify-content-center flex-grow-1" style={{fontSize:'0.8rem'}}>
                                             <div>

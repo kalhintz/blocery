@@ -1,33 +1,51 @@
 import React, { Component, Fragment } from 'react';
-import { Collapse, Button } from 'reactstrap';
-import { CopyToClipboard } from 'react-copy-to-clipboard'
+import { Collapse, Modal, ModalHeader, ModalBody } from 'reactstrap';
 
-import { getConsumer, getOrderDetailListByConsumerNo } from '../../../lib/shopApi'
-import { scOntGetBalanceOfBlct, scOntGetConsumerBlctHistory } from "../../../lib/smartcontractApi";
-import { BLCT_TO_WON } from "../../../lib/exchangeApi"
-import { getLoginUser } from "../../../lib/loginApi"
+import { getConsumer, getOrderDetailListByConsumerNo } from '~/lib/shopApi'
+import { scOntGetBalanceOfBlct, scOntGetConsumerBlctHistory } from "~/lib/smartcontractApi";
+import { BLCT_TO_WON } from "~/lib/exchangeApi"
+import { getConsumerBlctToBlyList, getConsumerBlyToBlctList } from '~/lib/swapApi'
+import ComUtil from '~/util/ComUtil'
 
-import ComUtil from '../../../util/ComUtil'
-
-import classNames from 'classnames' //여러개의 css 를 bind 하여 사용할 수 있게함
-
+import { Button as Btn } from '~/styledComponents/shared/Buttons'
+import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed } from '~/styledComponents/shared/Layouts'
+import { HrThin, HrHeavyX2 } from '~/styledComponents/mixedIn'
+import { Checkbox } from '@material-ui/core'
+import { color } from "~/styledComponents/Properties";
 import { ShopXButtonNav } from '../../common'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import 'react-toastify/dist/ReactToastify.css'
-import mypageStyle from './MyPage.module.scss'
+
 import { scOntGetConsumerMissionEventBlctHistory, setMissionClear, scOntGetBlctBountyHistory } from "~/lib/eventApi"
+import {BsBoxArrowInDownLeft, BsBoxArrowUpRight} from 'react-icons/bs'
+
+import styled from 'styled-components'
+
+import BlySise from '~/components/common/blySise/BlySise'
+import { AiOutlineInfoCircle } from 'react-icons/ai'
+
+import Skeleton from '~/components/common/cards/Skeleton'
+
+const CheckboxLayout = styled(Flex)`
+    & label {
+        margin: 0;
+    }
+`;
 
 export default class TokenHistory extends Component {
     constructor(props){
         super(props)
         this.state = {
-            tokenBalance: 0,
+            tokenBalance: '',
             loginUser:'',
             account: '',
             blctList: null,
             copied: false,
             isOpen: false,
-            blctToWon: ''           // BLCT 환율
+            blctToWon: '',           // BLCT 환율
+            onlyIpChul: false,
+            noIpChulData: false,
+            blySiseModal: false
         }
     }
 
@@ -176,13 +194,44 @@ export default class TokenHistory extends Component {
             })
         }
 
-        ComUtil.sortDate(list, 'date', true);
+        // swap 내역 추가
+        const {data: blctToBlyList } = await getConsumerBlctToBlyList();
+        if(blctToBlyList && blctToBlyList.length > 0) {
+            blctToBlyList.map( item => {
+                list.push({
+                    blct: item.blctAmount,
+                    date: item.swapTimestamp,
+                    goodsNm: item.memo ? item.memo : "",
+                    stateName: 'BLY 출금',
+                    gubun: 'minus'
+                })
+            });
+        }
 
-        if(list.length != 0) {
+        const {data: blyToBlctList } = await getConsumerBlyToBlctList();
+        if(blyToBlctList && blyToBlctList.length > 0) {
+            blyToBlctList.map( item => {
+                list.push({
+                    blct: item.blctPayAmount,
+                    date: item.blctPayedTime,
+                    stateName: 'BLY 입금',
+                    gubun: 'plus'
+                })
+            });
+        }
+
+        if(blyToBlctList.length === 0 && blctToBlyList.length === 0) {
             this.setState({
-                blctList: list
+                noIpChulData: true
             })
         }
+
+        ComUtil.sortDate(list, 'date', true);
+        //console.log('list', list)
+
+        this.setState({
+            blctList: list
+        })
 
         console.log('myPage-componentDidMount:', this.state.loginUser, this.state.loginUser.account);
 
@@ -224,77 +273,195 @@ export default class TokenHistory extends Component {
         })
     }
 
+    moveToDeposit = () => {
+        this.props.history.push('/deposit')
+    }
+
+    moveToWithDraw = () => {
+        this.props.history.push('/withdraw')
+    }
+
+    checkOnlyIpCulList = () => {
+        this.setState(prevState => ({
+            onlyIpChul: !prevState.onlyIpChul
+        }));
+    }
+
+    //BLY 시세 모달
+    onBlySiseClick = async () => {
+        this.setState({
+            blySiseModal: true
+        })
+    }
+
+    //BLY 시세 모달 toggle
+    onBlySiseModalToggle = () => {
+        this.setState({
+            blySiseModal: !this.state.blySiseModal
+        })
+    }
+
+
     render() {
-
-        if(!this.state.blctToWon) return null;
-
         const account = this.state.account
         const accountHead = account.substring(0,7)
         const accountTail = account.substring(account.length-7,account.length)
         const data = this.state.blctList
+        //console.log('data2', data)
         return (
             <Fragment>
-                <ShopXButtonNav back history={this.props.history}>보유적립금</ShopXButtonNav>
+                <ShopXButtonNav underline historyBack>자산</ShopXButtonNav>
 
-                <div className='p-3 bg-light'>
-                    <div className='p-3'>
-                        <div className='text-center'>
-                            <span className='font-weight-bold text-danger f1'>{ComUtil.addCommas(parseFloat(this.state.tokenBalance).toFixed(2))}{' '}</span>
-                            <span className='f1'>BLCT / {ComUtil.addCommas(ComUtil.roundDown(this.state.tokenBalance * this.state.blctToWon, 2))}원</span>
-                        </div>
-                        <div className='text-right f6 text-secondary'>1 BLCT = {ComUtil.addCommas(this.state.blctToWon)}원</div>
-                        <div className='text-left f6 pt-3'>내지갑 주소 (클릭시 복사)</div>
-                        <div className='text-center'>
-                            <CopyToClipboard text={account} onCopy={this.onCopy}>
-                                <Button outline block >{accountHead} ... {accountTail}</Button>
-                            </CopyToClipboard>
-                        </div>
+                <Div p={30} pb={26}>
 
-                        <div className='text-center cursor-pointer m-2' onClick={() => {
-                            this.setState({isOpen: !this.state.isOpen})
-                        }}>
-                            <u>지갑주소 이용방법</u>
-                        </div>
-                        <Collapse isOpen={this.state.isOpen} className={'mb-3'}>
-                            <div className={'f5'}>
-                                <p>1. 지갑주소를 복사한 후에 explorer.ont.io에 가서 복사한 주소로 검색을 하면 정확한 transaction history를 확인할 수 있습니다.</p>
-                                <p>2. 내 지갑주소로 BLCT를 입금하신 후, 구매시에 사용이 가능합니다.</p>
-                            </div>
-                        </Collapse>
+                    {
+                        this.state.tokenBalance === '' ? <Skeleton p={0} mb={20}/> : (
+                            <Div textAlign={'left'} mb={20}>
+                                <Div bold fontSize={37}>{
+                                    this.state.tokenBalance === '' ? <Skeleton.Row width={100}/> :
+                                        `${ComUtil.addCommas(parseFloat(this.state.tokenBalance).toFixed(2))} BLY`
+                                }</Div>
+                                <Div bold fg={'green'} fontSize={20} mb={3}>{
+                                    this.state.tokenBalance === '' ? <Skeleton.Row width={60}/> :
+                                        ComUtil.addCommas(ComUtil.roundDown(this.state.tokenBalance * this.state.blctToWon, 2))
+                                } 원</Div>
+                                <Flex>
+                                    <Div fg={'adjust'} fontSize={12}>1 BLY = {ComUtil.addCommas(this.state.blctToWon)}원</Div>
+                                    <Div ml={3} mb={1} onClick={this.onBlySiseClick}>
+                                        <AiOutlineInfoCircle color={color.adjust}/>
+                                    </Div>
 
-                    </div>
-                </div>
+                                </Flex>
+                            </Div>
+                        )
+                    }
+
+
+
+                    <Flex>
+                        <Div width={'50%'} p={5}>
+                            <Btn bg={'white'} bc={'light'} rounded={2} py={10} fontSize={13} block onClick={this.moveToDeposit}>
+                                <Flex justifyContent={'center'} alignItems={'flex-start'}>
+                                    <BsBoxArrowInDownLeft size={20}/>
+                                    <Div ml={8}>입금</Div>
+                                </Flex>
+                            </Btn>
+                        </Div>
+                        <Div width={'50%'} p={5}>
+                            <Btn bg={'white'} bc={'light'} rounded={2} py={10} fontSize={13} block onClick={this.moveToWithDraw}>
+                                <Flex justifyContent={'center'} alignItems={'flex-start'}>
+                                    <BsBoxArrowUpRight size={20}/>
+                                    <Div ml={8}>출금</Div>
+                                </Flex>
+                            </Btn>
+                        </Div>
+                    </Flex>
+
+                    {/*<Flex mb={5} fontSize={12}>*/}
+                    {/*<Div>내지갑 주소 (클릭시 복사)</Div>*/}
+                    {/*<Div right={0} position={'absolute'} zIndex={-1} width={136} height={157}>*/}
+                    {/*<Img src={bgBill} cover={'contain'} m={0} />*/}
+                    {/*</Div>*/}
+                    {/*<Right cursor onClick={() => {*/}
+                    {/*this.setState({isOpen: !this.state.isOpen})*/}
+                    {/*}}>*/}
+                    {/*<Div bb fg={'adjust'}>지갑주소 이용방법</Div>*/}
+                    {/*</Right>*/}
+                    {/*</Flex>*/}
+
+                    {/*<Div textAlign={'center'}>*/}
+                    {/*<CopyToClipboard text={account} onCopy={this.onCopy}>*/}
+                    {/*<Btn bc={'light'} block fontSize={12}>{accountHead} ... {accountTail}</Btn>*/}
+                    {/*</CopyToClipboard>*/}
+                    {/*</Div>*/}
+
+                    <Collapse isOpen={this.state.isOpen}>
+                        <Div fontSize={12}>
+                            <p>1. 지갑주소를 복사한 후에 explorer.ont.io에 가서 복사한 주소로 검색을 하면 정확한 transaction history를 확인할 수 있습니다.</p>
+                            <p>2. 내 지갑주소로 BLY를 입금하신 후, 구매시에 사용이 가능합니다.</p>
+                        </Div>
+                    </Collapse>
+
+
+
+                </Div>
+
+                <CheckboxLayout alignItems={'center'} fontSize={12} fg={'dark'}>
+                    <Checkbox id={'filter_only_io'} checked={this.state.onlyIpChul} onChange={this.checkOnlyIpCulList} />
+                    <label for={'filter_only_io'}><Span ml={'-5px'}>입출금 내역만 보기</Span></label>
+                </CheckboxLayout>
+                <HrHeavyX2 m={0} bc={'background'} />
+                {
+                    !data ? <Skeleton.List count={4}/>:
+                        (this.state.onlyIpChul && this.state.noIpChulData) ? <Div textAlign={'center'} p={16}>입출금 내역이 없습니다.</Div> :
+                            (
+                                data.map(({blct, date, goodsNm, stateName, gubun}, index)=>{
+                                    return (
+                                        this.state.onlyIpChul ?
+                                            (stateName === 'BLY 입금' || stateName === 'BLY 출금') ?
+                                                <Div key={`token_${blct}${index}`}>
+                                                    <Flex p={16} alignItems={'flex-start'}>
+                                                        <Div>
+                                                            <Div fontSize={16} mb={4}>{stateName}</Div>
+                                                            <Div fontSize={12} fg={'dark'} mb={4}>{goodsNm}</Div>
+                                                            <Div fontSize={10} fg={'secondary'}>{ComUtil.utcToString(date, 'YYYY-MM-DD HH:mm')}</Div>
+                                                        </Div>
+                                                        {
+                                                            <Right bold fontSize={16} fg={'green'} flexShrink={0}>
+                                                                {
+                                                                    gubun == 'minus' ?
+                                                                        (<Span fg={'danger'}>- {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</Span>)
+                                                                        : (<Span fg='green'>+ {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</Span>)
+                                                                }
+                                                            </Right>
+                                                        }
+                                                    </Flex>
+                                                    <HrThin m={0} />
+                                                </Div> : null
+                                            :
+                                            <Div key={`token_${blct}${index}`}>
+                                                <Flex p={16} alignItems={'flex-start'}>
+                                                    <Div>
+                                                        <Div fontSize={16} mb={4}>{stateName}</Div>
+                                                        <Div fontSize={12} fg={'dark'} mb={4}>{goodsNm}</Div>
+                                                        <Div fontSize={10} fg={'secondary'}>{ComUtil.utcToString(date, 'YYYY-MM-DD HH:mm')}</Div>
+                                                    </Div>
+                                                    {
+                                                        <Right bold fontSize={16} fg={'green'} flexShrink={0}>
+                                                            {
+                                                                gubun == 'minus' ?
+                                                                    (<Span fg={'danger'}>- {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</Span>)
+                                                                    : (<Span fg='green'>+ {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</Span>)
+                                                            }
+                                                        </Right>
+                                                    }
+                                                </Flex>
+                                                <HrThin m={0} />
+                                            </Div>
+                                    )
+                                })
+                            )
+                }
 
                 {
-                    data?
-                        data.map(({blct, date, goodsNm, stateName, gubun}, index)=>{
-                            return (
-                                <div key={`token_${blct}${index}`}>
-                                    <hr className={'m-0'}/>
-                                    <div className={'d-flex p-3'}>
-                                        {
-                                            <div style={{minWidth: 80}} className={classNames(mypageStyle.centerAlign, 'text-center font-weight-bold f2')}>
-                                                {
-                                                    gubun == 'minus' ? (<span className='text-danger'>- {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</span>) : (<span className='text-info'>+ {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</span>)
-                                                }
-                                            </div>
-                                        }
-                                        {/*</div>*/}
-                                        <div className={'ml-3'}>
-                                            <div style={{color:'gray', fontSize:'10pt'}}>{ComUtil.utcToString(date, 'YYYY-MM-DD HH:mm')}</div>
-                                            <div className='font-weight-bold'>{stateName}</div>
-                                            <div style={{color:'gray'}}>{goodsNm}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        })
-                        :
-                        <div>
-                            <hr className='m-0'/>
-                            <br/>
-                            <div className={'text-center'}>BLCT 사용내역이 없습니다.</div>
-                        </div>
+                    (data && data.length <= 0) && (
+                        <Div>
+                            <HrThin m={0} />
+                            <Flex height={300} justifyContent={'center'}>BLY 사용내역이 없습니다.</Flex>
+                        </Div>
+                    )
+                }
+
+                {
+                    this.state.blySiseModal &&
+                    <Modal isOpen={true} toggle={this.onBlySiseModalToggle} centered>
+                        <ModalHeader toggle={this.onBlySiseModalToggle}><b>BLY 시세</b></ModalHeader>
+                        <ModalBody>
+                            <BlySise open={this.state.blySiseModal} />
+                        </ModalBody>
+                        {/*<ModalFooter>*/}
+                        {/*</ModalFooter>*/}
+                    </Modal>
                 }
                 <ToastContainer/>
 

@@ -26,7 +26,7 @@ export default class UseGuide extends Component {
     render(){
         return (
             <Fragment>
-                <ShopXButtonNav history={this.props.history} fixed historyBack>이용안내</ShopXButtonNav>
+                <ShopXButtonNav underline history={this.props.history} fixed historyBack>이용안내</ShopXButtonNav>
                 <Container className={'pt-3 pb-3'}>
                     <Row>
                         <Col xs={12} sm={12} md={6} className='p-0'>
@@ -53,8 +53,8 @@ export default class UseGuide extends Component {
                                 <Card body>
                                     <CardTitle className='f2'><span className='d-flex align-items-center'><FontAwesomeIcon className='mr-2' icon={faShoppingCart} size={'lg'} />주문/결제</span></CardTitle>
                                     <CardText>
-                                        마켓블리는 블록체인 기반 농식품 거래 서비스로 신용카드 결제와 BLCT 암호화폐 결제를 선택할 수 있습니다.<br/>
-                                        구매 및 후기 작성에 따라 BLCT를 적립금으로 받으실 수 있습니다.
+                                        마켓블리는 블록체인 기반 농식품 거래 서비스로 신용카드 결제와 BLY 암호화폐 결제를 선택할 수 있습니다.<br/>
+                                        구매 및 후기 작성에 따라 BLY를 적립금으로 받으실 수 있습니다.
                                     </CardText>
                                 </Card>
                             </Col>

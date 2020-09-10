@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="37" viewBox="0 0 36 37">
+    <defs>
+        <style>
+            .prefix__cls-3{fill:#fff;stroke:#fff;stroke-width:.5px}
+        </style>
+    </defs>
+    <g id="prefix__ic_edit" transform="translate(21.5 1.082)">
+        <rect id="prefix__사각형_4463" width="36" height="37" data-name="사각형 4463" rx="18" transform="translate(-21.5 -1.082)" style="opacity:.11;fill:#fff"/>
+        <path id="prefix__사각형_4399" d="M0 0H20V20H0z" data-name="사각형 4399" transform="translate(-13.5 6.918)" style="fill:#c2c2c2;opacity:0"/>
+        <path id="prefix__패스_12390" d="M14.788 47.622a.4.4 0 00-.4.4v3.542a1.2 1.2 0 01-1.2 1.2H2a1.2 1.2 0 01-1.2-1.2v-10.4A1.2 1.2 0 012 39.97h3.538a.4.4 0 100-.8H2a2 2 0 00-2 1.995v10.4a2 2 0 002 1.995h11.2a2 2 0 002-1.995v-3.544a.4.4 0 00-.4-.4zm0 0" class="prefix__cls-3" data-name="패스 12390" transform="translate(-11.872 -27.937)"/>
+        <path id="prefix__패스_12391" d="M118.9.787a1.8 1.8 0 00-2.54 0L109.243 7.9a.4.4 0 00-.1.176l-.943 3.384a.4.4 0 00.491.491l3.38-.936a.4.4 0 00.176-.1l7.119-7.118a1.8 1.8 0 000-2.539zm-8.789 7.377l5.827-5.826 1.879 1.879-5.827 5.826zm-.375.753l1.5 1.5-2.077.575zm9.069-5.687l-.423.423-1.882-1.879.423-.423a1 1 0 011.411 0l.468.468a1 1 0 01.004 1.411zm0 0" class="prefix__cls-3" data-name="패스 12391" transform="translate(-115.745 9.422)"/>
+    </g>
+</svg>

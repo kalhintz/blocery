@@ -79,7 +79,7 @@ const GoodsQueModalButton = ({children, goods, onClose = () => null}) => {
                     {/*<hr className={'m-0'}/>*/}
                     <div className={'d-flex m-3'}>
                         <div className={'text-center mr-2'} style={{width: 70, height: 70}}>
-                            <img src={Server.getThumbnailURL() + goods.goodsImages[0].imageUrl }  className={'w-100 h-100'} />
+                            <img src={Server.getThumbnailURL() + goods.goodsImages[0].imageUrl }  className={'w-100 h-100'} alt={'사진'} />
                         </div>
                         <div>
                             {goods.goodsNm}

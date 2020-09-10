@@ -84,7 +84,8 @@ const ProducersGoodsList = (props) => {
     }
 
     function movePage(goodsNo) {
-        Webview.closePopupAndMovePage(`/goods?goodsNo=${goodsNo}`)
+        // Webview.closePopupAndMovePage(`/goods?goodsNo=${goodsNo}`)
+        props.history.push(`/goods?goodsNo=${goodsNo}`)
     }
 
     return(
@@ -94,7 +95,7 @@ const ProducersGoodsList = (props) => {
             }
             <ShopXButtonNav fixed
                             //forceBackUrl={`/farmersDetailActivity?producerNo=${producerNo}`}
-                history={props.history} close>판매상품</ShopXButtonNav>
+                history={props.history} historyBack>판매상품</ShopXButtonNav>
             <HeaderTitle
                 sectionLeft={<div>총 {ComUtil.addCommas(goodsList.length)}개 상품</div>}
                 sectionRight={
@@ -143,6 +144,7 @@ const ProducersGoodsList = (props) => {
                                                     imageUrl={Server.getThumbnailURL() + goods.goodsImages[0].imageUrl}
                                                     discountRate={Math.round(goods.discountRate)}
                                                     remainedCnt={goods.remainedCnt}
+                                                    blyReview={goods.blyReviewConfirm}
                                                 />
                                                 <SlideItemContent
                                                     className={'p-2'}
@@ -150,7 +152,7 @@ const ProducersGoodsList = (props) => {
                                                     goodsNm={goods.goodsNm}
                                                     currentPrice={goods.currentPrice}
                                                     consumerPrice={goods.consumerPrice}
-                                                    // discountRate={goods.discountRate}
+                                                    discountRate={goods.discountRate}
                                                 />
                                             </div>
                                         </Col>

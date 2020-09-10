@@ -40,7 +40,7 @@ export default class HintPassPhrase extends Component {
                         <div style={{outline:'black solid thin', fontSize:'50px'}} className={'text-center mt-3'}>{this.state.hintFront}****</div>
                         <br/>
                         <div className={'text-center m-2'}>결제 비밀번호 확인이 어려울 경우</div>
-                        <div className={'text-center m-2'}><span style={{color:'#007bff'}}>info@blocery.io</span>로 아이디(이메일계정)와 결제 비밀번호 앞 두자리를 보내주시면 추가 비밀번호
+                        <div className={'text-center m-2'}><span style={{color:'#007bff'}}>cs@blocery.io</span>로 아이디(이메일계정)와 결제 비밀번호 앞 두자리를 보내주시면 추가 비밀번호
                             2자리를 안내해 드리겠습니다.</div>
                     </div>
 

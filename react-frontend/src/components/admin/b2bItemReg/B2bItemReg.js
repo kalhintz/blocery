@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react';
 import { Button, Input, FormGroup, Label, Row, Col, Container } from 'reactstrap'
-import { getB2bItemByNo, getNewItemKindCode, getB2bItems, addB2bItem, updateB2bItemEnabled } from "~/lib/adminApi";
+import { getB2bItemByNo, getNewB2bItemKindCode, getB2bItems, addB2bItem, updateB2bItemEnabled } from "~/lib/adminApi";
 import { getLoginAdminUser } from '~/lib/loginApi';
 import { ModalConfirm } from '~/components/common';
 
@@ -91,7 +91,7 @@ const B2bItemReg = (props) => {
     const onAddClick = async() => {
         console.log('onAddClick newKinds: ', newKinds);
 
-        let {data : newCode} = await getNewItemKindCode();
+        let {data : newCode} = await getNewB2bItemKindCode();
         setNewKinds(newKinds.concat({
             code: newCode,
             name: ''

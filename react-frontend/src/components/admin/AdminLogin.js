@@ -58,8 +58,13 @@ export default class AdminLogin extends Component {
                     let loginAdminInfo = response.data;
                     //쿠키(localStorage)에 login된 userType저장.
                     //localStorage.setItem('loginUserType', loginInfo.userType);
+
                     localStorage.setItem('userType', 'admin')
+
+                    localStorage.setItem('adminEmail', data.email) //20200330 - adminEmail 별도 저장.
+                    sessionStorage.setItem('adminLogined', 1) //20200330 - adminLogined도 별도 저장..
                     sessionStorage.setItem('logined', 1)
+
 
                     this.setState({
                         redirectToReferrer: true

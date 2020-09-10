@@ -12,8 +12,8 @@ import classNames from 'classnames';
 import Style from './GoodsQnaList.module.scss'
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+import "ag-grid-community/src/styles/ag-grid.scss";
+import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import GoodsQnaAnswer from "./GoodsQnaAnswer";
 
 export default class GoodsQnaList extends Component {

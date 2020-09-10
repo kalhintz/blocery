@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="prefix__ic_rank_b" width="45" height="15" viewBox="0 0 45 15">
+    <g id="prefix__사각형_4435" data-name="사각형 4435" style="fill:#ffc991;stroke:#bb854f">
+        <rect width="45" height="15" rx="4" style="stroke:none"/>
+        <rect width="44" height="14" x=".5" y=".5" rx="3.5" style="fill:none"/>
+    </g>
+    <text id="prefix__BRONZE" transform="translate(4 11)" style="fill:#7e542a;font-size:9px;font-family:NotoSansCJKkr-Bold,Noto Sans CJK KR;font-weight:700">
+        <tspan x="0" y="0">BRONZE</tspan>
+    </text>
+</svg>

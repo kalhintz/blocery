@@ -388,13 +388,14 @@ const FoodsDetail = (props) => {
 
         <Fragment>
             <ImageGallery
-                showNav={true}
+                showNav={false}
                 autoPlay={false}
-                showIndex={true}
+                showIndex={false}
                 showBullets={true}
-                showPlayButton={true}
+                showPlayButton={false}
                 showFullscreenButton={false}
                 showThumbnails={false}
+                disableArrowKeys={false}
                 items={images}
             />
 
@@ -437,8 +438,8 @@ const FoodsDetail = (props) => {
             {/* 상품정보 */}
             <ul className={classNames(Style.goodsInfo, 'p-3 m-0 f6 text-secondary')}>
                 <li>·판매자</li>
-                {/*<li className={'text-primary cursor-pointer'} onClick={()=>{Webview.openPopup(`/b2b/sellerDetail?sellerNo=${props.foods.sellerNo}`, true)}}><u>{farmName}</u></li>*/}
-                <li>{farmName}</li>
+                <li className={'text-primary cursor-pointer'} onClick={()=>{props.history.push('/b2b/sellerDetail?sellerNo='+props.foods.sellerNo)}}><u>{farmName}</u></li>
+                {/*<li>{farmName}</li>*/}
                 <li>·생산지</li>
                 <li>{productionArea}</li>
                 <li>·중량/용량</li>
@@ -486,7 +487,7 @@ const FoodsDetail = (props) => {
             {
                 //상품설명
                 (tabId === 1) && (
-                    <div className='p-1'>
+                    <div>
                         {
                             <ToastUIEditorViewer
                                 height="400px"

@@ -5,57 +5,40 @@ import { ViewModule, ViewStream, ViewModuleOutlined} from '@material-ui/icons'
 
 import { getConsumerGoodsDefined } from '~/lib/goodsApi'
 import { BlocerySpinner, HeaderTitle } from '~/components/common'
+import {HalfGoodsList} from '~/components/common/lists'
 
 import { Doc } from '~/components/Properties'
 import ComUtil from '~/util/ComUtil'
 
 import { Server } from '~/components/Properties'
 
+import {GrandTitle} from '~/components/common/texts'
+import Css from './BestDeal.module.scss'
+import {IconStore, IconMedalGold, IconMedalSilver, IconMedalBronze} from '~/components/common/icons'
+import Footer from '../footer'
+import Skeleton from '~/components/common/cards/Skeleton'
+
 const BestDeal = (props) => {
 
-    const [data, setData] = useState([])
-    const [count, setCount] = useState(0)
-    const [style, setStyle] = useState(getStyle(0))
-    const [loading, setLoading] = useState(false)
-    const [viewIndex, setViewIndex] = useState(0)
+    const [data, setData] = useState()
+    const [dateText, setDateText] = useState('')
 
     useEffect(() => {
         search()
+        console.log('didMount 베스트')
+
     }, [])
 
     async function search() {
 
-        setLoading(true)
 
         const { data } = await getConsumerGoodsDefined('bestSelling')
-
+        console.log({data})
         setData(data)
-        setCount(data.length)
-        setLoading(false)
-    }
 
-    function onViewChange(iconIndex){
-        setViewIndex(iconIndex)
-        setStyle(getStyle(iconIndex))
-    }
-
-    //뷰에 따른 스타일 리턴
-    function getStyle(iconIndex) {
-        const isBig = Doc.isBigWidth()
-
-        let width;
-
-        //가로 뷰 일 경우는 항상 100%
-        if(iconIndex === 1) width = '100%'
-
-        else{
-            if(isBig) width = 150   //큰화면 : 150px 고정
-            else width = '50%'      //작은화면 : 50% 고정
-
-        }
-        return {
-            width: width
-        }
+        let endDate = (ComUtil.addDate(ComUtil.utcToString(ComUtil.getNow(), 'YYYY-MM-DD'), -1)).substring(5).replace('-','/');
+        let startDate = (ComUtil.addDate(ComUtil.utcToString(ComUtil.getNow(), 'YYYY-MM-DD'), -30)).substring(5).replace('-','/');
+        setDateText(`${startDate}~${endDate} 기준`)
     }
 
 
@@ -64,46 +47,71 @@ const BestDeal = (props) => {
         props.history.push(`/goods?goodsNo=${item.goodsNo}`)
     }
 
-    return (
+    return(
         <Fragment>
-            {
-                loading && <BlocerySpinner/>
-            }
-            <HeaderTitle
-                sectionLeft={<div>총 {ComUtil.addCommas(count)}개 상품</div>}
-                sectionRight={<ViewButton icons={[<ViewModule />, <ViewStream />]} onChange={onViewChange} />}
+            <GrandTitle
+                smallText={'마켓블리'}
+                largeText={'인기상품'}
+                subText={dateText}
             />
-            <hr className='m-0'/>
-            <div className='d-flex flex-wrap align-content-stretch m-1'>
-                {
-                    data.map( goods => {
-
+            {/*<span className="ml-3">*/}
+                {/*{dateText}*/}
+            {/*</span>*/}
+            {
+                !data ? <Skeleton.ProductList count={5} /> :
+                    data.map( (goods, index) => {
                         return(
-                            <div key={'bestDeal'+goods.goodsNo} style={style} onClick={onClick.bind(this, goods)}>
-                                <div className='m-1 border'>
-                                    <SlideItemHeaderImage
-                                        imageUrl={Server.getImageURL() + goods.goodsImages[0].imageUrl}
-                                        imageHeight={viewIndex === 0 ? 150 : 250}
-                                        discountRate={Math.round(goods.discountRate)}
-                                        remainedCnt={goods.remainedCnt}
-                                    />
+                            <div key={'bestGoods'+goods.goodsNo}
+                                 className={Css.item} onClick={onClick.bind(this, goods)}
+                            >
+                                {
+                                    index === 0 && <IconMedalGold className={Css.medal}/>
+                                }
+                                {
+                                    index === 1 && <IconMedalSilver className={Css.medal}/>
+                                }
+                                {
+                                    index === 2 && <IconMedalBronze className={Css.medal}/>
+                                }
+
+                                <SlideItemHeaderImage
+                                    imageUrl={Server.getThumbnailURL() + goods.goodsImages[0].imageUrl}
+                                    //imageUrl={'https://image.chosun.com/sitedata/image/201911/18/2019111802277_0.png'}
+
+                                    imageWidth={100}
+                                    imageHeight={100}
+                                    discountRate={Math.round(goods.discountRate)}
+                                    remainedCnt={goods.remainedCnt}
+                                    blyReview={goods.blyReviewConfirm}
+                                />
+
+
+                                <div className={Css.content}>
+                                    <div className={Css.farmersInfo} onClick={onClick.bind(this, goods, 'farmers')} >
+                                        <div><IconStore style={{marginRight: 6}}/></div>
+                                        {/* goods.level 농가등급 */}
+                                        <div>{goods.producerFarmNm}</div>
+                                    </div>
                                     <SlideItemContent
-                                        className={'m-2'}
                                         directGoods={goods.directGoods}
                                         goodsNm={goods.goodsNm}
                                         currentPrice={goods.currentPrice}
                                         consumerPrice={goods.consumerPrice}
-                                        discountRate={Math.round(goods.discountRate)}
+                                        discountRate={goods.discountRate}
                                     />
                                 </div>
+
+
                             </div>
+
                         )
                     })
-                }
+            }
 
-
-            </div>
+            <Footer/>
         </Fragment>
     )
+
 }
 export default BestDeal
+

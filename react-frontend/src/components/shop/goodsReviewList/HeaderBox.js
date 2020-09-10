@@ -7,7 +7,7 @@ const Style = {
         boxShadow: '1px 1px 2px gray'
     },
     active: {
-        borderBottom: '3px solid #17a2b8'
+        borderBottom: '3px solid #24855b'
     }
 }
 

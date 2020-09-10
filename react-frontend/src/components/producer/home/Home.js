@@ -19,7 +19,7 @@ import OrderDeliveryComp from './orderStat/OrderDeliveryComp';  //주문 현황 
 import OrderConfirmOk from './orderStat/OrderConfirmOk';        //주문 현황 최근1개월기준 구매확정(건수)
 
 import OrderSaleTransition from './transition/OrderSaleTransition'; // 주문매출 추이
-
+import ComUtil from '~/util/ComUtil'
 import { autoLoginCheckAndTry } from "~/lib/loginApi";
 
 const Home = (props) => {
@@ -44,6 +44,17 @@ const Home = (props) => {
             if(!loginUser){
                 Webview.openPopup('/login?userType=producer', true); // 생산자 로그인 으로 이동팝업
             }
+
+            //producer 로그인 성공.
+            //19.12.30
+            // if (ComUtil.isPcWeb()) { //웹접속일때, 생산자 웹전용 컨솔로 연결..
+            //     console.log('=======producer Login - WEB ');
+            //
+            //     let url = window.location.toString();
+            //     if ( url.indexOf('/producer/web') < 0 )
+            //         window.location  = '/producer/web';   //producer/web 으로 이동..
+            // }
+
         } else {
             Webview.openPopup('/login?userType=producer', true); // 생산자 로그인 으로 이동팝업
         }

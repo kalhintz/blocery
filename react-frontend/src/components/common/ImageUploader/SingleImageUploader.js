@@ -8,6 +8,7 @@ import axios from 'axios'
 import { Delete } from '@material-ui/icons'
 import Style from './SingleImageUploader.module.scss'
 import Compressor from 'compressorjs'
+import {Webview} from '~/lib/webviewApi'
 class SingleImageUploader extends React.Component{
     constructor(props){
         super(props)
@@ -31,6 +32,9 @@ class SingleImageUploader extends React.Component{
     }
 
     onImageUploadClick = async (image) => {
+
+        if (ComUtil.isMobileApp())
+            Webview.cameraPermission()
 
         //이미지가 있으면 삭제
         if(image.imageUrl){
@@ -122,19 +126,59 @@ class SingleImageUploader extends React.Component{
         });
     }
 
+    copyImageUrl = (image) => {
+
+        const imageUrl = Server.getImageURL() + image.imageUrl
+        var textarea = document.createElement("input");
+        textarea.value = `<img src="${imageUrl}" alt="${image.imageNm}" />`;
+        // textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in Microsoft Edge.
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+
+        //
+        // var img = document.createElement("img");
+        // img.src = imageUrl
+        // console.log(img.textContent)
+
+    }
+
     //image 가 있는것만 배열로 리턴
     // getFilteredImages = (images) => {
     //     return images.filter((image) => image.imageUrl.length > 0)
     // }
 
     //이미지업로드
-    upload = (formData) => axios(Server.getRestAPIHost() + '/file',
-        {
-            method: 'post',
-            data:formData,
-            withCredentials: true,
-            credentials: 'same-origin'
-        })
+    // upload = (formData) => axios(Server.getRestAPIHost() + '/file',
+
+    upload = async (formData) => {
+        let method;
+        if(this.props.isNoResizing){
+            method = '/fileNoResizing'
+        }else{
+            method = '/file'
+        }
+
+        return await axios(Server.getRestAPIFileServer() + method,
+            {
+                method: 'post',
+                data:formData,
+                withCredentials: true,
+                credentials: 'same-origin'
+            })
+
+
+    }
+
+    upload2 = (formData) => axios(Server.getRestAPIHost() + '/fileNoResizing',
+            {
+                method: 'post',
+                data:formData,
+                withCredentials: true,
+                credentials: 'same-origin'
+            })
+
     render(){
 
         const arr = [...Array(this.props.defaultCount)]
@@ -145,30 +189,39 @@ class SingleImageUploader extends React.Component{
                 <div className={Style.wrap}>
                     {
                         arr.map((empty, index) => {
-
                             const image = images.find((img) => img.imageNo === index) || {imageNo: index, imageNm: '', imageUrl: ''}
                             const isShownMainText = index === 0 & this.props.isShownMainText ? true : false
+                            return(
+                                <Fragment key={'singleImageUploader'+index}>
+                                    <div className={'d-flex flex-column'}>
+                                        <div className={[Style.item, isShownMainText &&'bg-info'].join(' ')} onClick={this.onImageUploadClick.bind(this, image)}>
+                                            {
+                                                image.imageUrl ? (
+                                                        <Fragment>
+                                                            <div className={Style.deleteText}>×</div>
+                                                            <img className={Style.image}
+                                                                 src={image.imageUrl ? Server.getThumbnailURL() + image.imageUrl : ''}  alt={'사진'}/>
+                                                        </Fragment>
 
-                            return <div key={'singleImageUploader'+index} className={[Style.item, isShownMainText &&'bg-info'].join(' ')} onClick={this.onImageUploadClick.bind(this, image)}>
-                                    {
-                                        image.imageUrl ? (
-                                                <Fragment>
-                                                    <div className={Style.deleteText}>×</div>
-                                                    <img className={Style.image}
-                                                         src={image.imageUrl ? Server.getThumbnailURL() + image.imageUrl : ''} />
-                                                </Fragment>
-                                            ) :
-                                            (isShownMainText ? '+ 대표사진' : '+ 사진')
-                                    }
-                                    <input
-                                        style={{display:'none'}}
-                                        type='file'
-                                        ref={file => this.files[index] = file}
-                                        onChange={this.onImageChange.bind(this, index)}
-                                        accept='image/*'
-                                    />
+                                                    ) :
+                                                    (isShownMainText ? '+ 대표사진' : '+ 사진')
+                                            }
+                                            <input
+                                                style={{display:'none'}}
+                                                type='file'
+                                                ref={file => this.files[index] = file}
+                                                onChange={this.onImageChange.bind(this, index)}
+                                                accept='image/*'
+                                            />
 
-                                </div>
+                                        </div>
+                                        {
+                                            (this.props.isShownCopyButton && image.imageUrl) && <a href={'javascript:void(0)'} className={'m-1 small'} onClick={this.copyImageUrl.bind(this, image)}>url 복사</a>
+                                        }
+                                    </div>
+
+                                </Fragment>
+                            )
 
                         })
                     }
@@ -184,7 +237,9 @@ SingleImageUploader.propTypes = {
     defaultCount: PropTypes.number, //파일 업로드 개수
     maxFileSizeMB: PropTypes.number, //파일업로드 용량
     isShownMainText: PropTypes.bool, //첫번째 이미지의 "+ 대표사진" 텍스트 여부
-    onChange: PropTypes.func.isRequired
+    onChange: PropTypes.func.isRequired,
+    isShownCopyButton: PropTypes.bool,
+    isNoResizing: PropTypes.bool
 }
 
 SingleImageUploader.defaultProps = {
@@ -192,6 +247,8 @@ SingleImageUploader.defaultProps = {
     defaultCount: 10,
     maxFileSizeMB: 10,
     isShownMainText: false,
-    onChange: () => null
+    onChange: () => null,
+    isShownCopyButton: false,
+    isNoResizing: false
 }
 export default SingleImageUploader

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import IMP from 'iamport-react-native';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 
 /*Payment.js 를 class로 변경해 본 코드..  상단의 빨간 설명바 안뜨는 현상외엔 동일하게 동작하는 것으로 보임..
 export default class Payment extends React.Component {
@@ -91,6 +91,7 @@ function Payment({ navigation }) {
 
     /* [필수입력] 결제 후 실행될 콜백 함수 입력 */
     function callback(response) {
+        console.log('*************** Payment : ', response);
         const isSuccessed = getIsSuccessed(response);
         if (isSuccessed) {
             // 결제 성공한 경우, 리디렉션 위해 홈으로 이동한다
@@ -105,7 +106,20 @@ function Payment({ navigation }) {
 
         } else {
             // 결제 실패한 경우, 본래 페이지로 돌아간다
-            navigation.goBack();
+            let alertTitle = '결제실패';
+            // let alertContent = response.error_msg;
+            let alertContent = '결제에 실패하였습니다. 다시 한 번 시도해주세요.';
+            Alert.alert(
+                alertTitle,
+                alertContent,
+                [
+                    {
+                        text: '확인',
+                        onPress: () => navigation.goBack()
+                    }
+                ],
+                {cancelable: false},
+            )
         }
     }
 

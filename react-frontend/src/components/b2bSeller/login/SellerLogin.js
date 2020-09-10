@@ -25,6 +25,13 @@ export default class SellerLogin extends Component {
         }
     }
 
+    componentDidMount() {
+        //http로 첫페이지 접속시 https로 자동전환
+        if ( window.location.protocol === 'http:' && Server._serverMode() === 'production') {
+            window.location = 'https://' + window.location.host + window.location.pathname
+        }
+    }
+
     onLoginClicked = async (event) => {
 
         event.preventDefault();
@@ -35,7 +42,7 @@ export default class SellerLogin extends Component {
 
         // input ERROR check
         let data = {};
-        data.email = event.target[0].value;
+        data.email = event.target[0].value.trim();
         data.valword = event.target[1].value;
         data.userType = 'seller'
 
@@ -268,7 +275,7 @@ export default class SellerLogin extends Component {
                     <br/>
                 </Container>
                 {
-                    this.state.isOpen && this.state.type === 'id' && <ModalPopup title={'알림'} color={'primary'} content={'가입 시 입력하신 이름을 적어 고객센터로(info@blocery.io) 메일을 보내주시면 답신 드리도록 하겠습니다.'} onClick={this.onClose}></ModalPopup>
+                    this.state.isOpen && this.state.type === 'id' && <ModalPopup title={'알림'} color={'primary'} content={'가입 시 입력하신 이름을 적어 고객센터로(cs@blocery.io) 메일을 보내주시면 답신 드리도록 하겠습니다.'} onClick={this.onClose}></ModalPopup>
                 }
                 {
                     this.state.isOpen && this.state.type === 'pw' &&

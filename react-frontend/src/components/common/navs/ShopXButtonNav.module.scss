@@ -1,11 +1,17 @@
 @import "Color.module.scss";
 .wrap{
-  height: 44px;
+  height: 56px;
   display: flex;
-  background: $color-info;
-  color: white;
+  background: $color-b2c-default;
+  color: $color-b2c-black;
   align-items: center;
   position: relative;
+
+  display: flex;
+  align-items: center;
+  padding: 0 19px;
+
+
 }
 
 .fixed {
@@ -23,9 +29,17 @@
   flex-grow: 1;
   text-align: center;
   flex-grow: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .cart {
   position: absolute;
   right: 10px;
+}
+
+.underline{
+  border-bottom: 1px solid $color-b2c-bg;
 }

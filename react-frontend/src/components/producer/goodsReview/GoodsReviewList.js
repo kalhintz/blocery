@@ -11,8 +11,8 @@ import classNames from 'classnames';
 import Style from './GoodsReviewList.module.scss'
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+import "ag-grid-community/src/styles/ag-grid.scss";
+import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 export default class GoodsReviewList extends Component {
     constructor(props) {
@@ -240,7 +240,7 @@ export default class GoodsReviewList extends Component {
                 width: 30, height: 30, paddingRight: '1px'
             };
             return (
-                <img src={src_url} style={style}/>
+                <img src={src_url} style={style} alt={'상품후기 사진'}/>
             )
         });
     }

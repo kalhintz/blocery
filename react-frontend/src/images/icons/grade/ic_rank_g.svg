@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="33" height="15" viewBox="0 0 33 15">
+    <defs>
+        <linearGradient id="prefix__linear-gradient" x1=".055" x2=".929" y1=".081" y2=".937" gradientUnits="objectBoundingBox">
+            <stop offset="0" stop-color="#ffe69b"/>
+            <stop offset="1" stop-color="#e9ca00"/>
+        </linearGradient>
+    </defs>
+    <g id="prefix__ic_rank_g" transform="translate(0 .417)">
+        <g id="prefix__사각형_4435" data-name="사각형 4435" transform="translate(0 -.417)">
+            <rect width="33" height="15" rx="4" style="stroke:none"/>
+            <rect width="32" height="14" x=".5" y=".5" rx="3.5" style="fill:none"/>
+        </g>
+        <text id="prefix__GOLD" transform="translate(4 10.583)" style="fill:#ae8500;font-size:9px;font-family:NotoSansCJKkr-Bold,Noto Sans CJK KR;font-weight:700">
+            <tspan x="0" y="0">GOLD</tspan>
+        </text>
+    </g>
+</svg>

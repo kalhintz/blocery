@@ -3,9 +3,21 @@ import momentDurationFormatSetup from 'moment-duration-format'
 import Compressor from 'compressorjs'
 import queryString from 'query-string'
 import MobileDetect from 'mobile-detect'
+import cloneDeep from "lodash/cloneDeep"; //lodash 전체 라이브러리를 가져오던 초기 호출 방식을 변경 필요한 메서드만 가져옴
+import { Server } from '~/components/Properties'
+import axios from 'axios'
 
 export default class ComUtil {
 
+    /*******************************************************
+     이유: Object.assign()에게도 한가지 문제점이 있는데요.
+          복사하려는 객체의 내부에 존재하는 객체는 완전한 복사가 이루어지지않는다는 점
+     # Object 객체 복사 (lodash.cloneDeep 이용) :: Deep Clone
+     ex) let 복사할 변수 =  ComUtil.objectAssign(복사할 오브젝트);
+     *******************************************************/
+    static objectAssign(obj){
+        return cloneDeep(obj);
+    }
 
     /*******************************************************
      두날짜 비교해서, 같은지 작은지 큰지 return
@@ -38,6 +50,12 @@ export default class ComUtil {
         return new Date(pYear, pMonth, pDay);
     }
 
+    static yyyymmdd2DateStr(yyyymmdd) {
+        let pYear 	= yyyymmdd.substr(0,4);
+        let pMonth 	= yyyymmdd.substr(4,2);
+        let pDay 	= yyyymmdd.substr(6,2);
+        return pYear + '-'  + pMonth + '-' + pDay;
+    }
     /*******************************************************
      날짜 연산 함수 - 날짜 더하기 빼기
      예) addDate('2019-01-05', 5) =>  returns 2019-01-10
@@ -148,16 +166,19 @@ export default class ComUtil {
      @Param : number or string(숫자)
      @Return : number
      *******************************************************/
-    static toNum(value) {
+    static toNum(value, isParsingNumber = true) {
         try{
             let removedValue = value.toString().replace(/\,/g,'')     //콤마제거
             removedValue = removedValue.replace(/\s/gi, '');			//공백제거
             //계산 가능한 숫자인지 판별
             if(isNaN(removedValue) || removedValue === '')
                 return 0
-            else
-                return parseFloat(removedValue)
-
+            else {
+                if (isParsingNumber)
+                    return parseFloat(removedValue)
+                else
+                    return removedValue
+            }
         }catch(e){
             return 0
         }
@@ -187,7 +208,7 @@ export default class ComUtil {
     }
 
     /*******************************************************
-     이미지 파일을 받아 압축율을 적용
+     이미지 파일을 받아 압축율을 적용 (안씀 버그있음)
      @Param : { file, opacity }
      @Return : file
      *******************************************************/
@@ -203,6 +224,26 @@ export default class ComUtil {
                 console.log(err.message);
             },
         }).file;
+    }
+
+    /*******************************************************
+     이미지 압축
+     @Param : file, quality(압축률[0.6 추천])
+     @Return : file
+     *******************************************************/
+    static getCompressoredFile = (file, quality = 0.6) => {
+        return new Promise((resolve, reject) => {
+            new Compressor(file, {
+                quality: quality,
+                success: async (result) => {
+                    resolve(result)
+                },
+                error(err) {
+                    console.log(err.message);
+                    reject(err)
+                },
+            });
+        })
     }
 
     /*******************************************************
@@ -388,15 +429,25 @@ export default class ComUtil {
         let future  = moment(date);
         const now = moment();
 
+        const length = moment.duration( future.diff(now)).format(format).length
+
+        let result
+        if(length === 11) {
+            result = moment.duration( future.diff(now)).format(format).slice(0,6) +"00:" + moment.duration( future.diff(now)).format(format).slice(6,11)
+        } else if(length === 8) {
+            result = moment.duration( future.diff(now)).format(format).slice(0,6) + "00:00:" + moment.duration( future.diff(now)).format(format).slice(6,8)
+        } else {
+            result = moment.duration( future.diff(now)).format(format)
+        }
+
+        return result
 
         //month Diff는 자동으로 되지않아서, 별도로 추가.
-        const monthDiff = moment.utc(moment(future,"YYYY-MM-DD").diff(moment(now,"YYYY-MM-DD"),'months'));
-
+        //const monthDiff = moment.utc(moment(future,"YYYY-MM-DD").diff(moment(now,"YYYY-MM-DD"),'months'));
 
         //monthDiff가 1개월 이상이면  now에 Month를 더해서 비교 - Number()함수 꼭필요.
-        return ((monthDiff > 0)? monthDiff+'개월 ' + moment.duration( future.diff(moment().add(Number(monthDiff),'M'))).format(format)
-            : ''+ moment.duration( future.diff(now)).format(format) );
-
+        // return ((monthDiff > 0)? monthDiff+'개월 ' + moment.duration( future.diff(moment().add(Number(monthDiff),'M'))).format(format)
+        //     : ''+ moment.duration( future.diff(now)).format(format) );
     }
 
     /*******************************************************
@@ -442,6 +493,17 @@ export default class ComUtil {
      */
     static isMobileApp() {
         if (navigator.userAgent.startsWith('BloceryApp')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 현재 환경이 모바일 App(React Native App)이고 QR이 지원되는 경우에만 true 반환
+     * (android, ios 모두 가능)
+     */
+    static isMobileAppAndQrEnabled() {
+        if (navigator.userAgent.startsWith('BloceryAppQR')) {
             return true;
         }
         return false;
@@ -553,7 +615,7 @@ export default class ComUtil {
      *******************************************************/
     static timeFromNow(targetTime) {
 
-        console.log('targetTime : ', targetTime);
+        //console.log('targetTime : ', targetTime);
         if (!this.setupDone) { //duration을 formatting 하기위한 plugin초기화.
             momentDurationFormatSetup(moment);
             this.setupDone = true;
@@ -614,5 +676,133 @@ export default class ComUtil {
             str = str + String.fromCharCode(rotatedStr.charCodeAt(i) - ( i +1 ));
         }
         return str;
+    }
+
+    //max 10개로 cookie에서 관리.
+    static saveLastSeenGoods(goodsId) {
+
+        //TEST_CODE localStorage.removeItem('lastSeenGoods')
+
+        let list = this.getLastSeenGoodsList();
+
+        //이미 존재하면 미추가.
+        if (list.includes(goodsId)) {
+            console.log('lastSeenGoods', goodsId)
+            return;
+        }
+
+        const MAX_SEEN = 15;
+
+        //list가 15개 넘으면 앞에꺼 제거.
+        if (list.length >= MAX_SEEN) {
+            //list.unshift();
+            list.splice(MAX_SEEN-1, list.length - (MAX_SEEN-1));
+        }
+        list.splice(0,0,goodsId)
+
+        localStorage.setItem('lastSeenGoods', JSON.stringify(list));
+    }
+
+    static getLastSeenGoodsList() {
+
+        let cookieList = localStorage.getItem('lastSeenGoods');
+        if (!cookieList) return [];
+
+        let list = JSON.parse(cookieList);
+
+        return list;
+    }
+
+    static noScrollBody(){
+        let body = document.body
+        body.style.overflow = 'hidden'
+    }
+    static scrollBody(){
+        let body = document.body
+        body.style.overflow = 'auto'
+    }
+
+    static getGroupKeys(arr, groupKey) {
+        const keys = [];
+
+        arr.map(item => {
+            if (keys.indexOf(item[groupKey]) === -1) {
+                keys.push(item[groupKey]);
+            }
+        })
+        return keys;
+    }
+    //랜덤 array 적용템
+    static shuffle(array) {
+        let currentIndex = array.length, temporaryValue, randomIndex;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+            // 랜덤 아이
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // 섞기 (랜덤으로 뽑은 아이템과 currentIndex 를 swap)
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+
+    /*******************************************************
+     이미지파일 서버 업로드
+     @Param : file
+     @Return : Image (Back-end dbdata 참조)
+     *******************************************************/
+    static editorUploadFile = async (file) => {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            // The third parameter is required for server
+            formData.append('image', file, file.name);
+
+            const method = '/contentImgFile';
+
+            //서버에 파일 업로드
+            axios(Server.getRestAPIFileServerHost() + method, {
+                method: 'post',
+                data:formData,
+                withCredentials: true,
+                credentials: 'same-origin'
+            }).then((result) => {
+                resolve(result.data)
+            })
+        })
+    }
+    /*******************************************************
+     소수점자리수 8자까지만 허용하고 리턴하 bly 전용 함수
+     @Param : number or string
+     @Return : number or null
+     *******************************************************/
+    static getBlyNumber(value) {
+        let newValue = ComUtil.toNum(value, false)
+        newValue = (newValue.toString()).substring(0, newValue.toString().indexOf('.')+(8+1));
+
+        // newValue = newValue.toString()
+
+        // newValue = ComUtil.roundDown(newValue, 8)
+
+        // const splitNewValue = newValue.split('.')
+        //
+        // if(splitNewValue.length >= 2) {
+        //     console.log(splitNewValue[1].length)
+        //     // if (splitNewValue[1].length > 8) {
+        //     //     newValue = ComUtil.roundDown(parseFloat(newValue), 8)
+        //     newValue = parseFloat(newValue)
+        //     // }
+        // }
+
+        if (parseFloat(newValue) <= 0) {
+            return '';
+        }else{
+            return newValue
+        }
     }
 }

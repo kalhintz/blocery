@@ -23,9 +23,9 @@ const FarmDiaryCard = ({cultivationStepMemo, diaryContent, diaryImages, diaryReg
             <Container className={'mb-3'}>
                 <Row>
                     <Col sm={12}>
-
+                        <div className='border'>
                             <img src={src} alt={itemKindName} style={{width: '100%'}}/>
-                            <div className='p-3 border border-top-0'  onClick={onClick}>
+                            <div className='p-3'  onClick={onClick}>
                                 <div className='pb-3 d-flex small'>
                                     <div>
                                         [{itemName} > {itemKindName}]
@@ -47,9 +47,7 @@ const FarmDiaryCard = ({cultivationStepMemo, diaryContent, diaryImages, diaryReg
                                     </div>
                                 </div>
                             </div>
-
-
-
+                        </div>
                     </Col>
                 </Row>
             </Container>

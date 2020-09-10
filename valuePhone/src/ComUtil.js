@@ -18,7 +18,7 @@ export default ComUtil = {
             await firebase.messaging().requestPermission();
             await this.updateTokenToServer(userInfo);
         } catch (error) {
-            alert("you can't handle push notification");
+            // alert("you can't handle push notification");
         }
     },
     //사용자별 FCM Token 을 DB에 업데이트

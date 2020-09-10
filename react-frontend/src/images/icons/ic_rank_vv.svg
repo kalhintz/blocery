@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="15" viewBox="0 0 28 15">
+    <g id="prefix__ic_rank_vv" transform="translate(0 -.211)">
+        <g id="prefix__사각형_4435" data-name="사각형 4435" transform="translate(0 .211)" style="fill:#7e40b5;stroke:#3b1160">
+            <rect width="28" height="15" rx="4" style="stroke:none"/>
+            <rect width="27" height="14" x=".5" y=".5" rx="3.5" style="fill:none"/>
+        </g>
+        <text id="prefix__VVIP" transform="translate(4 11.211)" style="fill:#fff;font-size:9px;font-family:NotoSansCJKkr-Bold,Noto Sans CJK KR;font-weight:700">
+            <tspan x="0" y="0">VVIP</tspan>
+        </text>
+    </g>
+</svg>

@@ -37,7 +37,7 @@ class ModalWithNav extends React.Component {
                                     </div>
                                 </header>
                                 <hr className={'m-0'}/>
-                                <figure className={classNames(Style.body, this.props.noPadding ? Style.noPadding : null)} onClick={this.stopPropagation}>
+                                <div className={classNames(noPadding ? Style.noPadding : null)} onClick={this.stopPropagation}>
                                     {
                                         //children 객체에 props 를 전달
                                         React.cloneElement(this.props.children, {
@@ -46,7 +46,7 @@ class ModalWithNav extends React.Component {
                                             onLoad: this.props.onLoad
                                         })
                                     }
-                                </figure>
+                                </div>
                             </div>
                         </Col>
                     </Row>

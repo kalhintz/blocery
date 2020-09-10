@@ -432,7 +432,7 @@ export default class DealCancel extends Component {
                                             return(
                                                 <div key={index} className='d-flex pt-2 pb-2'>
                                                     <div className={classnames(Style.img, 'pr-2')}>
-                                                        <img className={Style.goodsImg} src={Server.getThumbnailURL()+goodsImages[0].imageUrl} />
+                                                        <img className={Style.goodsImg} src={Server.getThumbnailURL()+goodsImages[0].imageUrl} alt={'사진'} />
                                                     </div>
                                                     <div>
                                                         <div>{goodsNm}</div>

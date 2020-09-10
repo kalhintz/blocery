@@ -6,7 +6,6 @@ import BottomNavigation, {FullTab} from 'react-native-material-bottom-navigation
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import WebView from 'react-native-webview';
 import axios from 'axios';
-import DeviceInfo from 'react-native-device-info'
 import firebase from 'react-native-firebase';
 import SplashScreen from 'react-native-splash-screen';
 import ComUtil from "./ComUtil";
@@ -191,23 +190,16 @@ export default class HomeScreen extends React.Component {
     goAppStoreAndExit = () => {
         let url = '';
         if (Platform.OS === 'android') {
-            // url = 'market://details?id=com.ezfarm.farmdiary'; // test용
             url = "market://details?id=com.bloceryB2b";
         } else {
-            url = 'itms-apps://itunes.apple.com/us/app/id${APP_STORE_LINK_ID}?mt=8';  // version2 에서는 url 확인해서 넣기
+            url = 'itms-apps://itunes.apple.com/us/app/%EB%82%98%EC%9D%B4%EC%8A%A4%ED%91%B8%EB%93%9C/id1489410869?l=ko&ls=1';  // version2 에서는 url 확인해서 넣기
         }
 
         Linking.canOpenURL(url).then(supported => {
             console.log(supported);
-
-            if (Platform.OS === 'android')  // version2 에서는 url 유효하기에 제거
-                supported && Linking.openURL(url);
-
+            supported && Linking.openURL(url);
             RNExitApp.exitApp();
         }, (err) => console.log(err));
-
-        // Linking.openURL(url);
-        //
     }
 
 
@@ -249,8 +241,9 @@ export default class HomeScreen extends React.Component {
             let sellerMypageUrl = Server.getMyPage(true);
 
             const res = [{url:mainUrl},{url:goodsUrl},{url:searchUrl},{url:buyerMypageUrl},{url:sellerMypageUrl}].find(obj => obj.url === currentUrl)
+            const findSellerRes = currentUrl.indexOf(searchUrl); // 업체찾기에서 x, y값이 url에 같이 있기에 indexOf로 비교함
 
-            if (res) {
+            if (res || findSellerRes > -1) {
                 ToastAndroid.show('한 번 더 누르시면 종료됩니다.', ToastAndroid.SHORT);
                 this.exitApp = true;
 
@@ -389,6 +382,7 @@ export default class HomeScreen extends React.Component {
                 uri = Server.getGoodsPage(await this.isSellerUserType())
                 break;
             case TAB_KEY.SEARCH :
+                await this.sendMyLocation();
                 uri = Server.getSearchPage(await this.isSellerUserType())
                 break;
             case TAB_KEY.MY_PAGE :
@@ -475,8 +469,8 @@ export default class HomeScreen extends React.Component {
 
                     let tabs = this.getTabName(isSeller);
                     this.setState({
-                        tabs: tabs,
-                        key: this.getNewKey()
+                        tabs: tabs//,
+                        //무한루프문제로 막음 key: this.getNewKey()
                     });
 
                 });
@@ -586,7 +580,9 @@ export default class HomeScreen extends React.Component {
 
         const { url, param } = JSON.parse(data)
         console.log('#######################HomeScreen : popupClosed -' + url);
-        //
+
+        const isRefresh = (param && param.isRefresh) ? param.isRefresh : true;
+
         //페이지 Redirection : ClosePopupAndMovePage
         if (url) { //URL refresh
             const uri = {uri: Server.getServerURL() + url}
@@ -596,7 +592,10 @@ export default class HomeScreen extends React.Component {
             })
         } else {
             //팝업 닫을 때 refresh. : CLOSE_POPUP
-            this.setState({key: this.state.key + 1});// - 혹시 refresh 필요시. 호출
+            //this.setState({key: this.state.key + 1});// - 혹시 refresh 필요시. 호출
+            if (isRefresh) {
+                this.webView.ref.reload();
+            }
         }
 
 
@@ -622,7 +621,7 @@ export default class HomeScreen extends React.Component {
                     android: () =>
                         <WebView
                             //source={{ uri: 'https://mobilehtml5.org/ts/?id=23' }}
-                            userAgent = {'BloceryApp-Android:'+ DeviceInfo.getUserAgent()}
+                            userAgent = {'BloceryAppQR-Android'}
                             key={this.state.key}
                             source={this.state.source}
                             ref={(webView) => {
@@ -643,7 +642,7 @@ export default class HomeScreen extends React.Component {
                                 //source={{ uri: 'https://mobilehtml5.org/ts/?id=23' }}
                                 // iOS WebView 는 AppDelegate.m 에서 설정 https://stackoverflow.com/questions/36590207/set-user-agent-with-webview-with-react-native
                                 // iOS WKWebView 는 여기서 설정된 것 사용
-                                userAgent = {'BloceryApp-iOS:'+ DeviceInfo.getUserAgent()}
+                                userAgent = {'BloceryApp-iOS'}
                                 useWebKit={true}
                                 sharedCookiesEnabled={true}
                                 key={this.state.key}

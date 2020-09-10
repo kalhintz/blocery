@@ -1,0 +1,21 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.item{
+  display: flex;
+  align-items: flex-start;
+  margin: 24px 16px;
+}
+
+
+.content{
+  padding-left: 15px;
+  flex-grow: 1;
+}
+.farmersInfo{
+  color: $color-b2c-green;
+  display: flex;
+  align-items: center;
+  font-size: $f12;
+  margin-bottom: 2px;
+}

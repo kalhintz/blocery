@@ -28,7 +28,7 @@ const ProducersFarmDiary = (props) => {
 
     return(
         <div>
-            <ShopXButtonNav fixed history={props.history} close>생산일지 보기</ShopXButtonNav>
+            <ShopXButtonNav fixed history={props.history} historyBack>생산일지 보기</ShopXButtonNav>
             <Container>
                 <Row>
                     <Col className='text-center p-3'>
@@ -51,7 +51,7 @@ const ProducersFarmDiary = (props) => {
                             farmDiary.diaryImages.map(((diaryImage, index) => (
                                 <div key={'diaryImage'+index} className='text-center w-100 mb-2'>
                                     <img style={{width: '100%'}}
-                                         src={Server.getImageURL() + diaryImage.imageUrl}
+                                         src={Server.getImageURL() + diaryImage.imageUrl} alt={'사진'}
                                     />
                                 </div>
                             )))

@@ -26,7 +26,7 @@ class ModalConfirm extends Component {
                 }
                 </span>
                 <div>
-                    <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className} centered>
+                    <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
                         <ModalHeader toggle={this.modalToggle}>{this.props.title}</ModalHeader>
                         <ModalBody>
                             {/*<Input name="inputPassPhrase" type="text" placeholder= onChange={this.passPhraseInput}/>*/}

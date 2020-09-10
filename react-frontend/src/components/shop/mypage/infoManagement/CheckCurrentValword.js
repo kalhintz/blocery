@@ -141,7 +141,7 @@ export default class CheckCurrentValword extends Component {
     render() {
         return(
             <Fragment>
-                <ShopXButtonNav history={this.props.history} historyBack>비밀번호 확인</ShopXButtonNav>
+                <ShopXButtonNav underline history={this.props.history} historyBack>비밀번호 확인</ShopXButtonNav>
                 <Container fluid>
                     <p></p>
                     <Row>
@@ -184,7 +184,7 @@ export default class CheckCurrentValword extends Component {
                         :
                         <ModalBody>회원님의 환전 비밀번호는 '{this.state.hintFront}****' 입니다.</ModalBody>
                     }
-                    <ModalBody>비밀번호 관련 문의는 info@blocery.io 로 문의주세요.</ModalBody>
+                    <ModalBody>비밀번호 관련 문의는 cs@blocery.io 로 문의주세요.</ModalBody>
                     <ModalFooter>
                         <Button color="info" onClick={this.modalToggleOk}>확인</Button>
                         <Button color="secondary" onClick={this.modalToggle}>취소</Button>

@@ -17,7 +17,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Webview } from '../../../lib/webviewApi'
 import Style from './MyPage.module.scss'
-import { LoginLinkCard } from '~/components/common'
+import { B2bLoginLinkCard } from '~/components/common'
 
 export default class Mypage extends Component {
     constructor(props) {
@@ -110,7 +110,7 @@ export default class Mypage extends Component {
 
     //정보관리
     onInfoModify = () => {
-        alert('정보의 확인 및 수정이 필요한 경우 메일(info@blocery.io)로 요청해 주시기 바랍니다.')
+        alert('정보의 확인 및 수정이 필요한 경우 메일(cs@blocery.io)로 요청해 주시기 바랍니다.')
     }
 
     //알림
@@ -141,7 +141,7 @@ export default class Mypage extends Component {
                     this.state.loginUser === 'notRender' ? <div></div> : //로그인 여부 판단될 때까지 render방지.
                     (!this.state.loginUser) ?
                         <div className='p-4'>
-                            <LoginLinkCard onClick={this.onClickLogin} />
+                            <B2bLoginLinkCard onClick={this.onClickLogin} />
                         </div>
 
                         :

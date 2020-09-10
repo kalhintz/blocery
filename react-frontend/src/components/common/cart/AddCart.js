@@ -114,7 +114,7 @@ const AddCart = (props) => {
 
     //배송정책 적용
     const calculateDeliveryFee = (_qty) => {
-        setDeliveryFee(getDeliveryFee({qty: _qty, deliveryFee: props.deliveryFee, deliveryQty: props.deliveryQty, termsOfDeliveryFee: props.termsOfDeliveryFee}))
+        setDeliveryFee(getDeliveryFee({qty: _qty, deliveryFee: props.deliveryFee, deliveryQty: props.deliveryQty, termsOfDeliveryFee: props.termsOfDeliveryFee, orderPrice: props.currentPrice*_qty}))
     }
 
     return(

@@ -4,10 +4,11 @@ import { ShopXButtonNav, ModalConfirm } from '~/components/common/index'
 import Switch from "react-switch";
 
 import { getConsumer, updateConsumerInfo } from '~/lib/shopApi'
+import { getServerVersion } from "~/lib/commonApi";
 
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Webview } from "../../../../lib/webviewApi";
+
 
 export default class Setting extends Component {
     constructor(props) {
@@ -15,16 +16,22 @@ export default class Setting extends Component {
         this.state = {
             isChecked: false,
             modal: false,
-            loginUser: ''
+            loginUser: '',
+            version: ''
         }
     }
 
     async componentDidMount() {
         const loginUser = await getConsumer()
+        const {data:serverVersion} = await getServerVersion();
+
+        const originVersion = serverVersion.serverVersion;
+        const version = originVersion.substring(0, originVersion.length-9);
 
         this.setState({
             loginUser: (loginUser) ? loginUser.data : '',
-            isChecked: loginUser.data.receivePush
+            isChecked: loginUser.data.receivePush,
+            version: version
         })
     }
 
@@ -107,7 +114,7 @@ export default class Setting extends Component {
     render() {
         return (
             <Fragment>
-                <ShopXButtonNav history={this.props.history} forceBackUrl={'/mypage'}>설정</ShopXButtonNav>
+                <ShopXButtonNav underline history={this.props.history} forceBackUrl={'/mypage'}>설정</ShopXButtonNav>
                 <div className='p-3 font-weight-bold'>알림</div>
                 <hr className='p-0 m-0'/>
                 <div className='d-flex p-3'>
@@ -138,7 +145,7 @@ export default class Setting extends Component {
                 <hr className='p-0 m-0'/>
                 <div className='d-flex p-3'>
                     <div className='flex-grow-1'>버전정보</div>
-                    <div className={'text-right d-flex'}>Beta</div>
+                    <div className={'text-right d-flex'}>{this.state.version}</div>
                 </div>
                 <hr className='p-0 m-0'/>
 

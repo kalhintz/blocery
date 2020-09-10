@@ -1,0 +1,14 @@
+@import "Color.module.scss";
+.wrap {
+}
+
+.wrap input, button {
+  border-radius: 0px !important;
+}
+.wrap label {
+  color: $color-secondary;
+}
+
+.wrap h5 {
+  margin-bottom: 18.75px;
+}

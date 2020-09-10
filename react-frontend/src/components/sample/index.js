@@ -1,6 +1,6 @@
-import Counter from './Counter'
 import { ImageCompressor } from './ImageCompressor'
+import { KycImageUploader } from './KycImageUpload'
 export {
-    Counter,
     ImageCompressor,
+    KycImageUploader
 }

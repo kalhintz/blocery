@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="43" height="43" viewBox="0 0 43 43">
+    <defs>
+        <style>
+            .prefix__cls-2,.prefix__cls-5{fill:none}.prefix__cls-2{stroke:#9c9c9c;stroke-width:1.5px}.prefix__cls-4{stroke:none}
+        </style>
+    </defs>
+    <g id="prefix__ic_more_12" transform="translate(.164)">
+        <path id="prefix__사각형_4455" d="M0 0H43V43H0z" data-name="사각형 4455" transform="translate(-.164)" style="fill:#fff;opacity:0"/>
+        <g id="prefix__ic_more_5" transform="translate(7.165 8.681)">
+            <g id="prefix__그룹_1135" data-name="그룹 1135">
+                <g id="prefix__사각형_945" class="prefix__cls-2" data-name="사각형 945">
+                    <path d="M2 0h9.558v12.842H2a2 2 0 01-2-2V2a2 2 0 012-2z" class="prefix__cls-4" transform="translate(0 4.475)"/>
+                    <path d="M2 .75h8.058a.75.75 0 01.75.75v9.842a.75.75 0 01-.75.75H2a1.25 1.25 0 01-1.25-1.25V2A1.25 1.25 0 012 .75z" class="prefix__cls-5" transform="translate(0 4.475)"/>
+                </g>
+                <g id="prefix__사각형_946" class="prefix__cls-2" data-name="사각형 946">
+                    <path d="M0 0h7.705v6.989a2 2 0 01-2 2H2a2 2 0 01-2-2V0z" class="prefix__cls-4" transform="translate(3.853 16.032)"/>
+                    <path d="M1.5.75h4.705a.75.75 0 01.75.75v5.489a1.25 1.25 0 01-1.25 1.25H2a1.25 1.25 0 01-1.25-1.25V1.5A.75.75 0 011.5.75z" class="prefix__cls-5" transform="translate(3.853 16.032)"/>
+                </g>
+                <path id="prefix__패스_2203" d="M8.568 5.783L24.452.5v21.069l-16.21-4.5" data-name="패스 2203" transform="translate(2.362 -.5)" style="stroke-linejoin:round;stroke:#9c9c9c;stroke-width:1.5px;fill:none"/>
+            </g>
+        </g>
+    </g>
+</svg>

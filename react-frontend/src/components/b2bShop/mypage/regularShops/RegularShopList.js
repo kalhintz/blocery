@@ -96,7 +96,8 @@ export default class RegularShopList extends Component {
                                         <div className={classNames(Style.circle, Style.centerAlign)} onClick={this.onClick.bind(this,sellerNo)}>
                                             <img
                                                 style={{width: 100, height: 80, bottom: -50, zIndex:1, objectFit: 'cover', backgroundColor: '#d6d8db'}}
-                                                src={ (producerImage && producerImage[0])? Server.getImageURL() + producerImage[0].imageUrl :''  }
+                                                src={ (producerImage && producerImage[0])? Server.getImageURL() + producerImage[0].imageUrl :''}
+                                                alt={'사진'+farmName}
                                             />
                                         </div>
                                         <div className={classNames('ml-3 align-items-center justify-content-center flex-grow-1')}>

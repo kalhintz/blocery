@@ -1,0 +1,119 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.red{
+  color: $color-b2c-danger;
+}
+.dark{
+  color: $color-b2c-dark;
+}
+.bold{
+  font-weight: bold;
+}
+
+.wonRate > span:first-child{
+  margin-right: 6px;
+}
+.blct > span:first-child{
+  margin-right: 3px;
+}
+
+.name{
+  font-size: $f14;
+  margin-bottom: 7px;
+}
+.flex{
+  display: flex;
+  align-items: center;
+}
+.flex > div:nth-child(2){
+  margin-left: auto;
+}
+
+.container{
+  color: $color-b2c-black;
+}
+
+/* 1단 타입 */
+/* 원 할인율 */
+.type1 .wonRate{
+  font-size: $f12;
+}
+/* BLCT 할인율 */
+.type1 .blctRate{
+  font-size: $f12;
+}
+/* 원 가격 */
+.type1 .won{
+  font-size: $f14;
+  //font-weight: bold;
+}
+/* BLCT 가격 */
+.type1 .blct{
+  font-size: $f14;
+  //font-weight: bold;
+}
+
+//Blocery 로고 아이콘
+.type1 .flex img{
+  width: 15px!important;
+  height: 15px!important;
+}
+
+
+/* 2단 타입 */
+/* 원 할인율 */
+.type2 .wonRate{
+  font-size: $f10;
+}
+/* BLCT 할인율 */
+.type2 .blctRate{
+  font-size: $f10;
+}
+/* 원 가격 */
+.type2 .won{
+  font-size: $f14;
+  //font-weight: bold;
+}
+/* BLCT 가격 */
+.type2  .blct{
+  font-size: $f10;
+  //font-weight: bold;
+}
+
+//Blocery 로고 아이콘
+.type2 .flex img{
+  width: 12px!important;
+  height: 12px!important;
+}
+
+
+
+
+
+
+/* 3단 타입 */
+/* 원 할인율 */
+.type3 .wonRate{
+  font-size: $f10;
+}
+/* BLCT 할인율 */
+.type3 .blctRate{
+  font-size: $f10;
+}
+/* 원 가격 */
+.type3 .won{
+  font-size: $f14;
+  //font-weight: bold;
+}
+/* BLCT 가격 */
+.type3 .blct{
+  font-size: $f14;
+  //font-weight: bold;
+}
+
+//Blocery 로고 아이콘
+.type3 .flex img{
+  width: 15px!important;
+  height: 15px!important;
+}

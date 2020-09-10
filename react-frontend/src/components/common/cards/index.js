@@ -7,4 +7,5 @@ export { default as HrGoodsPriceCard } from './HrGoodsPriceCard'                
 export { default as ProducerProfileCard } from './ProducerProfileCard'              //생산자 프로필 카드
 export { default as SellerProfileCard } from './SellerProfileCard'                  //B2B 판매자 프로필 카드
 export { default as LoginLinkCard } from './LoginLinkCard'                          //로그인 팝업띄우는 카드
+export { default as B2bLoginLinkCard } from './B2bLoginLinkCard'                    //B2B 로그인 팝업띄우는 카드
 export { default as AddressCard } from './AddressCard'                              //주소 카드

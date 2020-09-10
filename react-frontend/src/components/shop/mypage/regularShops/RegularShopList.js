@@ -1,16 +1,16 @@
 import React, { Component, Fragment } from 'react';
 import { ShopXButtonNav, ModalConfirm } from '../../../common/index'
-import { Button } from 'reactstrap'
-import { faStar } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {IconStore, IconStar} from '~/components/common/icons'
 
-import { getConsumer, getRegularShopList, delRegularShop } from '../../../../lib/shopApi'
-import { countRegularConsumer } from '../../../../lib/producerApi'
+import { getConsumer, getRegularShopList, delRegularShop } from '~/lib/shopApi'
 
-import classNames from 'classnames' //여러개의 css 를 bind 하여 사용할 수 있게함
-import Style from './RegularShopList.module.scss'
-import { Webview } from '~/lib/webviewApi'
-import {Server} from "../../../Properties";
+import { Button } from '~/styledComponents/shared/Buttons'
+import { Link } from '~/styledComponents/shared/Links'
+import { Div, Img, Flex, Span } from '~/styledComponents/shared/Layouts'
+import { HrThin } from '~/styledComponents/mixedIn'
+
+import { Server } from "~/components/Properties";
+import Skeleton from '~/components/common/cards/Skeleton'
 export default class RegularShopList extends Component {
     constructor(props) {
         super(props)
@@ -56,10 +56,6 @@ export default class RegularShopList extends Component {
     //     return count;
     // }
 
-    onClick = (producerNo) => {
-        // Webview.openPopup('/farmersDetailActivity?producerNo=' + producerNo, true);
-        this.props.history.push('/farmersDetailActivity?producerNo=' + producerNo)
-    }
     // 별 클릭시 단골 농장 삭제
     onClickStar = (shopNo) => {
         this.setState(prevState => ({
@@ -81,48 +77,52 @@ export default class RegularShopList extends Component {
         const data = this.state.shopList
         return (
             <Fragment>
-                <ShopXButtonNav history={this.props.history} historyBack>단골상점</ShopXButtonNav>
-                {/*{*/}
-                    {/*data?*/}
-                        {/*<div className='p-3'>{data.length}개</div>*/}
-                        {/*:*/}
-                        {/*<div>0개</div>*/}
-                {/*}*/}
+                <ShopXButtonNav underline history={this.props.history} historyBack>단골상점</ShopXButtonNav>
+                <Flex fontSize={14} m={16}>
+                    <Div bold>총 <Span fg='green'>{(data)?data.length + '개':'0개'}</Span> 단골상점</Div>
+                </Flex>
                 {
-                    (data && data.length !== 0) ?
-                        data.map(({farmName, producerNo, producerName, shopNo, countConsumer, countSellingItems, producerImage}, index)=>{
-                            return(
-                                <div key={'shopItem'+index}>
-                                    <hr className='m-0'/>
-                                    <div className='d-flex p-3'>
-                                        <div className={classNames(Style.circle, Style.centerAlign)} onClick={this.onClick.bind(this,producerNo)}>
-                                            <img
-                                                style={{width: 100, height: 80, bottom: -50, zIndex:1, objectFit: 'cover', backgroundColor: '#d6d8db'}}
-                                                src={Server.getImageURL() + producerImage[0].imageUrl}
-                                            />
-                                        </div>
-                                        <div className={classNames('ml-3 align-items-center justify-content-center flex-grow-1')}>
-                                            <div className='font-weight-bold' onClick={this.onClick.bind(this,producerNo)}>{farmName} | {producerName} </div>
-                                            {
-                                                countSellingItems == 0 ? <div>현재 판매상품 준비중</div> : <div>현재 판매상품 {countSellingItems}개</div>
-                                            }
-                                            <div>단골고객 {countConsumer}명</div>
-                                        </div>
-                                        <div className={classNames(Style.centerAlign, 'm-0 text-right')}>
-                                            <ModalConfirm title={'단골상점 취소'} content={'단골상점 취소 시 주요 소식 및 혜택을 받아보실 수 없습니다. 단골 상점을 취소하시겠습니까?'} onClick={this.modalOk}>
-                                                <FontAwesomeIcon onClick={this.onClickStar.bind(this,shopNo)} className={'text-info'} icon={faStar} size={'2x'} />
-                                            </ModalConfirm>
-                                        </div>
-                                    </div>
-                                </div>
+                    !data ? <Skeleton.ProductList count={5}/> :
+                        data.length <= 0 ? (
+                                <div>
+                                    <HrThin m={0} />
+                                    <div className={'w-100 h-100 bg-light d-flex justify-content-center align-items-center p-5 text-dark'}>{(data===undefined)?'':'등록된 단골 상점이  없습니다.'}</div>
+                                </div>) :
+                            data.map(({farmName, producerNo, producerName, shopNo, countConsumer, countSellingItems, producerImage}, index)=>{
+                                return(
+                                    <Div key={'shopItem'+index}>
+                                        <Flex m={16}>
+                                            <Link to={'/farmersDetailActivity?producerNo=' + producerNo}>
+                                                <Div width={100} height={100} rounded={5}>
+                                                    <Img src={ (!producerImage[0])? '': Server.getImageURL() + producerImage[0].imageUrl} alt={'사진'} />
+                                                </Div>
+                                            </Link>
+                                            <Div ml={15}>
+                                                <Link to={'/farmersDetailActivity?producerNo=' + producerNo}>
+                                                    <Div mb={3} fontSize={12} fg={'green'}><IconStore /> {farmName} | {producerName} </Div>
+                                                </Link>
+                                                <Flex mb={2} fontSize={14}>
+                                                    <Div fg={'adjust'} minWidth={90}>현재 판매상품</Div>
+                                                    <Div>{countSellingItems}개</Div>
+                                                </Flex>
+                                                <Flex mb={7} fontSize={14}>
+                                                    <Div fg={'adjust'} minWidth={90}>단골고객</Div>
+                                                    <Div>{countConsumer}명</Div>
+                                                </Flex>
+                                                <Div>
+                                                    <ModalConfirm title={'단골상점 취소'} content={'단골상점 취소 시 주요 소식 및 혜택을 받아보실 수 없습니다. 단골 상점을 취소하시겠습니까?'} onClick={this.modalOk}>
+                                                        <Button height={30} bc={'secondary'} onClick={this.onClickStar.bind(this,shopNo)}>
+                                                            <Flex fontSize={12}><IconStar /> &nbsp;단골취소</Flex>
+                                                        </Button>
+                                                    </ModalConfirm>
+                                                </Div>
+                                            </Div>
+                                        </Flex>
+                                        <HrThin m={0} />
+                                    </Div>
 
-                            )
-                        })
-                        :
-                        <div>
-                            <hr className='m-0'/>
-                            <div className={'w-100 h-100 bg-light d-flex justify-content-center align-items-center p-5 text-dark'}>{(data===undefined)?'':'등록된 단골 상점이  없습니다.'}</div>
-                        </div>
+                                )
+                            })
                 }
 
             </Fragment>

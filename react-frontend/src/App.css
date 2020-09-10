@@ -69,6 +69,91 @@
 /*}*/
 /*!* ag-grid 전용 end *!*/
 
+
+/*@font-face {*/
+    /*font-family: 'Nanum Myeongjo', serif;*/
+    /*src: url('https://fonts.googleapis.com/css?family=Nanum+Myeongjo:400,700,800&display=swap&subset=korean');*/
+/*}*/
+
+/*.nanum-myeongjo{*/
+    /*font-family: 'Nanum Myeongjo', serif;*/
+/*}*/
+
+/*@font-face {*/
+    /*font-family: 'SeoulHangangM';*/
+    /*src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/SeoulHangangM.woff')*/
+    /*format('woff');*/
+    /*font-weight: normal;*/
+    /*font-style: normal;*/
+/*}*/
+
+@font-face {
+    font-family: "SeoulHangangM";
+    src: url('./styles/fonts/SeoulHangang/SeoulHangangM.woff') format('woff');
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    letter-spacing: normal;
+}
+@font-face {
+    font-family: "SeoulHangangL";
+    src: url('./styles/fonts/SeoulHangang/SeoulHangangL.woff') format('woff');
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    letter-spacing: normal;
+}
+@font-face {
+    font-family: "SeoulHangangB";
+    src: url('./styles/fonts/SeoulHangang/SeoulHangangB.woff') format('woff');
+}
+@font-face {
+    font-family: "SeoulHangangEB";
+    src: url('./styles/fonts/SeoulHangang/SeoulHangangEB.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'NotoSansKR';
+    font-style: normal;
+    font-weight: 100;
+    src: url('./styles/fonts/NotoSansKr/NotoSansKR-Thin.woff2') format('woff2'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Thin.woff') format('woff'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Thin.otf') format('opentype');
+}
+@font-face {
+    font-family: 'NotoSansKR';
+    font-style: normal;
+    font-weight: 300;
+    src: url('./styles/fonts/NotoSansKr/NotoSansKR-Light.woff2') format('woff2'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Light.woff') format('woff'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Light.otf') format('opentype');
+}
+@font-face {
+    font-family: 'NotoSansKR';
+    font-style: normal;
+    font-weight: normal;
+    src: url('./styles/fonts/NotoSansKr/NotoSansKR-Regular.woff2') format('woff2'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Regular.woff') format('woff'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Regular.otf') format('opentype');
+}
+@font-face {
+    font-family: 'NotoSansKR';
+    font-style: normal;
+    font-weight: 500;
+    src: url('./styles/fonts/NotoSansKr/NotoSansKR-Medium.woff2') format('woff2'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Medium.woff') format('woff'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Medium.otf') format('opentype');
+}
+@font-face {
+    font-family: 'NotoSansKR';
+    font-style: normal;
+    font-weight: bold;
+    src: url('./styles/fonts/NotoSansKr/NotoSansKR-Bold.woff2') format('woff2'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Bold.woff') format('woff'),
+    url('./styles/fonts/NotoSansKr/NotoSansKR-Bold.otf') format('opentype');
+}
+
+
 @font-face {
     font-family: "Spoqa Han Sans";
     font-weight: 200;
@@ -110,12 +195,19 @@ html, body {
 
 html {
     font-size: 15px;
+    font-family: NotoSansKR, 'Sans-serif';
 }
 body {
-    font-family: 'Spoqa Han Sans', 'Spoqa Han Sans JP', 'Sans-serif';
-    font-size: 1rem;
-    letter-spacing: -0.4px;
-    line-height: 1.65;
+    /*font-family: 'Spoqa Han Sans', 'Spoqa Han Sans JP', 'Sans-serif';*/
+    font-family: NotoSansKR, 'Sans-serif';
+    /*font-size: 1rem;*/
+    /*letter-spacing: -0.4px;*/
+    /*line-height: 1.65;*/
+}
+
+a {
+    text-decoration: none;
+    color:#000000;
 }
 
 /* ================================== [swiper global customized class] START ================================== */
@@ -157,7 +249,7 @@ body {
 
 /* bullet 동그라미 컬러 */
 .swiper-pagination-bullet-active {
-    background-color: #17a2b8;
+    background-color: black;
 }
 
 /* ================================== [swiper global customized class] END ================================== */
@@ -170,4 +262,87 @@ body {
 /* hr 회색 배경용 */
 .blocery-bg-dark-gray {
     background-color: #e5e5e5;
+}
+
+
+input:read-only {
+    background-color:#ffffff;
+}
+
+input::-webkit-read-only {
+    background-color:#ffffff;
+}
+/* IE */
+input:-ms-read-only {
+    background-color:#ffffff;
+}
+/* Firefox */
+input:-moz-read-only {
+    background-color:#ffffff;
+}
+
+/* IE9 이하를 위한 css */
+.placeholder {
+    color: #ccc;
+    opacity: 1;
+}
+
+/* IE10 이상을 위한 css */
+input::placeholder {
+    color: #ccc;
+    opacity: 1; /* 파이어폭스에서 뿌옇게 나오는 현상을 방지하기 위한 css */
+}
+input::-webkit-input-placeholder {
+    color: #ccc;
+    opacity: 1 !important;
+}
+/* IE */
+input:-ms-input-placeholder {
+    color: #ccc;
+}
+/* Firefox */
+input:-mos-input-placeholder {
+    color: #ccc;
+}
+
+/*.ag-cell {*/
+    /*overflow: visible !important;*/
+/*}*/
+
+/*.ag-row-focus {*/
+    /*z-index: 1;*/
+/*}*/
+
+/*.ag-center-cols-viewport,*/
+/*.ag-center-cols-clipper,*/
+/*.ag-layout-normal {*/
+    /*overflow: visible !important;*/
+/*}*/
+
+/* 0 ~ 600 까지 100%*/
+@media only screen and (min-width: 600px) {
+    /* For tablets: */
+    .shopMediaContainer{
+        width: 100%;
+    }
+}
+/* 601 ~ 768 까지, 이후부터는 계속 768px로 유지함*/
+@media only screen and (min-width: 768px) {
+    /* [부모] 자식 중앙정렬 */
+    .shopMediaWrapper{
+        display: flex;
+        justify-content: center;
+    }
+
+    /* [자식] 크기 */
+    .shopMediaContainer{
+        width: 768px;
+    }
+
+    .dom_bottom,            /* [탭바], [상품구매 푸터] */
+    .dom_b2c_sidebar{       /* [b2c 사이드바] */
+        max-width: 768px;
+    }
+
+
 }

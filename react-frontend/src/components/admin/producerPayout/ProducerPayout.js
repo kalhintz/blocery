@@ -1,10 +1,10 @@
 import React, { Fragment, Component, PropTypes } from 'react';
-import { getAllProducerPayoutList, setProducerPayoutStatus } from '~/lib/adminApi'
+import { getAllProducerPayoutList, setProducerPayoutStatus, getAllTempProducerBlctMonth } from '~/lib/adminApi'
 import { getLoginAdminUser } from '~/lib/loginApi'
 import ComUtil from '~/util/ComUtil'
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+import "ag-grid-community/src/styles/ag-grid.scss";
+import "ag-grid-community/src/styles/ag-theme-balham.scss";
 // only available in ag-Grid Enterprise!!!
 // https://www.ag-grid.com/javascript-grid-excel/
 // https://www.ag-grid.com/javascript-grid-filter-set/
@@ -45,36 +45,59 @@ export default class ProducerPayout extends Component{
             data: [],
             excelData: [],
             columnDefs: [
-                {headerName: "매출구분", cellRenderer: "categoryRederer"},
-                {headerName: "정산상태", field: "producerPayoutStatus", cellRenderer: "payoutStatusEnumRenderer", cellClassRules: {
-                    grayBackground: function(params) {
-                        return params.value === ProducerPayOutStatusEnum.Complete;
-                    }
-                }},
-                {headerName: "정산상태일시", field: "producerPayoutStatusTimestamp", cellRenderer: "timestampRenderer"},
-                {headerName: "판매자상호", field: "producerFarmName"},
-                {headerName: "판매자이름", field: "producerName"},
-                {headerName: "입금은행", field: "bankInfo.name"},
-                {headerName: "입금계좌", field: "payoutAccount", width: 150},
+                {headerName: "판매자상호", field: "producerFarmName", width: 100},
+                {headerName: "판매자이름", field: "producerName", width: 100},
+                {headerName: "입금은행", field: "bankInfo.name", width: 90},
+                {headerName: "입금계좌", field: "payoutAccount"},
                 {headerName: "에금주", field: "payoutAccountName"},
-                {headerName: "구매확정건수", field: "totalOrderCount"},
-                {headerName: "구매취소건수", field: "totalCancelCount"},
-                {headerName: "정산금액", field: "totalPayout", sort:"desc"},
-                {headerName: "결제금액", field: "totalOrderPrice"},
-                {headerName: "수수료", field: "totalBloceryOnlyFee"},
-                {headerName: "소비자보상", field: "totalConsumerReward"},
-                {headerName: "생산자보상", field: "totalProducerReward"},
-                {headerName: "지연배송보상", field: "totalDelayPenalty"},
-                {headerName: "신용카드수수료", field: "totalCreditCardCommission"},
+                {headerName: "[총정산예정금액]", field: "sumNotYetPayoutPrice", cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "[총판매금액]", field: "sumNotYetOrderPrice", cellRenderer: 'formatCurrencyRenderer'},
+
+                {headerName: "카드미정산건수", field: "totalNotyetPayoutCount", width: 100},
+                {headerName: "미정산결제금액", field: "totalNotyetOrderPrice", cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "미정산수수료", field: "totalNotyetCommission", width: 110, cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "미정산지급예정금액", field: "totalNotyetPayoutAmount", width: 140, cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "미정산구매취소건수", field: "totalNotyetCancelCount", width: 150},
+                {headerName: "미정산취소수수료", field: "totalNotyetCancelFee", cellRenderer: 'formatCurrencyRenderer'},
+
+                {headerName: "BLCT미정산건수", field: "notYetBlctPayoutCount", width: 140, cellRenderer: 'formatCurrencyRendererWithBracket'}, //wrong
+                {headerName: "BLCT결제금", field: "blctNotYetOrderToken", cellRenderer: 'formatCurrencyRendererWithBracket'},
+                {headerName: "BLCT수수료", field: "blctNotYetCommission", width: 110, cellRenderer: 'formatCurrencyRendererWithBracket'},
+                {headerName: "BLCT지급금", field: "blctNotYetPayoutAmount", width: 110, cellRenderer: 'formatCurrencyRendererWithBracket'},
+                {headerName: "BLCT->원", field: "notYetBlctToWon", width: 110, cellRenderer: 'formatCurrencyRendererWithBracket'},
+
+            ],
+            columnFinishedDefs: [
+                {headerName: "판매자상호", field: "producerFarmName", width: 100},
+                {headerName: "판매자이름", field: "producerName", width: 100},
+                {headerName: "입금은행", field: "bankInfo.name", width: 90},
+                {headerName: "입금계좌", field: "payoutAccount"},
+                {headerName: "에금주", field: "payoutAccountName"},
+                {headerName: "[총정산금액]", field: "sumCompletePayoutPrice", cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "[총판매금액]", field: "sumCompleteOrderPrice", cellRenderer: 'formatCurrencyRenderer'},
+
+                {headerName: "정산완료건수", field: "totalPayoutCompletedCount", width: 110},
+                {headerName: "정산완료결제금액", field: "totalOrderPrice", cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "정산완료수수료", field: "totalCommission", cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "정산완료지급금", field: "totalPayoutAmount", cellRenderer: 'formatCurrencyRenderer'},
+
+                {headerName: "정산완료구매취소건수", field: "totalCancelCount", width: 150},
+                {headerName: "정산완료취소수수료", field: "totalCancelFee", width: 150, cellRenderer: 'formatCurrencyRenderer'},
+
+                {headerName: "BLCT정산완료건수", field: "totalBlctPayoutCount", width: 140},
+                {headerName: "BLCT결제금", field: "blctTotalOrderToken", cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "BLCT수수료", field: "blctTotalCommission", width: 110, cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "BLCT지급금", field: "blctTotalPayoutAmount", width: 110, cellRenderer: 'formatCurrencyRenderer'},
+                {headerName: "BLCT->원", field: "totalBlctToWon", width: 110, cellRenderer: 'formatCurrencyRenderer'},
+
             ],
             defaultColDef: {
-                width: 100,
+                width: 130,
                 resizable: true,
             },
             components: {
-                payoutStatusEnumRenderer: this.payoutStatusEnumRenderer,
-                timestampRenderer: this.timestampRenderer,
-                categoryRederer: this.categoryRederer,
+                formatCurrencyRenderer: this.formatCurrencyRenderer,
+                formatCurrencyRendererWithBracket: this.formatCurrencyRendererWithBracket,
             },
             overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
             overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 정산 내역이 없습니다.</span>',
@@ -83,6 +106,8 @@ export default class ProducerPayout extends Component{
             searchMonthValue: limitMonth,
 
             isSearchDataExist:false,
+            searchMode:false,  //true일경우 정산버튼 제거 - 현재달(정산이 불가능한 달) 조회시 정산버튼없이 조회만 가능
+            tempProducerNotyetBlct: 0,  // 조회달의 tempProducer의 미정산 BLCT 총액
         }
     }
 
@@ -93,24 +118,13 @@ export default class ProducerPayout extends Component{
         }
     }
 
-    payoutStatusEnumRenderer = ({value}) => {
-        return value;
-        // TODO: enum 을 JsonFormat 이용해서 사용하는 경우 JsonObject 로 부터 displayName 을 추출하여 리턴하는 것으로 수정
-        // console.log(JSON.stringify(value));
-        // console.log(value);
-        // return JSON.stringify(value);
+    formatCurrencyRenderer = ({value, data:rowData}) => {
+        return ComUtil.addCommas(value);
     }
 
-    timestampRenderer = ({value}) => {
-        return !value ? "-" : ComUtil.utcToString(value, 'YYYY-MM-DD HH:mm:ss');
-    }
-
-    categoryRederer = ({data}) => {
-        return this.makePayoutCategory(data);
-    }
-
-    makePayoutCategory = (data) => {
-        return data.totalOrderCount > 0 ? "구매확정" : "취소수수료";
+    formatCurrencyRendererWithBracket = ({value, data:rowData}) => {
+       let commaValue = ComUtil.addCommas(value);
+       return rowData.payoutBlct ? "(" + commaValue + ")" : commaValue;
     }
 
     //[이벤트] 그리드 로드 후 callback 이벤트
@@ -137,15 +151,21 @@ export default class ProducerPayout extends Component{
         if(!window.confirm('블록체인에 정산 완료가 요청되면 되돌릴 수 없습니다. 조회된 미정산(NotYet) 상태의 정산 금액이 펌뱅킹으로 이체한 리스트와 맞는지 확인하시기 바랍니다. 수동 정산 완료를 지금 하시겠습니까?')) {
             return;
         }
-        await this.manualCompletePayout()
-        await this.search()
-        this.setExcelData();
+
+        let searchMonthValue = this.state.searchMonthValue;
+        let year = searchMonthValue.year;
+        let month = searchMonthValue.month;
+
+        const finishComplete = await this.manualCompletePayout(year, month)
+        if(finishComplete) {
+            await this.search()
+            this.setExcelData();
+        }
     }
 
     onCompletePayout  = async () => {
        alert('신한은행 이체 API 연동은 추후 제공됩니다')
     }
-
 
     setExcelData() {
         if(!this.gridApi)
@@ -169,12 +189,16 @@ export default class ProducerPayout extends Component{
         let limitYear = this.payoutLimitMonth.year;
         let limitMonth = this.payoutLimitMonth.month;
         let limitMonthText  = this.makeMonthText(this.payoutLimitMonth);
-        
+
+        let searchMode = this.state.searchMode;
         if(year > limitYear ||
             (year >= limitYear && month > limitMonth) )
         {
-            alert(limitMonthText + "까지만 정산할 수 있습니다.")
-            return
+            alert(limitMonthText + "까지만 정산할 수 있습니다. (현재달은 조회만 가능)")
+            searchMode = true;
+            //return - 20200320 searchMode추가
+        } else {
+            searchMode = false; //정산가능한 달.
         }
 
         this.setState({loading: true})
@@ -185,90 +209,71 @@ export default class ProducerPayout extends Component{
             return
         }
 
+        // console.log(data);
+
+        const {data:tempProducerNotyetBlct} = await getAllTempProducerBlctMonth(year, month)
+        console.log("tempProducerNotyetBlct : ", tempProducerNotyetBlct);
+
         let isSearchDataExist = data.length > 0;
 
         this.setState({
             data: data,
             loading: false,
-            isSearchDataExist: isSearchDataExist
+            isSearchDataExist: isSearchDataExist,
+            searchMode: searchMode,
+            tempProducerNotyetBlct: tempProducerNotyetBlct
         })
     }
 
-    makePayoutListGroupByProducer = () => {
+    getTotalCompletePayoutBlctAmount = () => {
         if (!this.state.isSearchDataExist) {
             return null;
         }
 
         var data = this.state.data;
-        var payoutDataList = [];
+        let totalBlctNotYetPayoutAmount = 0;
 
+        console.log(data);
         data.forEach((node) => {
-            if (node.producerPayoutStatus === ProducerPayOutStatusEnum.NotYet)
-                payoutDataList.push(node);
+            if (node.blctNotYetPayoutAmount > 0) {
+                totalBlctNotYetPayoutAmount = totalBlctNotYetPayoutAmount + node.blctNotYetPayoutAmount;
+            }
         });
 
-        if (payoutDataList.length <= 0) {
-            return null;
-        }
-
-        // 생산자별 burn 요청하기 위한 그룹핑
-        // https://stackoverflow.com/questions/23705077/linq-js-to-group-by-array-of-objects-in-javascript
-        let payoutListGroupByProducer = Enumerable.from(payoutDataList)
-            .groupBy(
-                x => x.producerNo,
-                null,
-                (key, g) => {
-                    return {
-                        producerNo: key,
-                        ethAccount: g.first().producerEthAccount,
-                        bankInfo: g.first().bankInfo,
-                        orderSeqList: g.selectMany(x => x.orderSeqList).distinct().toArray(),
-                        totalPayout: g.sum(x => x ? x.totalPayout : 0),
-
-                    }
-                })
-            .toArray();
-
-        return payoutListGroupByProducer;
+        return totalBlctNotYetPayoutAmount;
     }
 
-    processOrderDetailPayoutStatus = async (orderSeqList, payoutStatus, totalPayout) => {
-        const { status, isSuccess } = await setProducerPayoutStatus(orderSeqList, payoutStatus, totalPayout)
+    manualCompletePayout = async (year, month)=> {
+        console.log("manualCompletePayout")
+
+        //backend에 year, month만 넘기면 notYet인 데이터 다시 조회 후 complete로 처리
+        const notyetPayoutAmount = this.getTotalCompletePayoutBlctAmount();
+
+        console.log(year, month, "tempProducerNotyetBlct : ", this.state.tempProducerNotyetBlct,  " notyetPayoutAmount :  ", notyetPayoutAmount);
+
+        if(notyetPayoutAmount !== this.state.tempProducerNotyetBlct) {
+            let confirmResult = window.confirm('tempProducer계좌와 현재 blct가 맞지 않습니다 그래도 전송하시겠습니까? ');
+            if(!confirmResult)
+                return false;
+        }
+
+
+        this.setState({chainLoading: true})
+        const {status, data} = await setProducerPayoutStatus(year, month)
+
         if(status !== 200) {
             return false
         }
 
-        return isSuccess;
-    }
-
-    manualCompletePayout = async ()=> {
-       console.log("manualCompletePayout")
-
-        var payoutListGroupByProducer = this.makePayoutListGroupByProducer();
-        if(!payoutListGroupByProducer || payoutListGroupByProducer.length <= 0)
-        {
-            alert('더 이상 정산할 항목이 없습니다.')
-            return;
+        this.setState({chainLoading: false})
+        if(data) {
+           alert("수동 정산 프로세스가 완료되었습니다.")
+        } else {
+            alert("수동 정산 프로세스가 실패하였습니다.")
         }
 
-        this.setState({chainLoading: true})
+        return data;
 
-        // TODO: 프로세스 중간에 브라우저를 닫더라도 한번 요청작업이 시작된 작업은 진행되는 것을 보장하기 위해서 정산 프로세스 벡엔드로 이동
-        // https://medium.com/@trustyoo86/async-await%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%B9%84%EB%8F%99%EA%B8%B0-loop-%EB%B3%91%EB%A0%AC%EB%A1%9C-%EC%88%9C%EC%B0%A8-%EC%B2%98%EB%A6%AC%ED%95%98%EA%B8%B0-315f31b72ccc
-        // forEach의 경우 해당 loop가 종료되는 것에 대한 결과를 기다려주지 않으므로 for...of 사용함
-        for(const x of payoutListGroupByProducer)
-        {
-            // 블록체인 호출 전에 OrderDetail의 payoutStatus를  PendingBurnBls 로 변경  => 블록체인 호출 안해도 되기에 PendingBurnBls단계 삭제함.
-            var isSuccess = await this.processOrderDetailPayoutStatus(x.orderSeqList, ProducerPayOutStatusEnum.Complete, x.totalPayout);
-            if(isSuccess === false) {
-                this.setState({chainLoading: false})
-                alert("주문 정보 테이블의 정산 상태를 PendingBurnBls로 변경에 실패했습니다. db 연결 상태를 확인 후 시스템 관리자에게 연락해 주세요.")
-                return;
-            }
-        };
-
-        this.setState({chainLoading: false})
-        alert("수동 정산 프로세스가 완료되었습니다.")
     }
 
 
@@ -285,12 +290,11 @@ export default class ProducerPayout extends Component{
 
         const data = payoutDataList.map((payout) => {
             return [
-                this.makePayoutCategory(payout),
-                payout.producerPayoutStatus, payout.producerPayoutStatusTimestmap,
+                // this.makePayoutCategory(payout),
                 payout.producerFarmName, payout.producerName, payout.bankInfo.name, payout.payoutAccount, payout.payoutAccountName,
-                payout.totalOrderCount, payout.totalPayout,
-                payout.totalOrderPrice,
-                payout.totalBloceryOnlyFee, payout.totalConsumerReward, payout.totalProducerReward, payout.totalDelayPenalty, payout.totalCreditCardCommission
+                payout.sumNotYetPayoutPrice, payout.sumNotYetOrderPrice, payout.totalNotyetPayoutCount, payout.totalNotyetOrderPrice,
+                payout.totalNotyetCommission, payout.totalNotyetPayoutAmount, payout.totalNotyetCancelCount, payout.totalNotyetCancelFee,
+                payout.notYetBlctPayoutCount, payout.blctNotYetOrderToken, payout.blctNotYetCommission, payout.blctNotYetPayoutAmount, payout.notYetBlctToWon
             ]
         });
 
@@ -340,8 +344,7 @@ export default class ProducerPayout extends Component{
                 <Container>
                     <hr/>
                     <Row>
-                        <Label size="sm"> * 정산은 월 단위로 NotYet 상태의 미정산 건에 대해서 블록체인에 Bls Burn을 요청한 후 정상적으로 처리된 경우 (은행 이체를 수행 한 후) Complete 상태로 변경합니다.</Label>
-                        <Label size="sm"> * Pending 상태의 정산 건에 대해서는 수작업으로 확인 후 정산 완료 처리하시기 바랍니다.</Label>
+                        <Label size="sm"> * 정산은 월 단위로 NotYet 상태의 미정산 건에 대해서 정상적으로 처리된 경우 (은행 이체를 수행 한 후) Complete 상태로 변경합니다.</Label>
                     </Row>
                     <hr/>
                     <Row>
@@ -384,7 +387,7 @@ export default class ProducerPayout extends Component{
                                                    fileName={this.makeTitleText(this.state.searchMonthValue)}
                                                    sheetName={this.makeTitleText(this.state.searchMonthValue)}
                                                    button={
-                                        <Button color={'info'} size={'sm'} block style={{width: '100px'}}>
+                                        <Button color={'info'} size={'sm'} style={{width: '100px'}}>
                                             <div className="d-flex">
                                                 엑셀 다운로드
                                             </div>
@@ -398,20 +401,22 @@ export default class ProducerPayout extends Component{
                         this.state.isSearchDataExist &&
                             <Row>
                                 <Col>
-                                    <Button color={'info'} size={'sm'} block  style={{width: '150px'}}
-                                            onClick={this.onCompletePayout}>
-                                        <div className="d-flex">
-                                            신한은행 즉시 이체 요청
-                                        </div>
-                                    </Button>
+                                    {/*<Button color={'info'} size={'sm'} block  style={{width: '150px'}}*/}
+                                            {/*onClick={this.onCompletePayout}>*/}
+                                        {/*<div className="d-flex">*/}
+                                            {/*신한은행 즉시 이체 요청*/}
+                                        {/*</div>*/}
+                                    {/*</Button>*/}
                                 </Col>
                                 <Col>
-                                    <Button color={'info'} size={'sm'} block  style={{width: '150px'}}
-                                            onClick={this.onManualCompletePayout}>
-                                        <div className="d-flex">
-                                            수동 정산 완료 처리
-                                        </div>
-                                    </Button>
+                                    { !this.state.searchMode &&
+                                        <Button color={'info'} size={'sm'} block style={{width: '150px'}}
+                                                onClick={this.onManualCompletePayout}>
+                                            <div className="d-flex">
+                                                수동 정산 완료 처리
+                                            </div>
+                                        </Button>
+                                    }
                                 </Col>
                              </Row>
                     }
@@ -421,9 +426,13 @@ export default class ProducerPayout extends Component{
                     <div
                         className="ag-theme-balham"
                         style={{
-                            height: '700px'
+                            height: '500px'
                         }}
                     >
+                        <div className="d-flex align-items-center">
+                            <h4> 미정산 내역 </h4> &nbsp;(card+Blct 결제: 건수가 card와 blct양쪽에 중복 반영됨)
+                        </div>
+                        <br/>
                         <AgGridReact
                             enableSorting={true}                //정렬 여부
                             enableFilter={true}                 //필터링 여부
@@ -440,6 +449,38 @@ export default class ProducerPayout extends Component{
                         </AgGridReact>
                     </div>
                 }
+
+                <br/>
+                <br/>
+                {
+                    <div
+                        className="ag-theme-balham"
+                        style={{
+                            height: '500px'
+                        }}
+                    >
+                        <br/>
+                        <br/>
+
+                        <h4> 정산완료 내역 </h4>
+                        <br/>
+                        <AgGridReact
+                            enableSorting={true}                //정렬 여부
+                            enableFilter={true}                 //필터링 여부
+                            columnDefs={this.state.columnFinishedDefs}  //컬럼 세팅
+                            defaultColDef={this.state.defaultColDef}
+                            enableColResize={true}              //컬럼 크기 조정
+                            overlayLoadingTemplate={this.state.overlayLoadingTemplate}
+                            overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
+                            onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
+                            onFilterChanged={this.onGridFilterChanged.bind(this)}
+                            rowData={this.state.data}
+                            components={this.state.components}
+                        >
+                        </AgGridReact>
+                    </div>
+                }
+
 
             </Fragment>
 

@@ -1,0 +1,47 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.item{
+  display: flex;
+  align-items: flex-start;
+  margin: 24px 16px;
+
+  position: relative;
+}
+
+.content{
+  padding-left: 15px;
+  flex-grow: 1;
+}
+.farmersInfo {
+  color: $color-b2c-green;
+  display: flex;
+  align-items: center;
+  font-size: $f12;
+  margin-bottom: 2px;
+}
+.back{
+  z-index: 10;
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  bottom: calc(0% + 70px);
+  margin-left: 16px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+  -webkit-transition: 0.2s time;
+  -moz-transition: 0.2s time;
+  -ms-transition: 0.2s time;
+  -o-transition: 0.2s time;
+  transition: 0.2s time;
+}
+.back:hover{
+  background-color: $color-b2c-light;
+}
+.back:active{
+  background-color: $color-b2c-gray;
+}

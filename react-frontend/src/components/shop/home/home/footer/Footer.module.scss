@@ -1,17 +1,49 @@
-.wrap {
-  font-size: 12px;
-  background-color: #f1f1f1;
+@import "Font.module.scss";
+
+.wrap{
+  font-family: NotoSansCJKkr;
+  background: #f8f8f8;
+  padding: 48px 24px;
 }
 
-.wrap ul {
-  margin: 0;
-  padding: 0.8rem;
+.wrap a{
+  color: #929292 !important;
 }
-.wrap li {
-  margin-right: 0.8rem;
+
+.wrap > div:nth-child(1){
+  display: flex;
+  justify-content: space-between;
+  font-size: $f14; /* 14px */
+  font-weight: 500;
+
+  margin-bottom: 15px;
+}
+
+.wrap > div:nth-child(2){
+  font-size: $f14; /* 14px */
+  color: #929292;
+  margin-bottom: 15px;
+}
+
+.wrap > ul{
+  padding: 0;
+  list-style:none;
+  line-height:16px;
+}
+.wrap > ul > li{
   display: inline-block;
+  /*   width: 50%; */
+  text-align: left;
+  font-size: $f10;  /* 10px */
+  vertical-align: top;
 }
-
-.content {
-  padding: 0.8rem;
+/* 홀수 */
+.wrap > ul > li:nth-child(odd){
+  width: 40%;
+  color: #929292;
+}
+/* 짝수 */
+.wrap > ul > li:nth-child(even){
+  color: #c2c2c2;
+  width: 60%;
 }

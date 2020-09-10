@@ -12,17 +12,17 @@ const BannerSwiper = (props) => {
         rebuildOnUpdate: true,  //새로운 데이터 로드시 처음부터 읽어들이도록 함(0번째 인덱스로 자동 이동됨)
         pagination: {
             el: '.swiper-pagination',
-            type: 'fraction',
+            // type: 'fraction',
             // clickable: true,
             // dynamicBullets: true
             // modifierClass: '.swiper-pagination'
             // currentClass: 'swiper-pagination2'
 
         },
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev'
-        }
+        // navigation: {
+        //     nextEl: '.swiper-button-next',
+        //     prevEl: '.swiper-button-prev'
+        // }
     }
     if(data.length <= 0) return null
     return <div>

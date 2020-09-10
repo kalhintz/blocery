@@ -1,0 +1,33 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+
+.item{
+  display: flex;
+  align-items: flex-start;
+  margin: 24px 16px;
+
+  position: relative;
+}
+
+.item .medal{
+  position: absolute;
+  top: -5px;
+  left: -10px;
+  z-index: 1;
+
+  /* 아이콘 shadow */
+  -webkit-filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
+  filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
+}
+
+.content{
+  padding-left: 15px;
+  flex-grow: 1;
+}
+.farmersInfo{
+  color: $color-b2c-green;
+  display: flex;
+  align-items: center;
+  font-size: $f12;
+  margin-bottom: 2px;
+}

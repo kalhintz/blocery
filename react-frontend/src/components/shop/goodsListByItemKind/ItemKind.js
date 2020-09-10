@@ -1,43 +1,63 @@
 import React, {useState, useEffect} from 'react'
-import Style from './ItemKind.module.scss'
-import { Link } from "react-router-dom";
-import classNames from 'classnames'
-import {getItemByItemNo, getItemKindByCode} from '~/lib/adminApi'
-import {Container, Row, Col} from 'reactstrap'
+import ComUtil from '~/util/ComUtil'
 
-const Item = (props) =>{
-    const {itemNo, itemKindName, itemKindCode, isActive, onClick = () => null} = props
-    return(
-    <Col xs={4} lg={3} xl={2} className={classNames('p-0 f6 d-flex align-items-center', Style.item, isActive ? Style.active : null)} onClick={onClick}>
-        {/*<Link to={`/category/${itemNo}/${itemKindCode}`} className='flex-grow-1 p-2' >*/}
-        <div className='flex-grow-1 p-2 d-flex align-items-center justify-content-center cursor-default'>
-            <div>{itemKindName}</div>
-            <div className='ml-auto'>{'>'}</div>
-        </div>
-        {/*</Link>*/}
-    </Col>
-    )
-}
+import styled from 'styled-components'
+import {getValue} from '~/styledComponents/Util'
+import {color} from '~/styledComponents/Properties'
+import {Div, Mask} from '~/styledComponents/shared'
+
+
+
+const Modal = styled(Div)`
+    background-color: ${color.white};
+    padding: 22px 0;
+    & > div{
+        margin-bottom: 19px;
+    }
+    & > div:last-child{
+        margin-bottom: 0;
+    }
+`;
+
+const Item = styled.div`
+    font-size: ${getValue(16)};
+    color: ${props => props.active ? color.green : color.dark};
+    font-weight: ${props => props.active && 'bold'};
+    cursor: pointer;
+    text-align: center;
+`;
+
 
 const ItemKind = (props) => {
+
     const [itemKindCode, setItemKindCode] = useState(props.itemKindCode)
+    
     function onClick(_itemKindCode) {
         setItemKindCode(_itemKindCode)
         props.onClick(_itemKindCode)
+        props.onClose()
     }
+
+    if(!props.item || !props.isOpen) return null
     return(
-        <Container fluid>
-            <Row>
+        <Mask underNav onClick={props.onClose}>
+            {/*<Div bg='white' pt={22 - (19/2)} pb={22 - (19/2)}>*/}
+            <Modal onClick={(e)=> e.stopPropagation()}>
+                <Item active={itemKindCode === 'all'} onClick={onClick.bind(this, 'all')}>{props.item.itemName}(전체)</Item>
                 {
-                    props.item && <Item itemNo={props.item.itemNo} itemKindName={'전체'} itemKindCode={'all'} isActive={itemKindCode === 'all'} onClick={onClick.bind(this, 'all')} />
-                }
-                {
-                    props.item && props.item.itemKinds.map((itemKind)=>
-                        <Item key={'category_itemKind_'+itemKind.code} itemNo={props.item.itemNo} itemKindName={itemKind.name} itemKindCode={itemKind.code} isActive={itemKindCode == itemKind.code} onClick={onClick.bind(this, itemKind.code)} />
+                    props.item.itemKinds.map(itemKind =>
+                        <Item key={'itemKink'+itemKind.code}
+                              active={itemKindCode == itemKind.code}
+                              onClick={onClick.bind(this, itemKind.code, itemKind.name)}
+
+                        >
+                            {itemKind.name}
+                        </Item>
                     )
                 }
-            </Row>
-        </Container>
+            </Modal>
+            {/*</Div>*/}
+        </Mask>
     )
 }
 export default ItemKind

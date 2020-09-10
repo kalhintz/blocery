@@ -1,0 +1,68 @@
+/* 공통 */
+.leftRound{
+  border-top-left-radius: 25px;
+}
+.green{
+  color: #24855b;
+}
+.item{
+  margin-bottom: 16px;
+}
+/* 페이지 */
+.grandTitleBox{
+  padding: 30px 16px;
+}
+/* n개 */
+.grandTitleBox span:nth-child(1){
+  font-size: 24px;
+  font-weight: bold;
+}
+/* 의 기획전이 */
+.grandTitleBox span:nth-child(2){
+  font-size: 19px;
+  font-family: SeoulHangangL;
+}
+.grandTitleBox > div:nth-child(2){
+  font-size: 27px;
+  font-family: SeoulHangangL;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  letter-spacing: normal;
+}
+
+
+.backgroundBox{
+  //background: url('https://img.insight.co.kr/static/2019/01/13/700/ckd59hr368s5c0jr244s.jpg');
+
+  //background-repeat: no-repeat;
+  //background-position: center;
+  //background-size: cover;
+
+  background-size: contain!important;
+  height: 85vmin;
+  position: relative;
+  //min-height: 182px!important;
+}
+.descLayer{
+  width: 100%;
+  background-color: white;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: center;
+  padding: 20px 30px;
+}
+.descLayer > div:nth-child(2){
+  line-height: 24px;
+}
+/* 녹색 타이틀 */
+.descLayer > div:nth-child(1){
+  font-size: 14px;
+}
+.descLayer > div:nth-child(2){
+  font-size: 19px;
+}

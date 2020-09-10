@@ -10,7 +10,8 @@ export default class DirectBuy extends Component {
         this.state = {
             buyType: 'direct',
             consumer: null,
-            goods: null
+            goods: null,
+            gift: false          // 선물하기 여부
         };
 
 
@@ -28,22 +29,32 @@ export default class DirectBuy extends Component {
         const { data:goods } = await getGoodsByGoodsNo(goodsNo);
         goods.orderCnt = qty;
 
+        let gift
+        if(params.get('gift') === "false") {
+            gift = false
+        } else {
+            gift = true
+        }
+
         //console.log("DirectBuy[consumerInfo]",consumer);
         //console.log("DirectBuy[goods]",goods);
 
         this.setState({
             consumer: consumer,
-            goods: [goods]
+            goods: [goods],
+            gift: gift
         });
     }
 
     render() {
         if(!this.state.goods && !this.state.consumer) return null;
+
         return (
             <Buy goods={ this.state.goods }
                  consumer={ this.state.consumer }
                  buyType={ this.state.buyType }
                  history={ this.props.history }
+                 gift={this.state.gift}
             />
         )
     }

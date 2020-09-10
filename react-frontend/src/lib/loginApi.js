@@ -20,6 +20,14 @@ export const doLogout = () => axios(Server.getRestAPIHost() + '/login', { method
         //localStorage.clear();
     });
 
+export const doAdminLogout = () => axios(Server.getRestAPIHost() + '/adminLogout', { method: "delete", withCredentials: true, credentials: 'same-origin' })
+    .then((response) => {
+        //autoLogin false,
+        console.log('do AdminLogout');
+        localStorage.setItem('adminEmail', '') //20200330 - adminEmail 별도 저장.
+        sessionStorage.setItem('adminLogined', 0)
+    });
+
 /**
  * 로그인된 userType 가져오기, 로그인 되었는지 여부로도 사용가능.
  * usage:   let {data:userType} = await getLoginUserType();
@@ -58,6 +66,14 @@ export const getLoginUser = () => axios(Server.getRestAPIHost() + '/login', { me
 
 export const checkPassPhrase = (data) => axios(Server.getRestAPIHost() + '/login/passPhrase', { method: "post", params:{ passPhrase: data }, withCredentials: true, credentials: 'same-origin' })
 
+
+//tempProducer@ezfarm.co.kr 이 producer를 강제 로그인하는 기능. data에 producer를 넣으면 그걸로 로그인되고, 안넣으면 producer@ezfarm.co.kr로 로그인 됨.
+export const tempAdminProducerLogin = (data) => axios(Server.getRestAPIHost() + '/tempAdminProducerLogin', { method: "post", data:data, withCredentials: true, credentials: 'same-origin' })
+
+//tempProducer@ezfarm.co.kr 이  로그인가능한 producer list가져오는 기능 (LoginInfo 의 형태로 리턴됨)
+export const tempAdminProducerList = (data) => axios(Server.getRestAPIHost() + '/tempAdminProducerList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+
 /**
  * 로그인된 admin user 가져오기
  * return '': 로그인 필요한 상태.
@@ -81,6 +97,31 @@ export const getLoginAdminUser = () => axios(Server.getRestAPIHost() + '/adminLo
         console.log(error);
     });
 
+export const isTokenAdminUser = () => axios(Server.getRestAPIHost() + '/isTokenAdminUser', { method: "post", withCredentials: true, credentials: 'same-origin' })
+
+//await으로 기다릴 수 있게 autoLogin 추가 작성 20200410 => App.js에서 항상호출 -> 자동login ///////////////////////////////////////////////////////////
+export const autoLoginCheckAndTryAsync = async () => {
+    if (ComUtil.isPcWeb() && localStorage.getItem('userType') !== 'consumer') return; //admin <-> 생산자간 전환등 용도 때문에 return.
+
+    //let {data:userType} = await getLoginUserType();
+    const isLogined = sessionStorage.getItem('logined');
+    //if (!userType && (isLogined == 1 || localStorage.getItem('autoLogin') == 1)) {
+    if (isLogined == 1 || localStorage.getItem('autoLogin') == 1) {
+        let user = {
+            email: localStorage.getItem('email'),
+            valword: ComUtil.decrypt(localStorage.getItem('valword')),
+            userType: localStorage.getItem('userType')
+        }
+        //console.log('autoLoginCheckAndTryAsync: getLoginUserType:', user);
+        let {data:ret} = await doLogin(user);
+        console.log('autoLoginCheckAndTryAsync dologin ret', ret);
+        if (ret.status !== Server.ERROR ) {
+            console.log('autoLoginCheckAndTryAsync: SUCCESS');
+            sessionStorage.setItem('logined', 1);  //로그인 완료.
+        }
+    }
+}
+
 
 export const autoLoginCheckAndTry = (isForce) => {
     const isLogined = sessionStorage.getItem('logined');
@@ -96,7 +137,7 @@ export const autoLoginCheckAndTry = (isForce) => {
 
                 console.log('getLoginUserType:',userType);
 
-                console.log('localStorage Val:' + localStorage.getItem('valword'));
+                //console.log('localStorage Val:' + localStorage.getItem('valword'));
                 Webview.appLog('localStorage Val:' + localStorage.getItem('valword'));
 
                 // Webview.appLog('PASSWD Decrypted:' + ComUtil.decrypt(localStorage.getItem('valword')));
@@ -113,7 +154,7 @@ export const autoLoginCheckAndTry = (isForce) => {
                         valword: ComUtil.decrypt(localStorage.getItem('valword')),
                         userType: localStorage.getItem('userType')
                     }
-                    console.log({autoLoginUser: user});
+                    //console.log({autoLoginUser: user});
                     doLogin(user)
                         .then((res) => {
 

@@ -134,7 +134,7 @@ export default class ModifyValword extends Component {
         if(this.state.redirect) return <Redirect to={this.state.redirect} />
         return(
             <Fragment>
-                <ShopXButtonNav back history={this.props.history}>비밀번호 변경</ShopXButtonNav>
+                <ShopXButtonNav underline back history={this.props.history}>비밀번호 변경</ShopXButtonNav>
                 <Container fluid>
                     <p></p>
                     <Row>

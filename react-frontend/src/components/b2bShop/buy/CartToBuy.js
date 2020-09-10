@@ -106,7 +106,7 @@ export default class CartToBuy extends React.Component{
         if (!document.getElementById('iamport')) {
             const scriptiamportJS = document.createElement('script');
             scriptiamportJS.id = 'iamport';
-            scriptiamportJS.src = '//cdn.iamport.kr/js/iamport.payment-1.1.7.js';
+            scriptiamportJS.src = '//cdn.iamport.kr/js/iamport.payment-1.1.8.js';
             document.body.appendChild(scriptiamportJS);
         }
     }
@@ -568,6 +568,7 @@ export default class CartToBuy extends React.Component{
         const buyer = this.state.buyer;
         let data = { // param
             pg: Server.getImpPgId(),    //LG유플러스
+            popup: true,
             pay_method: v_payMethod,    //신용카드(card), 실시간계좌이체(trans) , 가상계좌(vbank)
             merchant_uid: ''+ v_dealGroupNo,           //주문그룹번호(7자리) :String이라서 ''추가.
             name: tmp_DealGroup.orderGoodsNm,          //주문명(상품명)
@@ -702,7 +703,7 @@ export default class CartToBuy extends React.Component{
                                 <div className='f13'>배송 메세지</div>
                                 <Input type='select' name='select' id='stdDeliveryMsg' onChange={this.stdOnMsgChange}>
                                     <option name='radio1' value=''>배송 메세지를 선택해 주세요.</option>
-                                    <option name='radio2' value='radio1'>집 앞에 놔주세요.</option>
+                                    <option name='radio2' value='radio1'>문 앞에 놔주세요.</option>
                                     <option name='radio3' value='radio2'>택배함에 놔주세요.</option>
                                     <option name='radio4' value='radio3'>배송 전 연락주세요.</option>
                                     <option name='radio5' value='radio4'>부재 시 연락주세요.</option>
@@ -873,7 +874,7 @@ export default class CartToBuy extends React.Component{
                 {/* 결제비번 입력 모달 */}
                 <Modal isOpen={this.state.modalType === 'pay' && this.state.modal} toggle={this.toggle} className={this.props.className} centered>
                     <ModalHeader toggle={this.modalToggle}> 결제비밀번호 입력</ModalHeader>
-                    <ModalBody>
+                    <ModalBody className={'p-0'}>
                         {/* learPassPhrase 초기화, onChange 결과값 세팅 */}
                         <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhrase}></PassPhrase>
                     </ModalBody>

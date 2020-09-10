@@ -4,7 +4,7 @@ import { Button, Label } from 'reactstrap';
 import { Checkbox } from '@material-ui/core'
 
 
-import Style from './CartList.module.scss'
+
 const CartHeader  = (props) => {
     const onChange = (e) => {
         // props.onChange(e.target.checked)

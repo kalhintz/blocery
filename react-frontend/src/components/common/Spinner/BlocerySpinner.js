@@ -1,15 +1,17 @@
 import React from 'react'
 import Style from './BlocerySpinner.module.scss'
-import { Spinner, BloceryLogoGreen } from '../../common'
+//import { Spinner } from '../../common'
+import MarketBlySpinner from '~/images/icons/marketbly_spinner.gif'
+
 const BlocerySpinner = () => {
     return(
 
         <div className={Style.wrap}>
             <div className={Style.modal}>
                 <div>
-                    <BloceryLogoGreen/>
+                    <img src = {MarketBlySpinner} style={{width:'100%', height:'100%'}}/>
                 </div>
-                <div className={'small'}><Spinner/></div>
+                {/*<div className={'small'}><Spinner/></div>*/}
             </div>
         </div>
     )

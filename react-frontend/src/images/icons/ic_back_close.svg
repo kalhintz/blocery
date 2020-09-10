@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="prefix__ic_back_close" width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+        <style>
+            .prefix__cls-1{fill:none}.prefix__cls-2{fill:#fff;stroke:#000}.prefix__cls-3{stroke:none}
+        </style>
+    </defs>
+    <g id="prefix__그룹_283" data-name="그룹 283">
+        <path id="prefix__사각형_155" d="M0 0H24V24H0z" class="prefix__cls-1" data-name="사각형 155"/>
+        <g id="prefix__사각형_4531" class="prefix__cls-2" data-name="사각형 4531">
+            <path d="M0 0H20V2H0z" class="prefix__cls-3" transform="rotate(45 -2.278 8.914)"/>
+            <path d="M0.5 0.5H19.5V1.5H0.5z" class="prefix__cls-1" transform="rotate(45 -2.278 8.914)"/>
+        </g>
+        <g id="prefix__사각형_4532" class="prefix__cls-2" data-name="사각형 4532">
+            <path d="M0 0H20V2H0z" class="prefix__cls-3" transform="rotate(135 8.722 6.914)"/>
+            <path d="M0.5 0.5H19.5V1.5H0.5z" class="prefix__cls-1" transform="rotate(135 8.722 6.914)"/>
+        </g>
+    </g>
+</svg>

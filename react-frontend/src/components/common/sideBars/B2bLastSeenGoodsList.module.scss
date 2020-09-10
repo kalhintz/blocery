@@ -1,0 +1,58 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+.wrap{
+  /*   padding: 10px;   */
+}
+//.header{
+//  position: relative;
+//  padding: 10px;
+//  margin: 10px;
+//  display: flex;
+//  background-color: whitesmoke;
+//  border: 1px solid black;
+//}
+/* 타이틀 */
+//.header > div:first-child{
+//  position: absolute;
+//  top: 50%;
+//  left: 50%;
+//  transform: translate(-50%, -50%);
+//}
+///* 닫기 */
+//.header > div:last-child{
+//  border: 1px solid black;
+//}
+
+.item{
+  padding: 16px;
+  display: flex;
+  background-color: $color-b2c-default;
+}
+
+.item .imgBox{
+  //width: 30vmin;
+  //margin-right: 10px;
+}
+.item img{
+  //width: 100px;
+  //display: block; /* 이미지는 기본적으로 inline-block 이라서 여백이 들어가있다! */
+  //border-radius: 10px;
+}
+
+
+.container > div{
+  text-align: center;
+}
+
+/* 큰글씨 */
+.container .alertMessage{
+  font-size: 18px;
+  margin-top: 7px;
+}
+/* 서브 메시지 */
+.container .description{
+  margin-bottom: 7px;
+  font-size: 14px;
+  color: #9c9c9c;
+  margin-top: 7px;
+}

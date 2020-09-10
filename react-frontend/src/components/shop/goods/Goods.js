@@ -7,6 +7,7 @@ import { getProducerByProducerNo } from '../../../lib/producerApi'
 import ComUtil from '../../../util/ComUtil'
 import { Server } from '../../../components/Properties'
 import { Container, Row, Col } from 'reactstrap'
+import {B2cBackHeader} from '~/components/common/headers'
 export default class Goods extends Component {
     constructor(props) {
         super(props)
@@ -84,27 +85,19 @@ export default class Goods extends Component {
             <Container>
                 <Row>
                     <Col className={'p-0'}>
-                        <div className='position-relative'>
-                            <div className='d-flex position-absolute p-1' style={{top: 0, left: 0, zIndex: 5}}>
-                                <ShopOnlyXButtonNav back history={this.props.history} style={{filter: 'drop-shadow(2px 2px 2px #343a40)', fontSize: '2rem'}}/>
-                            </div>
-                            <div className='d-flex position-absolute p-3' style={{top: 0, right: 0, zIndex: 5}}>
-                                <CartLink showShadow={true}/>
-                            </div>
-                            {
-                                this.state.loading ? (<BlocerySpinner/>) :
-                                    (
-                                        <GoodsDetail
-                                            goods={this.state.goods}
-                                            producer={this.state.producer}
-                                            farmDiaries={this.state.farmDiaries}
-                                            images={this.state.images}
-                                            history={this.props.history}
-                                        />
-                                    )
-                            }
-
-                        </div>
+                        <B2cBackHeader title={'상품정보'} history={this.props.history} />
+                        {
+                            this.state.loading ? (<BlocerySpinner/>) :
+                                (
+                                    <GoodsDetail
+                                        goods={this.state.goods}
+                                        producer={this.state.producer}
+                                        farmDiaries={this.state.farmDiaries}
+                                        images={this.state.images}
+                                        history={this.props.history}
+                                    />
+                                )
+                        }
                     </Col>
                 </Row>
             </Container>

@@ -16,7 +16,7 @@ import { ToastContainer, toast } from 'react-toastify'                          
 import 'react-toastify/dist/ReactToastify.css'
 import { Webview } from '~/lib/webviewApi'
 import Style from './MyPage.module.scss'
-import { LoginLinkCard } from '~/components/common'
+import { B2bLoginLinkCard } from '~/components/common'
 export default class Mypage extends Component {
     constructor(props) {
         super(props);
@@ -170,7 +170,7 @@ export default class Mypage extends Component {
                     this.state.loginUser === 'notRender' ? <div></div> : //로그인 여부 판단될 때까지 render방지.
                     (!this.state.loginUser) ?
                         <div className='p-4'>
-                            <LoginLinkCard onClick={this.onClickLogin} />
+                            <B2bLoginLinkCard onClick={this.onClickLogin} />
                         </div>
                         :
                         <div>

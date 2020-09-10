@@ -20,7 +20,7 @@ const FarmDiaryItem = ({cultivationStepMemo, diaryContent, diaryImages, diaryReg
                 <div className='text-secondary f7'>[{itemName} > {itemKindName}] {ComUtil.utcToString(diaryRegDate)}</div>
                 <div className='font-weight-light f6'>{cultivationStepMemo}</div>
                 <div className='d-flex'>
-                    <div><img style={{minWidth: 80, maxWidth: 100}} src={src} /></div>
+                    <div><img style={{minWidth: 80, maxWidth: 100}} src={src} alt={'사진'} /></div>
                     <div className='flex-grow-1 f6 text-dark pl-1'>
                         {diaryContent}
                     </div>

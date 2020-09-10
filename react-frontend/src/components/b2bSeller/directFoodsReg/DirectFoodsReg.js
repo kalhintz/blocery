@@ -20,10 +20,7 @@ import CurrencyInput from '~/components/common/inputs/CurrencyInput'
 
 import { TERMS_OF_DELIVERYFEE } from '~/lib/bloceryConst'
 
-import 'codemirror/lib/codemirror.css';
-import 'tui-editor/dist/tui-editor.min.css';
-import 'tui-editor/dist/tui-editor-contents.min.css';
-import { Editor } from '@toast-ui/react-editor'
+import TuiEditor from '~/components/common/toastUI/TuiEditor'
 
 import { faTimes, faCheck, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -45,8 +42,6 @@ let bindData = {
 }
 
 export default class DirectFoodsReg extends Component {
-
-    editorRef = React.createRef();
 
     constructor(props) {
         super(props);
@@ -172,14 +167,17 @@ export default class DirectFoodsReg extends Component {
     }
 
     getDeliveryFeeValidate(obj){
-        const { foods } = this.state
-        if(foods.directDelivery){
+
+        if(obj.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE)                //무료배송 일 경우 밸리데이션 체크 안함
+        { return null }
+
+        if(obj.directDelivery){
             if(obj.deliveryFee.length <= 0)
                 return '배송비는 필수 입니다'
             else
                 return null
         } else{
-            if(foods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.EACH_GROUP_COUNT || foods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.NO_FREE){
+            if(obj.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.EACH_GROUP_COUNT || obj.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.NO_FREE){
                 if(ComUtil.toNum(obj.deliveryFee) <= 0)
                     return '배송비는 필수 입니다'
                 else
@@ -286,7 +284,9 @@ export default class DirectFoodsReg extends Component {
         //foodsContent 분리되었으므로 다시 가져오기, 가끔 data가 없을경우 fileName이 null이나 0인 경우가 있어서 제외
         if (!state.foods.goodsContent && state.foods.goodsContentFileName != 0) {
             let {data:foodsContent} = await getFoodsContent(state.foods.goodsContentFileName);
-            state.foods.goodsContent = foodsContent;
+            if(foodsContent) {
+                state.foods.goodsContent = foodsContent;
+            }
             //console.log('goodsContent await:', goodsContent, state.foods.goodsContentFileName)
         }
 
@@ -401,7 +401,15 @@ export default class DirectFoodsReg extends Component {
         this.setValidatedObj({foods});
         this.setState({foods});
     }
+    onContentImageChange = (images) => {
 
+        console.log({images})
+        const foods = Object.assign({}, this.state.foods)
+        foods.contentImages = images
+
+        this.setValidatedObj({foods})
+        this.setState({foods})
+    }
     //배송방법
     onDeliveryTypeClick = (item) => {
         const foods = Object.assign({}, this.state.foods)
@@ -440,9 +448,12 @@ export default class DirectFoodsReg extends Component {
         const foods = Object.assign({}, this.state.foods);
 
         if(name === 'currentPrice'){
+            if(foods.consumerPrice === null || foods.consumerPrice === '') {
+                alert('소비자가를 먼저 입력해주세요.');
+                return;
+            }
             const currentPrice = ComUtil.toNum(value);
             const consumerPrice = ComUtil.toNum(foods.consumerPrice);
-
 
             if(currentPrice === 0){
                 foods.discountRate = 100
@@ -510,8 +521,6 @@ export default class DirectFoodsReg extends Component {
 
     isPassedValidation = () => {
         const state = Object.assign({}, this.state);
-        //에디터의 내용을 state에 미리 저장 후 밸리데이션 체크
-        state.foods.goodsContent = this.editorRef.current.getInstance().getValue();
 
         //밸리데이션 체크
         this.setValidatedObj(state)
@@ -560,9 +569,6 @@ export default class DirectFoodsReg extends Component {
 
     //저장(DB에 selectedStepPrice 가 없어져서, 사용자가 선택한 단계와는 상관없이 단계별 값이 있는 마지막 )
     save = async (foods) => {
-
-        //상품상세
-        foods.goodsContent = this.editorRef.current.getInstance().getValue();
 
         //확정 전까지 재고수량 동기화
         if(!foods.confirm){
@@ -614,8 +620,6 @@ export default class DirectFoodsReg extends Component {
     isValidatedSuccessful = () => {
         let isSuccess = true;
         let msg = '';
-
-        //Object.keys(validatedObj)
 
         Object.keys(validatedObj).some((key) => {
             const _msg = validatedObj[key];
@@ -794,6 +798,13 @@ export default class DirectFoodsReg extends Component {
         }
     }
 
+    //상품 컨텐츠 온체인지 (tui-editor)
+    onChangeGoodsContent = (editorHtml) => {
+        const foods = Object.assign({}, this.state.foods)
+        foods.goodsContent = editorHtml;
+        this.setState({foods});
+    }
+
     render() {
 
         if(!this.state.isDidMounted) return <BlocerySpinner/>;
@@ -876,6 +887,18 @@ export default class DirectFoodsReg extends Component {
                                     {/*<SingleImageUploader images={foods.goodsImages} defaultCount={10} onChange={this.onGoodsImageChange} />*/}
                                     {/*<ImageUploader onChange={this.onGoodsImageChange} multiple={true} limit={10}/>*/}
                                     <Fade in={validatedObj.goodsImages ? true : false} className="text-danger small mt-1" >{validatedObj.goodsImages}</Fade>
+                                </FormGroup>
+                                <h6>상세이미지업로드(소비자에게 노출되지 않는 이미지 입니다)</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>이미지{star}</Label>
+                                    <SingleImageUploader
+                                        images={foods.contentImages}
+                                        defaultCount={10}
+                                        isShownMainText={false}
+                                        onChange={this.onContentImageChange}
+                                        isShownCopyButton={true}
+                                        isNoResizing={true}
+                                    />
                                 </FormGroup>
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>상품명{star}</Label>
@@ -1130,7 +1153,7 @@ export default class DirectFoodsReg extends Component {
                             {/*</FormGroup>*/}
                             {/*</Container>*/}
                             <Container>
-                                <h6>판매종료일</h6>
+                                <h6>판매종료일{star}</h6>
                                 <SingleDatePicker
                                     placeholder="판매종료일"
                                     date={foods.saleEnd ? moment(foods.saleEnd) : null}
@@ -1180,38 +1203,10 @@ export default class DirectFoodsReg extends Component {
                                                 usageStatistics: Let us know the hostname. We want to learn from you how you are using the editor. You are free to disable it. true | false
                                             */
                                         }
-                                        <Editor
-                                            previewStyle="vertical" //tab | vertical
-                                            // viewer={true}
-                                            height={800}       //"auto" | {800} 숫자로 해야 내부 scroll이 자동으로 생김.
-                                            initialEditType="wysiwyg" //markdown wysiwyg
-                                            initialValue={foods.goodsContent}
-                                            ref={this.editorRef}
-                                            toolbarItems={[
-                                                'heading',
-                                                'bold',
-                                                'italic',
-                                                'strike',
-                                                'divider',
-                                                'hr',
-                                                'quote',
-                                                'divider',
-                                                'ul',
-                                                'ol',
-                                                'task',
-                                                'indent',
-                                                'outdent',
-                                                'divider',
-                                                'table',
-                                                'image',
-                                                //'link',
-                                                'divider',
-                                                'code',
-                                                'codeblock',
-                                                'divider',
-                                            ]}
+                                        <TuiEditor
+                                            editorHtml={foods.goodsContent}
+                                            onChange={this.onChangeGoodsContent}
                                         />
-
                                         <FormGroup>
                                             <Fade in={validatedObj.goodsContent ? true : false} className="text-danger small mt-1" >{validatedObj.goodsContent}</Fade>
                                         </FormGroup>

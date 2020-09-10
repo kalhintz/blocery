@@ -1,55 +1,122 @@
 import React from 'react'
-import Style from './CategoryItems.module.scss'
-import classNames from 'classnames'
-import { Container, Row, Col } from 'reactstrap'
-import { Link } from 'react-router-dom'
-import { faGenderless } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { Link } from 'react-router-dom'
+import {Server} from '~/components/Properties'
+import {Icon} from '~/components/common/icons'
+import {Div, Flex, Img, Button, Link} from '~/styledComponents/shared'
+import {HrThin, HrHeavy, HrHeavyX2} from '~/styledComponents/mixedIn'
+
+import styled, {css} from 'styled-components'
+
+const margin = 33
+
+const FlexColumnLink = styled(Link)`
+    // display: block;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    // margin-bottom: 20px; 
+    // cursor: pointer;
+    // text-decoration: none;
+  
+    width: calc(100% / 5);
+    @media (max-width: 768px) {
+        width: calc(100% / 6);
+    }
+    @media (max-width: 411px) {
+        width: calc(100% / 5);
+    }
+`;
+
+
+
+
 
 
 const CategoryItems = (props) => {
     const {data} = props
 
-    function onItemClick(url) {
-        const state = {
-            type: 'ITEM',
-            payload: {
-                url: url
-            }
-        }
-
-        props.onClick(state)
+    function onClick(url) {
+        props.onClick(url)
     }
 
+
+
     return(
-        data.map((item, index)=>(
-            <div key={'category_item'+index} className={Style.wrap}>
-                <div className='d-flex p-2 pl-3 pr-3 font-weight-bolder cursor-default' onClick={onItemClick.bind(this, `/category/${item.itemNo}/all`)}>
-                    <div>{item.itemName}</div>
-                    <div className='ml-auto'>{'>'}</div>
-                </div>
-                <Container>
-                    <Row>
-                        {
-                            item.itemKinds && item.itemKinds.map((itemKind, index)=>
-                                <Col key={'category_itemKind'+index} xs={6} md={4} lg={3} xl={2} className={classNames('f6 p-2 pl-3 d-flex align-items-center', Style.item)}>
-                                    <Link to={`/category/${item.itemNo}/${itemKind.code}`} className='d-flex align-items-center' >
-                                        <span className={classNames('mr-2 d-flex justify-content-center align-items-center', Style.icon)}>
-                                            <FontAwesomeIcon icon={faGenderless} /></span>{itemKind.name}
-                                    </Link>
-                                    {/*<li className='p-1'><Link to={`/category/${item.itemNo}/${itemKind.code}`} >{itemKind.name}</Link></li>*/}
-                                </Col>
-                            )
-                        }
-                    </Row>
-                </Container>
+
+        <>
+
+        <Flex justifyContent='center' m={margin} fontSize={16}>
+            <Div textAlign='center' mr={margin}>
+                <Button bg={'white'} width={69} height={69} shadow mb={6} onClick={onClick.bind(this, '/mdPick')}>
+                    <Icon name={'mdPick'}/>
+                </Button>
+                <Div>기획전</Div>
+            </Div>
+            <Div textAlign='center' mr={margin}>
+                <Button bg={'white'} width={69} height={69} shadow mb={6} onClick={onClick.bind(this, '/home/5')}>
+                    <Icon name={'medal'}/>
+                </Button>
+                <Div>베스트</Div>
+            </Div>
+            <Div textAlign='center'>
+                <Button bg={'white'} width={69} height={69} shadow mb={6} onClick={onClick.bind(this, '/home/6')}>
+                    <Icon name={'new'}/>
+                </Button>
+                <Div>신상품</Div>
+            </Div>
+        </Flex>
+        <HrHeavyX2 bc='background'/>
+        <Div>
+            <Div fontSize={16} bold m={16} mt={30}>
+                카테고리
+            </Div>
+            <Div m={16} mb={25}>
+                <Flex flexWrap='wrap'>
+                    {
+                        data.map(item =>
+                            <FlexColumnLink p={4} bg={'white'} display={'block'} mb={20} to={`/category/${item.itemNo}/all`}>
+                                <Div mb={5} width={40} height={40}>
+                                    {
+                                        item.image ?
+                                            <Img src={Server.getImageURL() + item.image.imageUrl}/> :
+                                            <Div width='100%' height='100%' bc='background' rounded={3}></Div>
+                                    }
+
+                                </Div>
+                                <Div fontSize={12}>{item.itemName}</Div>
+                            </FlexColumnLink>
+                        )
+                    }
+                </Flex>
+            </Div>
+            {/*<Div m={16} mb={25}>*/}
+                {/*<Flex flexWrap='wrap'>*/}
+                    {/*{*/}
+                        {/*data.map(item =>*/}
+                            {/*<FlexColumnLink to={`/category/${item.itemNo}/all`}>*/}
+                                {/*<Div mb={5} width={40} height={40}>*/}
+                                    {/*{*/}
+                                        {/*item.image ?*/}
+                                            {/*<Img src={Server.getImageURL() + item.image.imageUrl}/> :*/}
+                                            {/*<Div width='100%' height='100%' bc='background' rounded={3}></Div>*/}
+
+                                    {/*}*/}
+
+                                {/*</Div>*/}
+                                {/*<Div fontSize={12}>{item.itemName}</Div>*/}
+                            {/*</FlexColumnLink>*/}
+                        {/*)*/}
+                    {/*}*/}
+                {/*</Flex>*/}
+            {/*</Div>*/}
+            <HrThin/>
 
 
-                {/*<ul className={classNames(Style.item, 'p-2 pl-3 pr-3 m-0 f6 text-dark')} >*/}
+        </Div>
 
-                {/*</ul>*/}
-            </div>
-        ))
+
+
+        </>
     )
 }
 export default CategoryItems

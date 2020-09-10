@@ -7,7 +7,7 @@ import App from './App';
 
 import 'bootstrap/scss/bootstrap.scss'
 
-import 'react-toastify/dist/ReactToastify.css'
+import 'react-toastify/dist/ReactToastify.min.css'
 import 'react-dates/lib/css/_datepicker.css';
 import './styles/react_dates_overrides.css';
 import 'moment/locale/ko';  //react-dates 달력에서 한글 포맷
@@ -26,13 +26,15 @@ import "../src/styles/fontStyle.css"
 import "../src/styles/cursor.css"
 
 //swiper css
-import 'swiper/dist/css/swiper.css'
+import 'swiper/dist/css/swiper.min.css'
 // import 'react-id-swiper/lib/styles/css/swiper.css';
 //swiper scss
 // import 'react-id-swiper/lib/styles/scss/swiper.scss';
 
 
 import "./App.css"
+import 'react-quill/dist/quill.snow.css';
+import './components/common/quillEditor/QuillEditor.css';
 
 import Root from './Root'
 

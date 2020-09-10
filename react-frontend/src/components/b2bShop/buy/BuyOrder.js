@@ -70,7 +70,7 @@ const BuyOrder = (props) => {
                 }
                 <Row>
                     <Col xs={4} style={{paddingRight: 0}}>
-                        <img className={Style.img} src={props.goodsImage}/>
+                        <img className={Style.img} src={props.goodsImage} alt={'사진'}/>
                     </Col>
                     <Col xs={8}>
                         {/*<small>{this.state.goods.itemName} </small><br/>*/}

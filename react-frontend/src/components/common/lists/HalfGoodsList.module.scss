@@ -1,0 +1,28 @@
+$halfMargin: 8px;
+
+.wrap{
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 $halfMargin $halfMargin $halfMargin;
+}
+/* 외곽박스 */
+.itemBox{
+  width: 50%;
+  margin-bottom: $halfMargin;
+
+}
+/* 안쪽박스 */
+.item{
+  margin: 0 $halfMargin $halfMargin $halfMargin;
+  cursor: pointer;
+}
+/* 이미지 박스 */
+.item > div:nth-child(1){
+  width: 100%;
+}
+/* 컨텐츠 박스 */
+.item > div:nth-child(2){
+}
+.item > div img{
+  //width: 100%;
+}

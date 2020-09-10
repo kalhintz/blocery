@@ -1,9 +1,10 @@
 import React, { Fragment } from 'react'
 import ComUtil from '~/util/ComUtil'
 import GoodsReviewItem from './GoodsReviewItem'
-import { NoSearchResultBox, IconStarGroup, HeaderTitle, ModalButton } from '~/components/common'
+import { NoSearchResultBox, IconStarGroup, HeaderTitle, ModalButton, ImageGalleryModal } from '~/components/common'
 import MoreButton from '../MoreButton'
 import {Server} from '~/components/Properties'
+
 const GoodsReviewContent = ({goodsReviews, totalCount, isVisibleStar, onMoreClick, isVisibleTitle}) => {
     function getAvgScore() {
         return totalCount === 0 ? 0 : ComUtil.sum(goodsReviews, 'score') / totalCount
@@ -14,12 +15,12 @@ const GoodsReviewContent = ({goodsReviews, totalCount, isVisibleStar, onMoreClic
         goodsReviews.map((goodsReview, index) => {
             if(isVisibleTitle){
                 row.push(
-                    <div>
+                    <div key={'goodsReviewContent'+index}>
                         <hr className='m-0'/>
-                        <div  className='p-1 ml-2'>
+                        <div  className='m-3'>
                             <span className='d-flex align-items-center text-secondary f6 mb-1 mt-2'>
-                                <img className='mr-1' style={{width: 30, height: 30}}
-                                     src={Server.getThumbnailURL() + goodsReview.goodsImages[0].imageUrl}/>
+                                <img className='mr-1 rounded' style={{width: 40, height: 40, objectFit: 'cover'}}
+                                     src={Server.getThumbnailURL() + goodsReview.goodsImages[0].imageUrl} alt={'상품사진'} />
                                 <span className='ml-2'>{goodsReview.goodsNm}</span>
                             </span>
                         </div>
@@ -27,7 +28,7 @@ const GoodsReviewContent = ({goodsReviews, totalCount, isVisibleStar, onMoreClic
                 )
             } else {
                 row.push(
-                    <hr className='m-0'/>
+                    <hr key={'goodsReviewContentHr'+index} className='m-0'/>
                 )
             }
             row.push(
@@ -46,7 +47,7 @@ const GoodsReviewContent = ({goodsReviews, totalCount, isVisibleStar, onMoreClic
                     <HeaderTitle
                         sectionLeft={
                             <Fragment>
-                                <span className='mr-2'>총 {ComUtil.addCommas(totalCount)}개 후기</span>
+                                <span className='mr-2'>총 {(totalCount == -1)? 0:ComUtil.addCommas(totalCount)}개 후기</span>
                                 |<span className='d-flex ml-2 mr-2'><IconStarGroup score={ComUtil.roundDown(getAvgScore(),1)} /></span>
                                 <span className='mr-2'>{ComUtil.roundDown(getAvgScore(),1)}</span>
                             </Fragment>

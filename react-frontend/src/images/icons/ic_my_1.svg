@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">
+    <g id="prefix__ic_my_1" transform="translate(1.936 5.024)">
+        <path id="prefix__사각형_582" d="M0 0H26V26H0z" data-name="사각형 582" transform="translate(-1.936 -5.024)" style="fill:#fff;opacity:0"/>
+        <g id="prefix__그룹_9492" data-name="그룹 9492" transform="translate(-763.911 -298.725)">
+            <path id="prefix__패스_13950" d="M858.8 419.514a.632.632 0 110-1.264h13.74a.632.632 0 110 1.264z" data-name="패스 13950" transform="translate(-88.286 -111.548)"/>
+            <path id="prefix__패스_13951" d="M858.8 307.014a.632.632 0 110-1.264h13.74a.632.632 0 110 1.264z" data-name="패스 13951" transform="translate(-88.286 -4.973)"/>
+            <path id="prefix__패스_13952" d="M858.8 532.014a.632.632 0 110-1.264h13.74a.632.632 0 110 1.264z" data-name="패스 13952" transform="translate(-88.286 -218.123)"/>
+            <circle id="prefix__타원_914" cx=".909" cy=".909" r=".909" data-name="타원 914" transform="translate(764.976 300.5)"/>
+            <circle id="prefix__타원_915" cx=".909" cy=".909" r=".909" data-name="타원 915" transform="translate(764.976 306.425)"/>
+            <circle id="prefix__타원_916" cx=".909" cy=".909" r=".909" data-name="타원 916" transform="translate(764.976 312.351)"/>
+        </g>
+    </g>
+</svg>

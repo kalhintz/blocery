@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="15" viewBox="0 0 28 15">
+    <defs>
+        <linearGradient id="prefix__linear-gradient" x1=".055" x2=".929" y1=".081" y2=".937" gradientUnits="objectBoundingBox">
+            <stop offset="0" stop-color="#ff8282"/>
+            <stop offset="1" stop-color="#e93838"/>
+        </linearGradient>
+    </defs>
+    <g id="prefix__ic_rank_v" transform="translate(0 .125)">
+        <g id="prefix__사각형_4435" data-name="사각형 4435" transform="translate(0 -.125)">
+            <rect width="28" height="15" rx="4" style="stroke:none"/>
+            <rect width="27" height="14" x=".5" y=".5" rx="3.5" style="fill:none"/>
+        </g>
+        <text id="prefix__VIP" transform="translate(7 10.875)" style="fill:#fff;font-size:9px;font-family:NotoSansCJKkr-Bold,Noto Sans CJK KR;font-weight:700">
+            <tspan x="0" y="0">VIP</tspan>
+        </text>
+    </g>
+</svg>

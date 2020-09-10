@@ -5,7 +5,7 @@ import classNames from 'classnames'
 
 const Image = (props) => {
     return (
-        <img src={props.src} style={props.style} className={classNames(Style.img, Style.imgRadius)} />
+        <img src={props.src} style={props.style} className={classNames(Style.img, Style.imgRadius)} alt={props.alt || '사진'} />
     )
 }
 

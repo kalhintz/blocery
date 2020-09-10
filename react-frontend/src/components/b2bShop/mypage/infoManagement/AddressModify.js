@@ -268,9 +268,9 @@ export default class AddressModify extends Component {
                                 </div>
                             </div>
                             <div className='d-flex mb-2'>
-                                <div className='d-flex flex-grow-1'>
-                                    <label><input type="checkbox" checked={this.state.isCheckedDefault} onChange={this.onCheckDefaultDeliver} /></label>
-                                    <div> 기본배송지로 저장</div>
+                                <div className='d-flex flex-grow-1 align-items-center'>
+                                    <input id='checkDefaultAddress' className={'mr-1'} type="checkbox" checked={this.state.isCheckedDefault} onChange={this.onCheckDefaultDeliver} />
+                                    <label className={'m-0'} for='checkDefaultAddress'> 기본배송지로 저장</label>
                                 </div>
                             </div>
 

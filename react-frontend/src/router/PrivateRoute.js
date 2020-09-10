@@ -1,6 +1,7 @@
 import React from 'react'
 import { Route, Redirect } from 'react-router-dom'
 import { Webview } from '../lib/webviewApi'
+import ComUtil from '../util/ComUtil'
 
 const fakeAuth = {
     isAuthenticated: function(_userType){
@@ -13,7 +14,7 @@ const fakeAuth = {
 
         // console.log(userType, _userType, userType==_userType);
 
-        console.log({
+        console.log('isAuthenticated',{
             fakeAuth: {
                 '검증 userType': _userType,
                 'localStorage.getItem(userType)': userType,
@@ -21,6 +22,18 @@ const fakeAuth = {
             }
         })
 
+        //tempProducer로 생산자 로그인 기능. - 20200330
+        //producer check시에도 admin중 tempProducer라면 return true.. 20200330
+        if (_userType === 'producer') {
+
+            console.log('tempProduce check:', localStorage.getItem('adminEmail'), sessionStorage.getItem('adminLogined'));
+
+            if (localStorage.getItem('adminEmail') === 'tempProducer@ezfarm.co.kr' &&
+                sessionStorage.getItem('adminLogined') == 1) {
+                return true;
+            }
+
+        }
 
         //if (logined == 'false' && userType === _userType ) { //logout을 명시적으로 한 경우는 확실히 false로 리턴.
         if (logined == 0 && userType === _userType ) { //logout을 명시적으로 한 경우는 확실히 0 = false로 리턴.
@@ -48,8 +61,9 @@ export function PrivateRoute({ component: Component, userType, ...rest }) {
                     const isLoggedIn = fakeAuth.isAuthenticated(userType)
                     console.log('in privateRoute: userType, isLoggedIn', userType, isLoggedIn);
 
+
                     switch(userType){
-                        case 'admin':
+                        case 'admin': 
                             return isLoggedIn ? (
                                 <Component {...props} />
                             ) : (
@@ -67,7 +81,10 @@ export function PrivateRoute({ component: Component, userType, ...rest }) {
                             return (props.location.pathname === '/producer/mypage' || isLoggedIn) ? (
                                 <Component {...props} />
                             ) : (
-                                Webview.openPopup('/login?userType=producer')
+                                // TODO web 여부 판단해서 분기??
+                                (ComUtil.isPcWeb() ?  ( props.history.push('/producer/webLogin')
+                                    ) : ( Webview.openPopup('/login?userType=producer'))
+                                )
                             )
                             break
                         case 'consumer':

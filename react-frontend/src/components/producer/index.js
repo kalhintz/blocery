@@ -18,6 +18,17 @@ import { BlctHistory } from './blctHistory'
 import { CalculateStatus, CalculateHistory, CalculateTab } from './calculate'
 import { CustomerCenter } from './mypage/customerCenter'
 import { Setting } from './mypage/setting'
+import { WebLogin } from './web'
+import { WebHome } from './web/home'
+import { WebShop } from './web/shop'
+import { WebGoodsList, WebGoodsReg, WebDirectGoodsReg, WebGoodsSelection } from './web/goods'
+import { WebFarmDiaryList } from './web/farmDiaryList'
+import { WebRegularShopList } from './web/regularShop'
+import { WebOrderList, WebOrderCancelList } from './web/orderList'
+import { WebCalculateTab, WebBlctHistory } from './web/calculate'
+import { WebGoodsQnaList } from './web/goodsQna'
+import { WebGoodsReviewList } from './web/goodsReview'
+import { WebNoticeList } from './web/home/noticeList'
 
 export {
     ProducerLogin,       // 생산자 로그인
@@ -41,6 +52,21 @@ export {
     // CalculateStatus,
     CalculateTab,
     CustomerCenter,
-    Setting
-
+    Setting,
+    WebHome,
+    WebGoodsList,
+    WebGoodsSelection,
+    WebGoodsReg,
+    WebDirectGoodsReg,
+    WebLogin,
+    WebShop,
+    WebFarmDiaryList,
+    WebRegularShopList,
+    WebOrderList,
+    WebOrderCancelList,
+    WebCalculateTab,
+    WebBlctHistory,
+    WebGoodsQnaList,
+    WebGoodsReviewList,
+    WebNoticeList
 }

@@ -1,0 +1,59 @@
+@import "Color.module.scss";
+@import "Font.module.scss";
+.header{
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  background: white;
+  //border: 1px solid white;
+  height: 56px;
+}
+
+.greenHeader{
+  background: #24855b;
+}
+
+.header > div:nth-child(2){
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+
+.header > div:nth-child(2) > div{
+  margin-left: 27px;
+}
+
+.underline{
+  border-bottom: 1px solid $color-b2c-bg;
+}
+
+
+.myPage {
+  width: 58px;
+  height: 27px;
+  font-family: NotoSansCJKkr;
+  font-size: 18px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 0.11;
+  letter-spacing: normal;
+  text-align: left;
+  color: #ffffff;
+}
+
+.category {
+  width: 66px;
+  height: 27px;
+  font-family: NotoSansCJKkr;
+  font-size: 18px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 0.11;
+  letter-spacing: normal;
+  text-align: left;
+  color: #000000;
+}

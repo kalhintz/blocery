@@ -81,7 +81,7 @@ export default class FoodsQnaList extends Component {
                                     <hr className='m-0' />
                                     <div className='m-2 d-flex' onClick={this.toggle.bind(this, index)}>
                                         <div className='mr-2' onClick={this.moveToGoodsDetail.bind(this, foodsNo)}>
-                                            <img style={{width:70, height:70}} src={Server.getThumbnailURL()+goodsImages[0].imageUrl} />
+                                            <img style={{width:70, height:70}} src={goodsImages[0]? Server.getThumbnailURL()+goodsImages[0].imageUrl : ''} alt={'상품사진'}/>
                                         </div>
                                         <div>
                                             <div className='text-secondary'>{goodsName}</div>

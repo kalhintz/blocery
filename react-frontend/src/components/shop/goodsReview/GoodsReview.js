@@ -122,7 +122,7 @@ function GoodsReview(props){
             <ShopXButtonNav close>상품후기작성</ShopXButtonNav>
             <div className='p-3'>
                 <div className='d-flex mb-2'>
-                    <div className='mr-2'><img style={{borderRadius: '100%', width: 50, height: 50}} src={goodsImageUrl}/></div>
+                    <div className='mr-2'><img style={{borderRadius: '100%', width: 50, height: 50}} src={goodsImageUrl} alt={'상품후기 사진'}/></div>
                     <div className='d-flex flex-column flex-grow-1 justify-content-between p-1'>
                         <div className='font-weight-bold'>{goodsNm}</div>
                         <div className='small text-secondary'>공개적으로 게시</div>

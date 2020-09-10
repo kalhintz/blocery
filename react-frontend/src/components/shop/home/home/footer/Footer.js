@@ -1,56 +1,43 @@
 import React from 'react'
-import Style from './Footer.module.scss'
+import Css from './Footer.module.scss'
 import { Webview } from "~/lib/webviewApi";
 import { Link } from 'react-router-dom'
 
 const Footer = () => {
 
     function queOpen() {
-        Webview.winOpenPopup('/mypage/queInfo');
+        this.props.history.push('/mypage/queInfo');
     }
 
     return (
-        <div className={Style.wrap}>
-            <ul>
-                <li>
-                    <Link to={'/mypage/useGuide'} className={'text-dark'}>이용안내</Link>
-                </li>
-                <li>
-                    <Link to={'/mypage/consumerCenter'} className={'text-dark'}>고객센터</Link>
-                </li>
-                <li>
-                    <Link to={'/mypage/termsOfUse'} className={'text-dark'}>이용약관</Link>
-                </li>
-                <li>
-                    <Link to={'/mypage/privacyPolicy'} className={'text-dark'}>개인정보처리방침</Link>
-                </li>
-            </ul>
-            <hr className='m-0'/>
-            <div className={Style.content}>
-                <div className='f7 d-flex'>
-                    <div>© Blocery. powered by </div>&nbsp;<div className='font-weight-bold'> ONTology</div>
-                </div>
-                <br/>
-                <p className='f7'>
-                    위탁사업자 : Farm & Consume, Ltd.<br/>
-                    Director : Jin Gyomoon<br/>
-                    Address : 10 Anson Road #23-14F International Plaza Singapore
-                    Registration No. 201830855C<br/>
-                </p>
-                <div className='d-flex'>운영사업자 : <div className='f6 font-weight-bold'> (주)이지팜</div></div>
-                <p className='f7'>
-                    대표이사 : 김영국<br/>
-                    사업자등록번호 : 124-81-73259<br/>
-                    통신판매업신고번호 : 2006-경기안양-117<br/>
-                    개인정보보호책임자 : 김용<br/>
-                    주소 : 경기도 안양시 동안구 동편로20번길 9<br/>
-                    호스팅제공 : Amazon WebServices, Inc<br/>
-                    생산자 입점문의 : <a style={{'cursor': 'pointer'}} onClick={queOpen}><u>입점 문의하기</u></a> <br/>
-                    제휴문의 : info@blocery.io<br/>
-                    고객센터 : 031-421-3414<br/>
-                    팩스 : 031-421-3422<br/>
-                </p>
+        <div className={Css.wrap}>
+            <div>
+                <div><Link to={'/mypage/useGuide'} className={'text-dark'}>이용안내</Link></div>
+                <div><Link to={'/mypage/consumerCenter'} className={'text-dark'}>고객센터</Link></div>
+                <div><Link to={'/mypage/termsOfUse'} className={'text-dark'}>이용약관</Link></div>
+                <div><Link to={'/mypage/privacyPolicy'} className={'text-dark'}>개인정보처리방침</Link></div>
             </div>
+            {/*<div>*/}
+                {/*© Blocery. powered by ONTology*/}
+            {/*</div>*/}
+            <ul>
+                <li>위탁사업자</li><li>Farm & Consume, Ltd.</li>
+                <li>Director</li><li>Jin Gyomoon</li>
+                <li>Address</li><li>10 Anson Road #23-14F International Plaza
+                Singapore Registration No. 201830855C</li>
+                <li>운영사업자</li><li>(주)이지팜</li>
+                <li>대표이사</li><li>김영국</li>
+                <li>사업자등록번호</li><li>124-81-73259</li>
+                <li>통신판매업신고번호</li><li>2006-경기안양-117</li>
+                <li>개인정보보호책임자</li><li>김용</li>
+                <li>주소</li><li>경기도 안양시 동안구 동편로20번길 9</li>
+                <li>호스팅제공</li><li>Amazon WebServices, Inc</li>
+                <li>생산자 입점문의</li><li><a style={{'cursor': 'pointer'}}><u><Link to={'/mypage/queInfo'}>입점 문의하기</Link></u></a></li>
+                {/*<li>생산자 입점문의</li><li><a style={{'cursor': 'pointer'}} onClick={queOpen}><u>입점 문의하기</u></a></li>*/}
+                <li>제휴문의</li><li>info@blocery.io</li>
+                <li>고객센터</li><li>031-8090-3108</li>
+                <li>팩스</li><li>031-421-3422</li>
+            </ul>
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { Button, Input, FormGroup, Label,  Row, Col, Container } from 'reactstrap'
 import { updateItemEnabled, getItemByItemNo, addItem, getItems, getNewItemKindCode } from '~/lib/adminApi'
-import { ModalConfirm } from '~/components/common'
+import { ModalConfirm, SingleImageUploader } from '~/components/common'
 
 class ItemReg extends Component {
     constructor(props) {
@@ -15,7 +15,8 @@ class ItemReg extends Component {
                 itemNo: isUpdate ? this.props.itemNo : 0,
                 itemKinds: [],
                 itemName: '',
-                enabled: null
+                enabled: null,
+                image: null
             },
             newKinds: [], //임시저장용
             errors: {
@@ -184,7 +185,13 @@ class ItemReg extends Component {
         await updateItemEnabled(itemNo, !enabled)
         this.props.onClose(true)
     }
-
+    onProfileImageChange = (images) => {
+        // const state = Object.assign({}, this.state);
+        // state.profileImages = images;
+        const item = Object.assign({}, this.state.item)
+        item.image = images[0] ? images[0] : null
+        this.setState({item: item})
+    }
     render() {
         const { item, errors, newKinds } = this.state
         return(
@@ -204,6 +211,13 @@ class ItemReg extends Component {
                                 placeholder='품목명'
                             />
                             <span className='text-danger'>{errors.itemName}</span>
+                            <SingleImageUploader
+                                isNoResizing
+                                isShownCopyButton
+                                images={this.state.item.image ? [this.state.item.image] : []}
+                                defaultCount={1}
+                                isShownMainText={false}
+                                onChange={this.onProfileImageChange} />
                         </FormGroup>
                     </Col>
                 </Row>

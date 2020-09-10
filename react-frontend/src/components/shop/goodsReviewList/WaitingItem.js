@@ -1,15 +1,21 @@
 import React from 'react'
 import ComUtil from '../../../util/ComUtil'
 import { StarButton } from '../../../components/common'
+import {Link} from 'react-router-dom'
 const WaitingItem = (props) => {
-    const {goodsNm, imgUrl, consumerOkDate, onClick} = props
+    const {goodsNo, goodsNm, imgUrl, consumerOkDate, onClick} = props
+
     return(
         <div style={{boxShadow: '1px 1px 2px gray'}} className='d-flex mb-2 p-3 bg-white'>
-            <div className='mr-3'>
-                <img style={{borderRadius: '100%', width: 50, height: 50, objectFit: 'cover'}} src={imgUrl} />
-            </div>
+            <Link to={'/goods?goodsNo='+goodsNo}>
+                <div className='mr-3'>
+                    <img style={{borderRadius: '100%', width: 50, height: 50, objectFit: 'cover'}} src={imgUrl} alt={"후기사진"}/>
+                </div>
+            </Link>
             <div className='flex-grow-1'>
-                <div className='font-weight-border'>{goodsNm}</div>
+                <Link to={'/goods?goodsNo='+goodsNo}>
+                    <div className='font-weight-border'>{goodsNm}</div>
+                </Link>
                 <div className='text-secondary small'>
                     {
                         consumerOkDate && ComUtil.utcToString(consumerOkDate)
