@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { ProducerWebNav } from '~/components/common'
 import { ProducerWebMenuList, ProducerWebSubMenuList, Server} from '~/components/Properties'
-import { doLogout, getLoginUser, getLoginAdminUser, tempAdminProducerLogin, tempAdminProducerList } from '~/lib/loginApi'
+import { doProducerLogout, getLoginProducerUser, getLoginAdminUser, tempAdminProducerLogin, tempAdminProducerList } from '~/lib/loginApi'
 import {Input} from 'reactstrap'
 import classNames from 'classnames'
 
@@ -31,7 +31,7 @@ class ProducerWebContainer extends Component {
 
         //일반 생산자 로직//////////////////////
 
-        let loginProducer = await getLoginUser();
+        let loginProducer = await getLoginProducerUser();
         console.log('ProducerWebContainer loginProducer', loginProducer);
         if (loginProducer)
             selectedProducerEmail  = loginProducer.email;
@@ -80,8 +80,7 @@ class ProducerWebContainer extends Component {
 
 
         }else {
-            adminUser = '';   //adminUser로 생산자 로그인 방식 실패.
-
+            adminUser = null;   //adminUser로 생산자 로그인 방식 실패.
             if (!loginProducer && !adminUser) { //producer도 admin(tempAdmin)도 미로그인 이면
                 this.props.history.push('/producer/webLogin')
             }
@@ -99,10 +98,11 @@ class ProducerWebContainer extends Component {
     }
 
     onClickLogout = async () => {
-        await doLogout();
+        await doProducerLogout();
 
         //자기 페이지 강제 새로고침()
-        window.location = this.props.history.location.pathname
+        //window.location = this.props.history.location.pathname
+        window.location = '/producer/webLogin'
     }
 
     onItemChange = async (e) => {

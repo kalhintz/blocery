@@ -1,18 +1,18 @@
-import React, { Fragment, useState, useEffect } from 'react'
-import ComUtil from '~/util/ComUtil'
-import { HeaderTitle, NoSearchResultBox, ModalWithNav } from '~/components/common'
-import { Container, Row, Col, Button } from 'reactstrap'
+import React, { Fragment, useState } from 'react'
+import { ModalWithNav } from '~/components/common'
 import { Webview } from "~/lib/webviewApi";
 import { getLoginUserType } from '~/lib/loginApi'
 import Textarea from 'react-textarea-autosize'
 import { addGoodsQnA } from '~/lib/shopApi'
 import { Server } from '~/components/Properties'
 
+import {Div, Button} from '~/styledComponents/shared'
+
 const GoodsQueModalButton = ({children, goods, onClose = () => null}) => {
 
     const [isOpen, setIsOpen] = useState(false)
     const [goodsQue, setGoodsQue] = useState('')
-    const [isSaving, setIsSaving] = useState(false);
+    // const [isSaving, setIsSaving] = useState(false);
 
     async function onPopupOpenClick(e) {
         e.preventDefault();
@@ -54,10 +54,12 @@ const GoodsQueModalButton = ({children, goods, onClose = () => null}) => {
             goodsQnaStat: null,
         }
         //1. db 저장
-        if(!isSaving) {
-            setIsSaving(!isSaving);
-            await addGoodsQnA(data)
-        }
+        // if(!isSaving) {
+        //     setIsSaving(!isSaving);
+        console.log('add')
+        await addGoodsQnA(data)
+        console.log('end')
+        // }
 
         setGoodsQue('')
 
@@ -79,9 +81,9 @@ const GoodsQueModalButton = ({children, goods, onClose = () => null}) => {
         <Fragment>
             <a href={'#'} className={'text-info'} onClick={onPopupOpenClick}>{children}</a>
             <ModalWithNav show={isOpen} title={'상품문의'} onClose={toggle} noPadding>
-                <div>
+                <Div p={10}>
                     {/*<hr className={'m-0'}/>*/}
-                    <div className={'d-flex m-3'}>
+                    <div className={'d-flex mb-3'}>
                         <div className={'text-center mr-2'} style={{width: 70, height: 70}}>
                             <img src={Server.getThumbnailURL() + goods.goodsImages[0].imageUrl }  className={'w-100 h-100'} alt={'사진'} />
                         </div>
@@ -91,7 +93,7 @@ const GoodsQueModalButton = ({children, goods, onClose = () => null}) => {
                     </div>
 
                     {/*<hr className={'m-0'}/>*/}
-                    <div className={'m-3'}>
+                    <div className={'mb-3'}>
                         <Textarea
                             style={{width: '100%', minHeight: 100, borderRadius: 1, border: '1px solid rgba(0,0,0,.125)'}}
                             className={'border'}
@@ -102,10 +104,10 @@ const GoodsQueModalButton = ({children, goods, onClose = () => null}) => {
                             value={goodsQue}
                         />
                     </div>
-                    <div className={'m-3'}>
-                        <Button className={'rounded-0'} block onClick={onSaveClick} >확인</Button>
+                    <div>
+                        <Button rounded={3} py={8} block onClick={onSaveClick} bg={'green'} fg={'white'} >확인</Button>
                     </div>
-                </div>
+                </Div>
             </ModalWithNav>
 
         </Fragment>

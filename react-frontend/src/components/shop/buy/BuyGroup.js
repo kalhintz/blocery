@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { Server } from '~/components/Properties'
-import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed } from '~/styledComponents/shared/Layouts';
+import { Div, Flex } from '~/styledComponents/shared/Layouts';
 import BuyOrder from './BuyOrder'
 import ComUtil from '~/util/ComUtil'
 import styled from 'styled-components'
@@ -20,6 +20,7 @@ const DeliveryInfo = styled(Div)`
 const Footer = styled(Flex)`
     border-bottom: 10px solid ${color.secondary};
     background-color: ${color.background};
+    align-items: flex-start;
 `;
 const SumBox = styled(Div)`
     position: relative;
@@ -44,13 +45,13 @@ export default class BuyGroup extends Component {
     constructor(props) {
         super(props);
     }
- 
+
     render() {
-        const { producer, summary, orderList } = this.props
+        const { producer, summary, orderList, plusDeliveryFee, hopeDeliveryDateChange, blctToWon } = this.props
 
         return (
             <Fragment>
-                <Header fontSize={12}>{producer.farmName} {producer.producerWrapDeliver && <Badge ml={10} fg={'white'} bg={'danger'}>묶음배송가능</Badge>}</Header>
+                <Header fontSize={15}>{producer.farmName} {producer.producerWrapDeliver && <Badge ml={10} fg={'white'} bg={'danger'}>묶음배송가능</Badge>}</Header>
                 {
                     orderList.map((order, index) =>{
 
@@ -59,6 +60,8 @@ export default class BuyGroup extends Component {
                                 key={`goods${index}`}
                                     order={order}
                                     imageUrl={order.orderImg ? Server.getThumbnailURL() + order.orderImg : ''}
+                                    plusDeliveryFee={plusDeliveryFee}
+                                    hopeDeliveryDateChange={hopeDeliveryDateChange}
                             />
                         )
                     })
@@ -88,8 +91,17 @@ export default class BuyGroup extends Component {
                         <Circle fg={'white'} bg={'dark'}>＝</Circle>
                     </SumBox>
                     <SumBox>
-                        <Div fg={'secondary'}>결제금액</Div>
-                        <Div fontSize={13}>{ComUtil.addCommas(summary.result)}원</Div>
+                        <Div>
+                            <Div fg={'secondary'}>결제금액</Div>
+                            <Div fontSize={13}>{ComUtil.addCommas(summary.result)}원</Div>
+                        </Div>
+                        {
+                            summary.result && (
+                                <Div fontSize={13}>
+                                    {`${ComUtil.addCommas(ComUtil.roundDown(summary.result / blctToWon, 0))} BLY`}
+                                </Div>
+                            )
+                        }
                     </SumBox>
                 </Footer>
 

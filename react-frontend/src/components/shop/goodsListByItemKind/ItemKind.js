@@ -1,6 +1,4 @@
-import React, {useState, useEffect} from 'react'
-import ComUtil from '~/util/ComUtil'
-
+import React, {useState} from 'react'
 import styled from 'styled-components'
 import {getValue} from '~/styledComponents/Util'
 import {color} from '~/styledComponents/Properties'

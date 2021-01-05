@@ -69,7 +69,7 @@ export const scOntManagerSendBlctToManager = (email, amount) =>
         }
     )
 
-export const scOntTransferManagerBlctToMany = (eventTitle, eventSubTitle, emailList, amount, sendKakao) =>
+export const scOntTransferManagerBlctWithEvent = (eventTitle, eventSubTitle, consumerNo, amount, sendKakao) =>
     axios(Server.getRestAPIHost() + '/ont/transferMangerTokenToMany',
         {
             method:"post",
@@ -78,25 +78,9 @@ export const scOntTransferManagerBlctToMany = (eventTitle, eventSubTitle, emailL
             data: {
                 eventTitle: eventTitle,
                 eventSubTitle: eventSubTitle,
-                emailList: emailList,
+                consumerNo: consumerNo,
                 amount: amount,
                 sendKakao: sendKakao
-            }
-        }
-    );
-
-export const scOntTransferManagerTokenToManyAccount = (eventTitle, eventSubTitle, accountList, amount) =>
-    axios(Server.getRestAPIHost() + '/ont/transferManagerTokenToManyAccount',
-        {
-            method:"post",
-            withCredentials: true,
-            credentials: 'same-origin',
-            data: {
-                eventTitle: eventTitle,
-                eventSubTitle: eventSubTitle,
-                accountList: accountList,
-                amount: amount,
-                sendKakao: false
             }
         }
     );
@@ -185,12 +169,13 @@ export const scOntOrderGoodsBlct = (orderSeqNo, blctAmount, price, ordersParam) 
     );
 
 // 주문취소
-export const scOntCancelOrderBlct = (goodsPriceBlct, cancelBlctFee, cancelFee, isNotDelivery) =>
+export const scOntCancelOrderBlct = (orderSeq, goodsPriceBlct, cancelBlctFee, cancelFee, isNotDelivery) =>
     axios(Server.getRestAPIHost() + '/ont/cancelOrderBlct',
         {   method:"post",
             withCredentials: true,
             credentials: 'same-origin',
             data: {
+                orderSeqNo: orderSeq,
                 cancelFee: cancelFee,
                 isNotDelivery: isNotDelivery,
                 goodsPriceBlct: goodsPriceBlct,

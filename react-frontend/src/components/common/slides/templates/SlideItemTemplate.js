@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React from 'react'
 import classNames from 'classnames'
 import Style from './SlideItemTemplate.module.scss'
 function SlideItemTemplate(props){

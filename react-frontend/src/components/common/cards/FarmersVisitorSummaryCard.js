@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useInterval} from 'react'
+import React, {useState, useEffect} from 'react'
 import ComUtil from '~/util/ComUtil'
 import { countRegularConsumer, getProducerByProducerNo } from '~/lib/producerApi'
 

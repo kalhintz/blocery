@@ -1,9 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Style from './GoodsItemCard.module.scss'
-import ComUtil from '../../../util/ComUtil'
-import { Card, Button, CardImg, CardTitle, CardText, CardDeck,
-    CardSubtitle, CardBody, Badge } from 'reactstrap';
+import ComUtil from '~/util/ComUtil'
+import { Card, Button, CardDeck, CardBody, Badge } from 'reactstrap';
 const GoodsItemCard = (props) => {
 
     function onGoodsClick(){

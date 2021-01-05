@@ -398,51 +398,52 @@ export default class WebShop extends Component{
                                         </Row>
                                     </FormGroup>
 
-                                    <FormGroup inline>
-                                        <Row>
-                                            <Col sm={2}>
-                                                <div className='d-flex align-items-center mt-2'>
-                                                    <input
-                                                        type="checkbox"
-                                                        id='producerWrapDeliver'
-                                                        className='mr-2'
-                                                        checked={state.producerWrapDeliver}
-                                                        onChange={this.onProducerWrapDeliverCheck}
-                                                    />
-                                                    <label for='producerWrapDeliver' className='m-0'>
-                                                        생산자 묶음 배송
-                                                    </label>
-                                                </div>
-                                            </Col>
-                                            <Col sm={5}>
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="flex-shrink-0 mr-2"> 무료배송 조건 금액 </span>
-                                                    <Input
-                                                        //className={'mt-2'}
-                                                        name="producerWrapLimitPrice"
-                                                        innerRef={this.producerWrapLimitPrice}
-                                                        value={state.producerWrapLimitPrice}
-                                                        readOnly={!state.producerWrapDeliver}
-                                                        onChange={this.onInputProducerWrapLimit}
-                                                    />
-                                                </div>
-                                            </Col>
-                                            <Col sm={5}>
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="flex-shrink-0 mr-2"> 배송비 </span>
-                                                    <Input
-                                                        // className={'mt-2'}
-                                                        name="producerWrapFee"
-                                                        innerRef={this.producerWrapFee}
-                                                        value={state.producerWrapFee}
-                                                        readOnly={!state.producerWrapDeliver}
-                                                        onChange={this.onInputProducerWrapFee}
-                                                    />
-                                                </div>
-                                            </Col>
-                                        </Row>
+                                    {/*생산자묶음배송 제외 202012*/}
+                                    {/*<FormGroup inline>*/}
+                                    {/*    <Row>*/}
+                                    {/*        <Col sm={2}>*/}
+                                    {/*            <div className='d-flex align-items-center mt-2'>*/}
+                                    {/*                <input*/}
+                                    {/*                    type="checkbox"*/}
+                                    {/*                    id='producerWrapDeliver'*/}
+                                    {/*                    className='mr-2'*/}
+                                    {/*                    checked={state.producerWrapDeliver}*/}
+                                    {/*                    onChange={this.onProducerWrapDeliverCheck}*/}
+                                    {/*                />*/}
+                                    {/*                <label for='producerWrapDeliver' className='m-0'>*/}
+                                    {/*                    생산자 묶음 배송*/}
+                                    {/*                </label>*/}
+                                    {/*            </div>*/}
+                                    {/*        </Col>*/}
+                                    {/*        <Col sm={5}>*/}
+                                    {/*            <div className='d-flex align-items-center'>*/}
+                                    {/*                <span className="flex-shrink-0 mr-2"> 무료배송 조건 금액 </span>*/}
+                                    {/*                <Input*/}
+                                    {/*                    //className={'mt-2'}*/}
+                                    {/*                    name="producerWrapLimitPrice"*/}
+                                    {/*                    innerRef={this.producerWrapLimitPrice}*/}
+                                    {/*                    value={state.producerWrapLimitPrice}*/}
+                                    {/*                    readOnly={!state.producerWrapDeliver}*/}
+                                    {/*                    onChange={this.onInputProducerWrapLimit}*/}
+                                    {/*                />*/}
+                                    {/*            </div>*/}
+                                    {/*        </Col>*/}
+                                    {/*        <Col sm={5}>*/}
+                                    {/*            <div className='d-flex align-items-center'>*/}
+                                    {/*                <span className="flex-shrink-0 mr-2"> 배송비 </span>*/}
+                                    {/*                <Input*/}
+                                    {/*                    // className={'mt-2'}*/}
+                                    {/*                    name="producerWrapFee"*/}
+                                    {/*                    innerRef={this.producerWrapFee}*/}
+                                    {/*                    value={state.producerWrapFee}*/}
+                                    {/*                    readOnly={!state.producerWrapDeliver}*/}
+                                    {/*                    onChange={this.onInputProducerWrapFee}*/}
+                                    {/*                />*/}
+                                    {/*            </div>*/}
+                                    {/*        </Col>*/}
+                                    {/*    </Row>*/}
 
-                                    </FormGroup>
+                                    {/*</FormGroup>*/}
                                 </div>
 
                                 <hr/>
@@ -576,7 +577,7 @@ export default class WebShop extends Component{
                                     <FormGroup inline>
                                         <Row>
                                             <Col sm={2}>
-                                                <Label>담당자명<Star/></Label>
+                                                <Label>담당자(+메모)<Star/></Label>
                                             </Col>
                                             <Col sm={10}>
                                                 <Input name="charger"
@@ -590,7 +591,7 @@ export default class WebShop extends Component{
                                     <FormGroup inline>
                                         <Row>
                                             <Col sm={2}>
-                                                <Label>담당자 전화번호<Star/></Label>
+                                                <Label>담당자 핸드폰번호<Star/></Label>
                                             </Col>
                                             <Col sm={10}>
                                                 <Input name="chargerPhone"

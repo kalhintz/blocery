@@ -1,6 +1,5 @@
 import React from 'react'
 import Style from './BlocerySpinner.module.scss'
-//import { Spinner } from '../../common'
 import MarketBlySpinner from '~/images/icons/marketbly_spinner.gif'
 
 const BlocerySpinner = () => {

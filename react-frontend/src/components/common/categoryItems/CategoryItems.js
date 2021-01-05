@@ -1,11 +1,10 @@
 import React from 'react'
-// import { Link } from 'react-router-dom'
 import {Server} from '~/components/Properties'
 import {Icon} from '~/components/common/icons'
 import {Div, Flex, Img, Button, Link} from '~/styledComponents/shared'
-import {HrThin, HrHeavy, HrHeavyX2} from '~/styledComponents/mixedIn'
+import {HrThin, HrHeavyX2} from '~/styledComponents/mixedIn'
 
-import styled, {css} from 'styled-components'
+import styled from 'styled-components'
 
 const margin = 33
 
@@ -73,8 +72,8 @@ const CategoryItems = (props) => {
             <Div m={16} mb={25}>
                 <Flex flexWrap='wrap'>
                     {
-                        data.map(item =>
-                            <FlexColumnLink p={4} bg={'white'} display={'block'} mb={20} to={`/category/${item.itemNo}/all`}>
+                        data.map((item, index) =>
+                            <FlexColumnLink key={`categoryItem_${index}`} p={4} bg={'white'} display={'block'} mb={20} to={`/category/${item.itemNo}/all`}>
                                 <Div mb={5} width={40} height={40}>
                                     {
                                         item.image ?

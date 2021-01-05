@@ -1,7 +1,7 @@
-import React, { Component, PropTypes } from 'react';
-import { Button,  Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
+import React, { Component } from 'react';
+import { Button} from 'reactstrap'
 import ComUtil from '~/util/ComUtil'
-import { getLoginAdminUser } from '../../../lib/loginApi'
+import { getLoginAdminUser } from '~/lib/loginApi'
 import { getTimeSaleAdminList, delTimeSale } from '~/lib/adminApi'
 import moment from 'moment-timezone'
 import { ModalConfirm,  AdminModalWithNav } from '~/components/common'
@@ -13,10 +13,16 @@ import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { Cell } from '~/components/common'
 import { Server } from '../../Properties'
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/src/stylesheets/datepicker.scss";
+
 export default class B2cTimeSaleList extends Component{
     constructor(props) {
         super(props);
         this.state = {
+            search: {
+                year:moment().format('YYYY')
+            },
             loading: false,
             data: [],
             columnDefs: [
@@ -87,6 +93,16 @@ export default class B2cTimeSaleList extends Component{
                     }
                 },
                 {
+                    headerName: "생산자No", field: "producerNo",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    width: 80
+                },
+                {
+                    headerName: "생산자명", field: "producerFarmNm",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    width: 100
+                },
+                {
                     headerName: "상품이미지",
                     field: "goodsImages",
                     suppressFilter: true,   //no filter
@@ -94,6 +110,11 @@ export default class B2cTimeSaleList extends Component{
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
                     cellRenderer:"goodsImageRenderer",
                     width: 120
+                },
+                {
+                    headerName: "상품No", field: "goodsNo",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    width: 80
                 },
                 {
                     headerName: "상품명",
@@ -127,6 +148,18 @@ export default class B2cTimeSaleList extends Component{
                     },
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
                     cellRenderer: "timeSaleCurrentPriceRenderer",
+                    width: 100
+                },
+                {
+                    headerName: "정산가", field: "currentPrice",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    cellRenderer: "settlementPriceRenderer",
+                    width: 100
+                },
+                {
+                    headerName: "판매지원금", field: "timeSaleSupportPrice",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    cellRenderer: "supportPriceRenderer",
                     width: 100
                 },
                 {
@@ -179,6 +212,8 @@ export default class B2cTimeSaleList extends Component{
                 titleRenderer:this.titleRenderer,
                 timeSaleConsumerPriceRenderer:this.timeSaleConsumerPriceRenderer,
                 timeSaleCurrentPriceRenderer:this.timeSaleCurrentPriceRenderer,
+                settlementPriceRenderer:this.settlementPriceRenderer,
+                supportPriceRenderer:this.supportPriceRenderer,
                 timeSalePriceRenderer:this.timeSalePriceRenderer,
                 timeSaleStateRenderer:this.timeSaleStateRenderer,
                 delButtonRenderer:this.delButtonRenderer
@@ -257,11 +292,23 @@ export default class B2cTimeSaleList extends Component{
     };
 
     titleRenderer = ({value, data:rowData}) => {
+        const stateNm = B2cTimeSaleList.getTimeSaleStateNm(rowData);
         return (
             <Cell textAlign="left">
-                <div onClick={this.regTimeSale.bind(this, rowData.goodsNo)} style={{color: 'blue'}}>
-                    <u>{rowData.goodsNm}</u>
-                </div>
+                {
+                    stateNm=="종료" && (
+                        <div style={{color: 'dark'}}>
+                            {rowData.goodsNm}
+                        </div>
+                    )
+                }
+                {
+                    stateNm!="종료" && (
+                        <div onClick={this.regTimeSale.bind(this, rowData.goodsNo)} style={{color: 'blue'}}>
+                            <u>{rowData.goodsNm}</u>
+                        </div>
+                    )
+                }
             </Cell>
         );
     };
@@ -281,6 +328,24 @@ export default class B2cTimeSaleList extends Component{
             </span>
         );
     };
+
+    //정산가
+    settlementPriceRenderer = ({value, data:rowData}) => {
+        return (
+            <span>
+                {ComUtil.addCommas(rowData.timeSalePrice * ((100 - rowData.timeSaleFeeRate) / 100) + ComUtil.toNum(rowData.timeSaleSupportPrice))}원
+            </span>
+        )
+    }
+
+    //판매지원금
+    supportPriceRenderer = ({value, data:rowData}) => {
+        return (
+            <span>
+                {ComUtil.addCommas(rowData.timeSaleSupportPrice)}원
+            </span>
+        )
+    }
 
     //타임세일가
     timeSalePriceRenderer = ({value, data:rowData}) => {
@@ -319,26 +384,7 @@ export default class B2cTimeSaleList extends Component{
     }
 
     timeSaleStateRenderer = ({value, data:rowData}) => {
-        let nowDate = moment().toDate();
-        let nowDateTime = moment(nowDate).format('YYYY-MM-DDTHH:mm');
-
-        let v_timeSaleStartDate = rowData.timeSaleStart;
-        let v_timeSaleStartDateTime = moment(v_timeSaleStartDate).format('YYYY-MM-DDTHH:mm');
-        let v_timeSaleEndDate = rowData.timeSaleEnd;
-        let v_timeSaleEndDateTime = moment(v_timeSaleEndDate).format('YYYY-MM-DDTHH:mm');
-
-        let stateNm = "예정";
-        if(
-            moment(v_timeSaleStartDateTime).format('x') < moment(nowDateTime).format('x') &&
-            moment(v_timeSaleEndDateTime).format('x') > moment(nowDateTime).format('x')
-        ){
-            stateNm = "진행중";
-        }
-        if(
-            moment(v_timeSaleEndDateTime).format('x') < moment(nowDateTime).format('x')
-        ){
-            stateNm = "종료";
-        }
+        const stateNm = B2cTimeSaleList.getTimeSaleStateNm(rowData);
         return (
             <span>
                 {stateNm}
@@ -348,12 +394,17 @@ export default class B2cTimeSaleList extends Component{
 
 
     delButtonRenderer = ({value, data:rowData}) => {
+        const stateNm = B2cTimeSaleList.getTimeSaleStateNm(rowData);
         return (
             <Cell>
                 <div style={{textAlign: 'center'}}>
-                    <ModalConfirm title={'포텐타임 삭제'} content={<div>선택한 포텐타임을 삭제하시겠습니까?</div>} onClick={this.delTimeSale.bind(this, rowData.goodsNo)}>
-                        <Button block size='sm' color={'info'}>삭제</Button>
-                    </ModalConfirm>
+                    {
+                        stateNm != '종료' && (
+                            <ModalConfirm title={'포텐타임 삭제'} content={<div>선택한 포텐타임을 삭제하시겠습니까?</div>} onClick={this.onDelTimeSale.bind(this, rowData.goodsNo)}>
+                                <Button block size='sm' color={'info'}>삭제</Button>
+                            </ModalConfirm>
+                        )
+                    }
                 </div>
             </Cell>
         );
@@ -362,7 +413,11 @@ export default class B2cTimeSaleList extends Component{
 
     search = async () => {
         this.setState({loading: true});
-        const { status, data } = await getTimeSaleAdminList();
+        const searchInfo = this.state.search;
+        const params = {
+            year:searchInfo.year
+        };
+        const { status, data } = await getTimeSaleAdminList(params);
         //console.log("getTimeSaleListAll==",data)
         if(status !== 200){
             alert('응답이 실패 하였습니다');
@@ -374,7 +429,7 @@ export default class B2cTimeSaleList extends Component{
         });
     };
 
-    delTimeSale = async(goodsNo, isConfirmed) => {
+    onDelTimeSale = async(goodsNo, isConfirmed) => {
         if (isConfirmed) {
             await delTimeSale(goodsNo);
             await this.search();
@@ -382,7 +437,7 @@ export default class B2cTimeSaleList extends Component{
     };
 
     regTimeSale = (goodsNo) => {
-        let v_goodsNo="";
+        let v_goodsNo=null;
         let v_title = "포텐타임 등록";
         if(goodsNo){
             v_title = "포텐타임 수정";
@@ -397,8 +452,6 @@ export default class B2cTimeSaleList extends Component{
 
     regMdPickModalToggle=()=>{
         this.setState({
-            mdPickId:"",
-            mdPickModalTitle:"",
             isTimeSaleModalOpen: !this.state.isTimeSaleModalOpen
         });
     };
@@ -407,22 +460,46 @@ export default class B2cTimeSaleList extends Component{
     onTimeSalePopupClose = (data) => {
 
         this.setState({
-            mdPickId:"",
-            mdPickModalTitle:"",
             isTimeSaleModalOpen: !this.state.isTimeSaleModalOpen
         });
 
-        if(data && data.refresh){
+        if (data && data.refresh) {
             this.search();
         }
     };
 
+    onSearchDateChange = async (date) => {
+        //console.log("",date.getFullYear())
+        const search = Object.assign({}, this.state.search);
+        search.year = date.getFullYear();
+        await this.setState({search:search});
+        await this.search();
+    }
+
     render() {
+        const ExampleCustomDateInput = ({ value, onClick }) => (
+            <Button
+                color="secondary"
+                active={true}
+                onClick={onClick}>포텐타임 {value} 년</Button>
+        );
         return (
             <div>
-                <div className="d-flex p-1">
-                    <div className="d-flex align-items-center pl-1">
+                <div className="d-flex align-items-center p-1">
+                    <div className="pl-1">
                         <span className="text-success">{this.state.data.length}</span>개의 포텐타임
+                    </div>
+                    <div className='ml-2'>
+                        <DatePicker
+                            selected={new Date(moment().set('year',this.state.search.year))}
+                            onChange={this.onSearchDateChange}
+                            showYearPicker
+                            dateFormat="yyyy"
+                            customInput={<ExampleCustomDateInput />}
+                        />
+                    </div>
+                    <div className='ml-2'>
+                        <Button color={'info'} onClick={this.search}>검색</Button>
                     </div>
                     <div className="flex-grow-1 text-right">
                         <Button outline size='sm' color={'info'} onClick={this.regTimeSale.bind(this,'')} className='m-2'>포텐타임 등록</Button>

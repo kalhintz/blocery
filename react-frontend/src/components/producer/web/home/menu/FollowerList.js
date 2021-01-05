@@ -1,6 +1,5 @@
 import React, { useState, useEffect} from 'react'
-import { getProducer, getRegularShopListByProducerNo } from '~/lib/producerApi'
-import { Button } from 'reactstrap'
+import { getRegularShopListByProducerNo } from '~/lib/producerApi'
 import ComUtil from '~/util/ComUtil'
 import { Link } from 'react-router-dom'
 

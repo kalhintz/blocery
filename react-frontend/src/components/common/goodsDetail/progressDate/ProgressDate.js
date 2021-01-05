@@ -123,7 +123,7 @@ const ProgressDate = (props) => {
                             priceSteps.map((item, i) =>
                                 <div className={Css.item}>
                                     <div className={classNames(Css.text, sIdx === i && Css.textDanger)}><b>{item.discountRate}%</b></div>
-                                    <div className={Css.text}><strike>{ComUtil.addCommas(consumerPrice)}원</strike></div>
+                                    <div className={Css.text}><del>{ComUtil.addCommas(consumerPrice)}원</del></div>
                                     <div className={Css.text}><b>{ComUtil.addCommas(item.price)}원</b></div>
                                 </div>
                             )

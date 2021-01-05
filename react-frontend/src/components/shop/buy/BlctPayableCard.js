@@ -1,32 +1,120 @@
 import React, {useState, useEffect, useRef} from 'react'
-import Css from './BlctPayableCard.module.scss'
-import classNames from 'classnames'
 import ComUtil from '~/util/ComUtil'
-import {Input, Button, Collapse} from 'reactstrap'
+import {Collapse} from 'reactstrap'
 import {Icon} from '~/components/common/icons'
-import ButtonCss from './Button.module.scss'
-
 import { IoMdClose } from "react-icons/io";
 
-function exchangeBlctToWon(payableBlct, blctToWon, ){
-    return ComUtil.addCommas((payableBlct * blctToWon).toFixed(0))
-}
+import {Div, Flex, Right} from '~/styledComponents/shared/Layouts'
+import {Button, Input} from '~/styledComponents/shared'
+import ReactSlider from 'react-slider'
+import styled from 'styled-components';
+
+import {color} from "../../../styledComponents/Properties";
+
+
+const StyledSlider = styled(ReactSlider)`
+    width: 100%;
+    height: 10px;
+`;
+
+const StyledThumb = styled.div`
+    width: 30px;
+    height: 30px;
+    line-height: 25px;
+    text-align: center;
+    background-color: #0CB3AB;
+    color: ${color.white};
+    border-radius: 50%;
+    cursor: grab;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    border: 1px solid white;
+`;
+
+const Thumb = (props, state) => <StyledThumb {...props}>{state.valueNow}</StyledThumb>;
+
+const StyledTrack = styled.div`
+    top: 0;
+    bottom: 0;
+    background: ${props => props.index === 0 ? color.secondary : '#0CB3AB'};
+    border-radius: 999px;
+    height: 10px;
+`;
+
+const Track = (props, state) => <StyledTrack {...props} index={state.index} />;
 
 const BlctPayableCard = (props) => {
     const [useBlct, setUseBlct] = useState() //기본값은 BLCT 최대치로 입력되어있도록
-    const elInput = useRef(null);
+    const [rate, setRate] = useState(0)
+    const elInput = useRef(null)
+    const { payableBlct } = props
+    const [thumbSize, setThumbSize] = useState(30)
+
     useEffect(()=>{
         //부모의 사용할 blct값에 강제로 초기값 0 을 넣어주기위해 didMount시 onChange를 강제로 일으켜 주었음
         props.onChange({
             value: 0,
             error: true
         })
-        elInput.current.focus();
+        // elInput.current.focus();
     },[])
-    function onChange(e){
-        console.log(e.target.value)
-        const value = e.target.value
-        const payableBlct = props.payableBlct
+
+    useEffect(() => {
+        // if(useBlct !==  null && useBlct !== undefined) {
+        //
+        //     if(payableBlct === 0) {
+        //         setRate(0)
+        //     }else{
+        //         setRate((useBlct / payableBlct) * 100)
+        //     }
+        // }
+        calcRate()
+    }, [useBlct])
+
+    const calcRate = () => {
+        if(useBlct !==  null && useBlct !== undefined) {
+
+            //사용한 Bly가 지불가능한 Bly보다 클 경우 useBlct를 payableBlct(최대치로 다시 조정)
+            if (useBlct > payableBlct){
+                setUseBlct(payableBlct)
+                setRate(100)
+
+                props.onChange({
+                    value: payableBlct,
+                    error: true
+                })
+
+            }else {
+                if(payableBlct === 0) {
+                    setRate(0)
+                }else{
+                    setRate((useBlct / payableBlct) * 100)
+                }
+            }
+        }
+    }
+
+    useEffect(()=>{
+        // changeBlyValue(0)
+        // onSliderChange(payableBlct)
+        calcRate()
+    }, [payableBlct])
+
+    const onChange = (e) => {
+        changeBlyValue(e.target.value)
+    }
+
+    const onSliderChange = (value) => {
+        const blct = payableBlct * (value / 100)
+        changeBlyValue(blct)
+    }
+
+    const changeBlyValue = (value) => {
 
         if(parseFloat(value) > payableBlct){
             props.onChange({
@@ -40,72 +128,74 @@ const BlctPayableCard = (props) => {
             })
         }
         setUseBlct(value)
+
     }
+
     //전액사용
-    function onClick(){
+    const onClick = () => {
         const value = props.payableBlct
         setUseBlct(value)
+
         props.onChange({
             value: value,
             error: false
         })
     }
-    function onClearClick(){
+
+    const onClearClick = () => {
         setUseBlct("");
         props.onChange({
             value: 0,
-            error: true
+            error: false
         })
         elInput.current.focus();
     }
     return(
-        <div className={classNames(Css.blctContainer, (useBlct > props.payableBlct || ComUtil.toNum(useBlct) <= 0) && Css.borderDanger)}>
-            <div>
-                <div>보유BLY</div>
-                <div className={Css.vMiddle}><Icon name={'blocery'}/>&nbsp;
-                    <span>
+        <Div>
+            <Div>
+                <Flex fontSize={14}>
+                    <Div fg={'adjust'}>보유</Div>
+                    <Right>
+                        <Icon name={'blocery'}/>&nbsp;
+                        <span>
                         <b>{ComUtil.addCommas(ComUtil.roundDown(props.totalBlct, 2))}</b>
                          BLY / {ComUtil.addCommas((props.totalBlct * props.blctToWon).toFixed(0))}원
                     </span>
-                </div>
-            </div>
-            <div>
-                <div>사용가능BLY</div>
-                <div className={Css.vMiddle}><Icon name={'blocery'}/>&nbsp;{props.payableBlct} BLY / {exchangeBlctToWon(props.payableBlct, props.blctToWon)}원</div>
-            </div>
-            <div className={'d-flex mt-2'}>
-                <div>
-                    <small>{`${ComUtil.addCommas(ComUtil.toNum(props.blctToWon))}원 X ${ComUtil.addCommas(ComUtil.toNum(useBlct))}BLY = ${ComUtil.addCommas(ComUtil.roundDown(ComUtil.toNum(useBlct) * ComUtil.toNum(props.blctToWon), 0))  } 원`}</small>
-                </div>
-                <div className={classNames('ml-auto', Css.textGray)}>
-                    <small>(1BLY 는 {ComUtil.addCommas(props.blctToWon)}원의 가치)</small>
-                </div>
+                    </Right>
+                </Flex>
+            </Div>
 
-            </div>
-            <div className={Css.inputGroup}>
-                <div>
-                    <Input innerRef={elInput} className={ButtonCss.input} type={'number'} value={useBlct} placeholder={'최대 '+props.payableBlct+' BLY'} onChange={onChange}/>
-                    <div className={Css.clear} onClick={onClearClick}><IoMdClose color={'white'}/></div>
-                </div>
+            <Div mt={20}>
+                <Flex mb={8} justifyContent={'flex-end'}>
+                    <Div fg={'adjust'} fontSize={12}>{`${ComUtil.addCommas(ComUtil.roundDown(ComUtil.toNum(useBlct) * ComUtil.toNum(props.blctToWon), 0))  } 원`}</Div>
+                    {/*<Right><small>(1BLY = {ComUtil.addCommas(props.blctToWon)}원)</small></Right>*/}
+                </Flex>
+                <Flex fontSize={13} mb={23}>
+                    <Div flexGrow={1} mr={8} relative>
+                        <Input ref={elInput} block height={40} bc={'light'} rounded={3} type={'number'} value={useBlct} placeholder={'최소 1BLY 이상'} onChange={onChange}/>
+                        <Flex absolute bg={'light'} fg={'white'} width={23} height={23} top={'50%'} yCenter right={7} rounded={'50%'} justifyContent={'center'} onClick={onClearClick}><IoMdClose color={'white'}/></Flex>
+                    </Div>
+                    <Div flexShrink={0}>
+                        <Button bg={'white'} fg={'black'} height={40} rounded={3} bc={'light'} px={10} onClick={onClick}>전액사용</Button>
+                    </Div>
+                </Flex>
 
-                <div>
-                    <Button className={ButtonCss.btnWhite} block onClick={onClick}>전액사용</Button>
-                </div>
-            </div>
-            <div className='mt-1'>
-                <Collapse isOpen={!useBlct || useBlct <= 0}>
-                    <small className={'text-danger'}>사용할 BLY를 입력해 주세요</small>
-                </Collapse>
-            </div>
-            <div className='mt-1'>
-                <Collapse isOpen={useBlct > props.payableBlct}>
-                    <small className={'text-danger'}>최대 {ComUtil.addCommas(props.payableBlct)} BLY를 사용 가능합니다</small>
-                </Collapse>
-            </div>
-            <div className='mt-1'>
-                <small>BLY는 상품금액의 최대 50%까지만 사용이 가능합니다.</small>
-            </div>
-        </div>
+                <StyledSlider
+                    value={rate}
+                    renderTrack={Track}
+                    renderThumb={Thumb}
+                    onChange={onSliderChange}
+                    disabled={!props.payableBlct}
+                />
+
+                {/*<Collapse isOpen={useBlct > props.payableBlct}>*/}
+                    {/*<Div mt={20}>*/}
+                        {/*<small className={'text-danger'}>최대 {ComUtil.addCommas(props.payableBlct)} BLY를 사용 가능합니다</small>*/}
+                    {/*</Div>*/}
+                {/*</Collapse>*/}
+            </Div>
+
+        </Div>
 
     )
 

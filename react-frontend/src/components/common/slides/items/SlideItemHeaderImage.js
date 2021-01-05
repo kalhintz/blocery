@@ -1,9 +1,10 @@
-import React, { Fragment, useState, useEffect, useRef } from 'react'
+import React from 'react'
 import Css from './SlideItemHeaderImage.module.scss'
 import classNames from 'classnames'
 import { TimeText } from '~/components/common'
 import { AiFillClockCircle } from "react-icons/ai";
 import { Server } from "../../../Properties";
+import moment from 'moment'
 
 function SlideImage(props){
     const { size = 'sm', imageUrl, imageWidth, imageHeight, saleEnd, discountRate, blyReview, remainedCnt = 0, onClick = () => null,
@@ -44,7 +45,10 @@ function SlideImage(props){
                 showTimeText && <div className={Css.timeTextLayer}>
                     <AiFillClockCircle size={16} />
                     <div>예약구매</div>
-                    <div><TimeText date={saleEnd} formatter={'[D-]DD HH[:]mm[:]ss'}/></div>
+                    <div>
+                        <TimeText date={saleEnd} formatter={(moment.duration(moment().diff(saleEnd))._data.days >= 0 &&
+                            moment.duration(moment().diff(saleEnd))._data.months >= 0) ? '[D-Day] DD HH[:]mm[:]ss' : '[D-]DD HH[:]mm[:]ss'}/>
+                    </div>
                 </div>
             }
 

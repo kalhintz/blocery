@@ -1,6 +1,6 @@
 import React from 'react'
 import Style from './MainGoodsCard.module.scss'
-import ComUtil from '../../../util/ComUtil'
+import ComUtil from '~/util/ComUtil'
 import { TimeText } from '../texts'
 const MainGoodsCard = (props) => {
     return (
@@ -31,7 +31,7 @@ const MainGoodsCard = (props) => {
                 </div>
                 <footer>
                     <div>{props.goodsNm} {props.packAmount} {props.packUnit}</div>
-                    <div>{`${ComUtil.addCommas(props.currentPrice)} (${Math.round(props.discountRate)}%)`}<small> <strike>{ComUtil.addCommas(props.consumerPrice)}</strike></small></div>
+                    <div>{`${ComUtil.addCommas(props.currentPrice)} (${Math.round(props.discountRate)}%)`}<small> <del>{ComUtil.addCommas(props.consumerPrice)}</del></small></div>
                 </footer>
             </div>
         </div>

@@ -1,7 +1,5 @@
 import React from 'react'
 import Style from './ProducerXButtonNav.module.scss'
-import propTypes from 'prop-types'
-import { Webview } from '../../../lib/webviewApi'
 const ProducerXButtonNav = (props) => {
     // const close = () => {
     //     // const data = {type: 'close'}

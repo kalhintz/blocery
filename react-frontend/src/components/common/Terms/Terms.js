@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Col, Button, Form, FormGroup, Label, Input, Row, Collapse, Card, CardBody } from 'reactstrap'
+import { Button, Collapse } from 'reactstrap'
 
 import PropTypes from 'prop-types'
 

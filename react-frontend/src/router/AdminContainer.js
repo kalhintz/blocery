@@ -11,7 +11,7 @@ import {Button, Input, Badge} from 'reactstrap'
 
 const bindData = [
     { value: 'shop', label:'마켓블리'},
-    { value: 'fintech', label:'나이스푸드'}
+    // { value: 'fintech', label:'나이스푸드'}
 ];
 
 class AdminContainer extends Component {
@@ -70,21 +70,21 @@ class AdminContainer extends Component {
                                     <Link to={'/producer/web'}> [생산자Web으로 이동] </Link>
                                 }
                             </div>
-                            <div className='m-1'>
-                                <RadioButtons size={'sm'}
-                                              value={bindData.find(item => item.value === type)}
-                                              options={bindData} onClick={ ({value}) =>{
+                            {/*<div className='m-1'>*/}
+                            {/*    <RadioButtons size={'sm'}*/}
+                            {/*                  value={bindData.find(item => item.value === type)}*/}
+                            {/*                  options={bindData} onClick={ ({value}) =>{*/}
 
-                                    if(value === 'shop'){
-                                        // window.location = `/admin/shop/order/orderList`
-                                        this.props.history.push(Server.getAdminShopMainUrl())
-                                    }else{
-                                        // window.location = `/admin/fintech/code/classItemList`
-                                        this.props.history.push(Server.getAdminFintechMainUrl())
-                                    }
+                            {/*        if(value === 'shop'){*/}
+                            {/*            // window.location = `/admin/shop/order/orderList`*/}
+                            {/*            this.props.history.push(Server.getAdminShopMainUrl())*/}
+                            {/*        }else{*/}
+                            {/*            // window.location = `/admin/fintech/code/classItemList`*/}
+                            {/*            this.props.history.push(Server.getAdminFintechMainUrl())*/}
+                            {/*        }*/}
 
-                                }} />
-                            </div>
+                            {/*    }} />*/}
+                            {/*</div>*/}
                             <div className='m-1'>
                                 <Button size={'sm'} outline onClick={this.adminLogout}>로그아웃</Button>
                             </div>

@@ -12,7 +12,7 @@ function Header(){
         <Navbar color="white" expand="sm" sticky="top" className={'shadow-none pt-1 pb-1'}>
             {/*<NavbarToggler onClick={this.toggle} />*/}
 
-            <NavbarBrand tag={Link} to={'/home/1'} className={'d-flex align-items-center'}>
+            <NavbarBrand tag={Link} to={'/'} className={'d-flex align-items-center'}>
                 <MarketBlyMainLogo style={{height: 40}} />
             </NavbarBrand>
 

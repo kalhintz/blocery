@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React from 'react'
 import { SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
 import { Server } from '~/components/Properties'
 import Css from './HalfGoodsList.module.scss'

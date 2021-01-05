@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import Css from './QtyInputGroup.module.scss'
 import ComUtil from '../../../util/ComUtil'

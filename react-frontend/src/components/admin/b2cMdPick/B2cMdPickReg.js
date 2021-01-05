@@ -1,23 +1,18 @@
-import React, { Component, PropTypes } from 'react';
-import { Container, Row, Col, Input, FormGroup, Label, Button, Fade, Badge, Alert, InputGroup, InputGroupAddon, InputGroupText, DropdownMenu, InputGroupButtonDropdown, DropdownToggle, DropdownItem, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap'
-
+import React, { Component } from 'react';
+import { Input, FormGroup, Label, Button, Alert, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap'
 import moment from 'moment-timezone'
-
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
 import { DateRangePicker } from 'react-dates';
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearchPlus, faPlusCircle, faMinusCircle } from '@fortawesome/free-solid-svg-icons'
+import {FaSearchPlus, FaPlusCircle, FaMinusCircle} from 'react-icons/fa'
 import
 {
     BlocerySpinner,
-    Spinner, RadioButtons, ModalConfirmButton, ProducerFullModalPopupWithNav,
     SingleImageUploader, FooterButtonLayer ,
     B2cGoodsSearch
 } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
-import { getAllGoods, getMdPick, setMdPickSave } from '~/lib/adminApi'
+import { getMdPick, setMdPickSave } from '~/lib/adminApi'
 import Style from './B2cMdPickReg.module.scss'
 
 export default class B2cMdPickReg extends Component{
@@ -25,7 +20,7 @@ export default class B2cMdPickReg extends Component{
         super(props);
 
         const { mdPickId } = this.props;
-console.log("mdPickId====>>>",mdPickId)
+
         this.state = {
             isDidMounted:false,
             focusedInput: null,
@@ -563,7 +558,7 @@ console.log("mdPickId====>>>",mdPickId)
                                                     <Button color={'info'}
                                                             data-index={index}
                                                             onClick={this.goodsSearchModalPopup}>
-                                                        <FontAwesomeIcon icon={faSearchPlus} /> 상품검색
+                                                        <FaSearchPlus /> 상품검색
                                                     </Button>
                                                 </div>
 
@@ -571,7 +566,7 @@ console.log("mdPickId====>>>",mdPickId)
                                                     className="ml-2"
                                                     color={'info'}
                                                     data-index={index}
-                                                    onClick={this.delRowMdPickGoods}><FontAwesomeIcon icon={faMinusCircle} /> 삭제</Button>
+                                                    onClick={this.delRowMdPickGoods}><FaMinusCircle /> 삭제</Button>
 
                                             </div>
 
@@ -583,7 +578,7 @@ console.log("mdPickId====>>>",mdPickId)
                                     <Button
                                         className="m-2"
                                         color={'info'}
-                                        onClick={this.addRowMdPickGoods}><FontAwesomeIcon icon={faPlusCircle} /> 상품 행 추가</Button>
+                                        onClick={this.addRowMdPickGoods}><FaPlusCircle /> 상품 행 추가</Button>
                                 </div>
                             </div>
 

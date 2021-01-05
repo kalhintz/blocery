@@ -1,15 +1,11 @@
 import React, { Component, Fragment } from 'react';
-import { Container, ListGroup, ListGroupItem, FormGroup, Label, Button } from 'reactstrap';
+import { Button } from 'reactstrap';
 import ComUtil from '~/util/ComUtil'
-import Select from 'react-select';
-import moment from 'moment-timezone';
 import Textarea from 'react-textarea-autosize'
 import { getGoodsQnaByGoodsQnaNo, setGoodsQnaAnswerByGoodsQnaNo } from '~/lib/producerApi';
 
 import { ToastContainer, toast } from 'react-toastify'; //토스트
 import 'react-toastify/dist/ReactToastify.css';
-
-import Style from './WebGoodsQnaAnswer.module.scss';
 import { Server } from '~/components/Properties'
 
 export default class WebGoodsQnaAnswer extends Component{

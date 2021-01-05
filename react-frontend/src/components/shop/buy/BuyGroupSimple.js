@@ -1,26 +1,14 @@
 import React, { Component, Fragment } from 'react'
 import { Server } from '~/components/Properties'
-import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed } from '~/styledComponents/shared/Layouts';
-import BuyOrder from './BuyOrder'
+import { Div, Flex } from '~/styledComponents/shared/Layouts';
 import ComUtil from '~/util/ComUtil'
 import styled from 'styled-components'
 
-import {Badge} from '~/styledComponents/mixedIn'
 import {color} from '~/styledComponents/Properties'
 
 import Css from './Buy.module.scss'
 import classNames from 'classnames'
 
-const Header = styled(Flex)`
-    padding: 16px;
-    border-bottom: 1px solid ${color.light};
-`;
-const DeliveryInfo = styled(Div)`
-    background-color: ${color.background};
-    font-size: 11px; 
-    text-align: center;
-    border-bottom: 1px solid ${color.light};
-`;
 const Footer = styled(Flex)`
     border-bottom: 10px solid ${color.secondary};
     background-color: ${color.background};

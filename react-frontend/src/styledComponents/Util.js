@@ -12,3 +12,10 @@ export const getValue = (value) => {
     if(isNaN(value)) return value
     return toRem(value) + "rem" 
 }
+
+export const hasValue = (value) => {
+    if (value === null || value === undefined) {
+        return false
+    }
+    return true
+}

@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react'
-import { Container, Row, Col, Button } from 'reactstrap'
+import { Container, Row, Col } from 'reactstrap'
 import { ShopXButtonNav } from '~/components/common/index'
-import { Webview } from "~/lib/webviewApi";
 import { B2cPrivatePolicy } from '~/components/common/termsOfUses'
 
 export default class PrivacyPolicy extends Component {
@@ -17,7 +16,7 @@ export default class PrivacyPolicy extends Component {
     render() {
         return (
             <Fragment>
-                <ShopXButtonNav history={this.props.history} historyBack fixed>개인정보 취급 방침</ShopXButtonNav>
+                <ShopXButtonNav historyBack fixed>개인정보 취급 방침</ShopXButtonNav>
                 <Container>
                     <Row>
                         <Col className={'p-2'}>

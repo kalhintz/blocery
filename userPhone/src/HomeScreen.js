@@ -207,12 +207,16 @@ export default class HomeScreen extends React.Component {
         let oldVersion = await AsyncStorage.getItem(VERSION_KEY);
         console.log('=============== oldVersion', oldVersion);
 
-
         if(oldVersion === null || oldVersion !== this.state.serverVersion) {
             if(this.state.serverVersion)
                 AsyncStorage.setItem(VERSION_KEY, this.state.serverVersion);
             console.log('============= is different Version');
-            ClearCacheModule.deleteCache();
+            const kakaoUpdateTime = new Date(2020, 11, 18, 9, 0, 0); // ios는 2020년 12월 18일 금요일 오전 9시 이후에 update 하도록
+            const now = new Date();
+            const isOverStartTime = kakaoUpdateTime.getTime() - now.getTime();
+            if(isOverStartTime < 0 || Platform.OS === 'android') {
+                ClearCacheModule.deleteCache();
+            }
             return true;
         }
         console.log('=============== version is not updated');
@@ -353,6 +357,14 @@ export default class HomeScreen extends React.Component {
             console.log('getInitNotification ', notificationOpen); // 앱 종료상태, 앱 백그라운드상태 에서 푸쉬를 타고 앱이 실행되면 실행됨
 
             const { notificationType } = notificationOpen.notification._data
+            const { url } = notificationOpen.notification._data
+
+            // console.log(url);
+            if(url) {
+                await this.changeConsumerUrl(Server.getServerURL() + url);
+                return;
+            }
+
 
             //각 해당하는 탭으로 이동
             switch (notificationType){
@@ -368,7 +380,7 @@ export default class HomeScreen extends React.Component {
                     await this.changeConsumerUrl( Server.getServerURL() + '/mypage?moveTo=goodsQnaList' ,TAB_KEY.MY_PAGE);
                     break;
                 case 'noticePush': //공지사항을 푸시하는 경우
-                    await this.changeConsumerUrl( Server.getServerURL() + '/mypage?moveTo=noticeList' ,TAB_KEY.MY_PAGE);
+                    await this.changeConsumerUrl( Server.getServerURL() + '/noticeList' ,TAB_KEY.HOME);
                     break;
 
                 case 'favoriteNewFarmDiary': //생산일지
@@ -377,6 +389,11 @@ export default class HomeScreen extends React.Component {
                 case 'delayShippingGoods':  //배송지연, 생산일지는 그냥 알림으로 이동
                     //await this.changeTab(TAB_KEY.MY_PAGE);
                     await this.changeConsumerUrl( Server.getServerURL() + '/mypage?moveTo=notificationList' ,TAB_KEY.MY_PAGE);
+                    break;
+
+                case 'kycAuth':
+                case 'transferBly':
+                    await this.changeConsumerUrl( Server.getServerURL() + '/mypage' ,TAB_KEY.MY_PAGE);
                     break;
 
 
@@ -471,7 +488,7 @@ export default class HomeScreen extends React.Component {
     /* 여기까지 */
 
     // popup
-    goPopupScreen = async(event) => {
+    onMessageFromFront = async(event) => {
         //console.log({eventData: event.nativeEvent.data});
         if (!event.nativeEvent.data) {
             return; //empty URL - 왜 호출되는지..
@@ -662,7 +679,7 @@ export default class HomeScreen extends React.Component {
                             onNavigationStateChange={(navState) => {
                                 this.webView.canGoBack = navState.canGoBack;
                             }}
-                            onMessage={this.goPopupScreen}
+                            onMessage={this.onMessageFromFront}
                             onLoadEnd={this.onLoadEnd}
                         />,
 
@@ -685,7 +702,7 @@ export default class HomeScreen extends React.Component {
                                 onNavigationStateChange={(navState) => {
                                     this.webView.canGoBack = navState.canGoBack;
                                 }}
-                                onMessage={this.goPopupScreen}
+                                onMessage={this.onMessageFromFront}
                                 onLoadEnd={this.onLoadEnd}
                             />
                         </SafeAreaView>

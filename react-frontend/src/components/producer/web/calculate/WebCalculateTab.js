@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import { FormGroup, Button } from 'reactstrap'
 import { Webview } from "~/lib/webviewApi";
 import { getPaymentProducer } from '~/lib/producerApi'
-import { getLoginUserType, getLoginUser } from "~/lib/loginApi";
+import { getLoginProducerUser } from "~/lib/loginApi";
 import { getProducer } from "~/lib/producerApi";
 
 import ComUtil from '~/util/ComUtil'
@@ -13,7 +13,7 @@ import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/src/styles/ag-grid.scss";
 import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
-import { Refresh } from '@material-ui/icons'
+import {MdRefresh} from "react-icons/md";
 import 'react-month-picker/css/month-picker.css'
 import MonthPicker from 'react-month-picker'
 import moment from 'moment-timezone'
@@ -94,7 +94,7 @@ export default class WebCalculateTab extends Component {
                         {headerName: '품목',width: 250, field: 'goodsNm', cellStyle:{"textAlign":"left", 'background-color': '#f1fff1'}, filterParams:{clearButton: true}},
                         {headerName: '상품구분',width: 90, field: 'timeSaleGoods', cellStyle:{"textAlign":"left", 'background-color': '#f1fff1'}, filterParams:{clearButton: true},
                             valueGetter: function(params) {
-                                return params.data.timeSaleGoods? "포텐타임" : params.data.blyTimeGoods? "블리타임" : "일반상품";
+                                return params.data.timeSaleGoods? "포텐타임" : params.data.blyTimeGoods? "블리타임" : params.data.superRewardGoods? "슈퍼리워드" : "일반상품";
                             }
                         },
                         {headerName: '환불여부',width: 110, field: 'refundFlag', cellStyle:{"textAlign":"left", 'background-color': '#f1fff1'}, filterParams:{clearButton: true},
@@ -140,7 +140,7 @@ export default class WebCalculateTab extends Component {
                     children: [
                         {headerName: '수수료율(%)',width: 110, field: 'feeRate', cellStyle: {"textAlign":"left", 'background-color': '#ffe3ee'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true},
                             valueGetter: function(params) {
-                                return params.data.timeSaleGoods ? "-" : params.data.blyTimeGoods ? "-" : params.data.feeRate;
+                                return params.data.timeSaleGoods ? "-" : (params.data.blyTimeGoods ? "-" : (params.data.superRewardGoods ? "-" : params.data.feeRate));
                             }
                         },
                         {headerName: '수수료(E)',width: 100, field: 'totalFeeRateMoney', cellStyle: {"textAlign":"left", 'background-color': '#ffe3ee'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true},
@@ -211,27 +211,14 @@ export default class WebCalculateTab extends Component {
     }
 
     getUser = async() => {
-
         //로그인 체크
-        const {data: userType} = await getLoginUserType();
-        if(userType === 'consumer') {
-            //소비자용 메인페이지로 자동이동.
-            Webview.movePage('/home/1');
-        } else if (userType === 'producer') {
-            let {data:loginUser} = await getProducer();
-
-            console.log('loginUser : ', loginUser);
-
-            if(!loginUser){
-                this.props.history.push('/producer/webLogin')
-            } else {
-                this.setState({
-                    loginUser: loginUser
-                })
-            }
-        } else {
+        const loginUser = await getLoginProducerUser();
+        if(!loginUser) {
             this.props.history.push('/producer/webLogin')
         }
+        this.setState({
+            loginUser: loginUser
+        })
     }
 
     // Ag-Grid Cell 스타일 기본 적용 함수
@@ -306,7 +293,7 @@ export default class WebCalculateTab extends Component {
     }
 
     search = async() => {
-        let {data} = await getPaymentProducer(this.state.loginUser.producerNo, this.state.searchMonthValue.year, this.state.searchMonthValue.month);
+        let {data} = await getPaymentProducer(this.state.loginUser.uniqueNo, this.state.searchMonthValue.year, this.state.searchMonthValue.month);
         // console.log(data);
         let isSearchDataExist = data.length > 0;
 
@@ -391,12 +378,12 @@ export default class WebCalculateTab extends Component {
 
         const excelData = this.state.data.map((orderDetail) => {
             const orderDate = ComUtil.utcToString(orderDetail.orderDate,'YYYY-MM-DD HH:mm');
-            const timeSaleGoods = orderDetail.timeSaleGoods ? "포텐타임" : "일반상품";
+            const timeSaleGoods = orderDetail.timeSaleGoods ? "포텐타임" : ( orderDetail.blyTimeGoods? "블리타임" : ( orderDetail.superRewardGoods? "슈퍼리워드" : "일반상품" ) );
             const vatFlag = orderDetail.vatFlag ? "과세" : "비과세";
             const refundFlag = orderDetail.refundFlag ? "환불" : "-";
             const timeSaleSupportPrice = orderDetail.totalSupportPrice / orderDetail.orderCnt;
             const totalGoodsPrice = orderDetail.totalGoodsPrice + orderDetail.totalSupportPrice + orderDetail.deliveryFee;
-            const feeRate = orderDetail.timeSaleGoods ? " " : orderDetail.blyTimeGoods ? " " : orderDetail.feeRate;
+            const feeRate = orderDetail.timeSaleGoods ? " " : orderDetail.blyTimeGoods ? " " : orderDetail.superRewardGoods? "" :orderDetail.feeRate;
             const feeRateMoney = (orderDetail.currentPrice * orderDetail.feeRate / 100).toFixed(0) * orderDetail.orderCnt;
             const supplyValue = orderDetail.vatFlag ? Math.round(orderDetail.simplePayoutAmount / 1.1) : 0;
             const vat = orderDetail.vatFlag ? Math.round(orderDetail.simplePayoutAmount / 1.1 * 0.1) : 0;
@@ -457,7 +444,7 @@ export default class WebCalculateTab extends Component {
                                 <Button color={'info'} size={'sm'} block  style={{width: '100px'}}
                                         onClick={this.onRefreshClick}>
                                     <div className="d-flex">
-                                        <Refresh fontSize={'small'}/> 조회
+                                        <MdRefresh/> 조회
                                     </div>
                                 </Button>
                             </div>

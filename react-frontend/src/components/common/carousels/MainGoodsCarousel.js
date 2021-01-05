@@ -1,22 +1,18 @@
-import React, {Fragment} from 'react'
-import ReactDOM from 'react-dom'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { MainGoodsCard } from '../cards'
 import ReactSwipe from 'react-swipe'
 import Style from './MainGoodsCarousel.module.scss'
-import { Badge } from 'reactstrap'
-import { NavigateBefore, NavigateNext } from '@material-ui/icons'
-import { Server, Const } from '../../Properties'
-import ComUtil from '../../../util/ComUtil'
-const myDiv = <Fragment><div style={{background: 'gray'}}>test</div><div style={{background: 'gray'}}>test</div><div style={{background: 'gray'}}>test</div><div style={{background: 'gray'}}>test</div></Fragment>
+import {MdNavigateBefore, MdNavigateNext} from 'react-icons/md'
+import { Server } from '../../Properties'
 
 const MainGoodsCarousel = (props) => {
     const serverImageUrl = Server.getImageURL()
     let reactSwipeEl
     return (
         <div className={Style.container}>
-            <i className={Style.btnBefore} onClick={() => reactSwipeEl.prev()}><NavigateBefore fontSize={'large'}/></i>
-            <i className={Style.btnNext} onClick={() => reactSwipeEl.next()}><NavigateNext fontSize={'large'}/></i>
+            <i className={Style.btnBefore} onClick={() => reactSwipeEl.prev()}><MdNavigateBefore /></i>
+            <i className={Style.btnNext} onClick={() => reactSwipeEl.next()}><MdNavigateNext /></i>
             <ReactSwipe
                 className="carousel"
                 swipeOptions={{ continuous: false }}

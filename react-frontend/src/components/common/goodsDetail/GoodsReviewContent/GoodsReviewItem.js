@@ -1,6 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react'
-import { Server } from '~/components/Properties'
-import { Button } from 'reactstrap'
+import React, { Fragment, useState } from 'react'
 import { IconStarGroup, ImageGalleryModal } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
 import { likedGoodsReview } from '~/lib/shopApi'

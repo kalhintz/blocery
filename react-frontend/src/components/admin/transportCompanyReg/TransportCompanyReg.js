@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Button, Input, FormGroup, Label, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import { addTransportCompany, delTransportCompany, getTransportCompanyByNo, getIsDuplicatedTransportCode } from '../../../lib/adminApi'
+import { addTransportCompany, delTransportCompany, getTransportCompanyByNo, getIsDuplicatedTransportCode } from '~/lib/adminApi'
 import { ModalConfirm } from '../../../components/common'
 import PropTypes from 'prop-types'
 

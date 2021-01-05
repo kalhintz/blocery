@@ -1,8 +1,6 @@
-import React, {useState, useEffect} from 'react'
+import React from 'react'
 import Css from './DetailPaymentInfoCard.module.scss'
-import classNames from 'classnames'
 import ComUtil from '~/util/ComUtil'
-import {Input, Button, Collapse} from 'reactstrap'
 import {Icon} from '~/components/common/icons'
 
 

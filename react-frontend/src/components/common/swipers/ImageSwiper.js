@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Swiper from 'react-id-swiper'
 import {Server} from '~/components/Properties'
 

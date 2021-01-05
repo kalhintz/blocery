@@ -1,13 +1,11 @@
 import React, { Component, Fragment } from 'react'
-import { Home, List, Menu, PhotoLibrary, Face } from '@material-ui/icons'
 import CssConsumer from './ShopTabBar.module.scss'
 import CssProducer from './TabBarProducer.module.scss'
 
 
 import PropTypes from 'prop-types'
 import { tabBarData } from '../../Properties'
-import ComUtil from '../../../util/ComUtil'
-import { getLoginUserType } from '../../../lib/loginApi'
+import { getLoginUserType } from '~/lib/loginApi'
 import { Link } from 'react-router-dom'
 
 import IconMenu from '~/images/icons/tabBar/ic_menu.svg'    //카테고리

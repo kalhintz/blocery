@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Button, Input } from 'reactstrap'
 import { getAllProducers, changeProducerPayoutBlct, getProducerFeeRate, reserveFeeRateToProducer } from '~/lib/adminApi'
 import { scOntGetBalanceOfBlct } from '~/lib/smartcontractApi'

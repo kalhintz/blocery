@@ -1,27 +1,21 @@
 import React, { Component, Fragment } from 'react';
-import { Container, Row, Col, Button, Badge, Input, Label, FormGroup } from 'reactstrap'
-import { getLoginUser, getLoginUserType } from '~/lib/loginApi'
-import { getProducer } from '~/lib/producerApi'
-import { getProducerGoods, getProducerFilterGoods, updateSalePaused } from '~/lib/goodsApi'
+import { Container, Row, Col, Button, Badge, FormGroup } from 'reactstrap'
+import { getLoginProducerUser } from '~/lib/loginApi'
+import { getProducerFilterGoods } from '~/lib/goodsApi'
 import { getServerToday } from '~/lib/commonApi'
-import { Webview } from '~/lib/webviewApi'
 import { getItems } from '~/lib/adminApi'
 import Select from 'react-select'
-import { Spinner, GoodsItemCard, ProducerFullModalPopupWithNav, Cell, ModalPopup, RadioButtons, ModalConfirm } from '~/components/common'
-import { GoodsReg, DirectGoodsReg, WebGoodsReg, WebDirectGoodsReg } from '~/components/producer'
+import { ProducerFullModalPopupWithNav, Cell, ModalPopup } from '~/components/common'
+import { WebGoodsReg, WebDirectGoodsReg } from '~/components/producer'
 import ComUtil from '~/util/ComUtil'
-import { faClock, faBolt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ExcelDownload } from '~/components/common'
+
+import {FaClock, FaBolt} from "react-icons/fa";
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/src/styles/ag-grid.scss";
 import "ag-grid-community/src/styles/ag-theme-balham.scss";
-
-import { Refresh } from '@material-ui/icons'
-
-import { autoLoginCheckAndTry } from "~/lib/loginApi";
 
 export default class WebGoodsList extends Component {
     constructor(props) {
@@ -215,7 +209,7 @@ export default class WebGoodsList extends Component {
                     <span className='small'>예상발송일 : {(rowData.expectShippingStart ? ComUtil.utcToString(rowData.expectShippingStart, 'YY.MM.DD') : '-')} ~ {(rowData.expectShippingEnd ? ComUtil.utcToString(rowData.expectShippingEnd, 'YY.MM.DD') : '-')}</span><br/>
                     <span>
 
-                        { rowData.directGoods ? <FontAwesomeIcon icon={faBolt} className={'text-warning mr-1'} /> : <FontAwesomeIcon icon={faClock} className={'text-info mr-1'} /> }
+                        { rowData.directGoods ? <FaBolt className={'text-warning mr-1'} /> : <FaClock className={'text-info mr-1'} /> }
                         <Badge color='success' children={rowData.itemName}/>{' '}
                         <Badge color='success' children={rowData.breedNm} />{' '}
                         <Badge color='success' children={`${rowData.packAmount} ${rowData.packUnit}`}/>{' '}
@@ -287,7 +281,7 @@ export default class WebGoodsList extends Component {
     }
     //Ag-Grid Cell 예약/즉시판매상품 여부 렌더러
     directGoodsRenderer = ({value, data:rowData}) => {
-        return value ? <FontAwesomeIcon icon={faBolt} className={'text-warning'} /> : <FontAwesomeIcon icon={faClock} className={'text-info'} />
+        return value ? <FaBolt className={'text-warning'}/> : <FaClock className={'text-info'} />
     }
     //Ag-Grid Cell 숫자콤마적용 렌더러
     formatCurrencyRenderer = ({value, data:rowData}) => {
@@ -323,7 +317,7 @@ export default class WebGoodsList extends Component {
         //console.log("diffSaleResult",diffSaleResult);
         return (
             <div>
-                { rowData.directGoods ? <FontAwesomeIcon icon={faBolt} className={'text-warning mr-1'} /> : <FontAwesomeIcon icon={faClock} className={'text-info mr-1'} /> }
+                { rowData.directGoods ? <FaBolt className={'text-warning mr-1'} /> :<FaClock className={'text-info mr-1'} /> }
                 <Badge color='success' children={rowData.itemName}/>{' '}
                 <Badge color='success' children={rowData.breedNm} />{' '}
                 <Badge color='success' children={`${rowData.packAmount} ${rowData.packUnit}`}/>{' '}
@@ -407,23 +401,11 @@ export default class WebGoodsList extends Component {
     }
 
     checkLogin = async () => {
-        //자동로그인 check & try
-        await autoLoginCheckAndTry();
-
         //로그인 체크
-        const {data: userType} = await getLoginUserType();
+        const loginInfo = await getLoginProducerUser();
         //console.log('userType',this.props.history)
-        if(userType == 'consumer') {
-            //소비자용 메인페이지로 자동이동.
-            Webview.movePage('/home/1');
-        } else if (userType == 'producer') {
-            let loginUser = await getProducer();
-            if(!loginUser){
-                this.props.history.push('/producer/webLogin')
-            }
-        } else {
+        if(!loginInfo) {
             this.props.history.push('/producer/webLogin')
-            // Webview.openPopup('/login?userType=producer', true); // 생산자 로그인 으로 이동팝업
         }
     }
 
@@ -779,7 +761,7 @@ export default class WebGoodsList extends Component {
                                     <Container className={''}>
                                         <Row>
                                             <Col xs={6}>
-                                                <Button className={'mb-2'} color={'info'} size={'lg'} block onClick={this.onGoodsPopupClick.bind(this, 'reservedGoods')}><FontAwesomeIcon icon={faClock}/> 예약 상품</Button>
+                                                <Button className={'mb-2'} color={'info'} size={'lg'} block onClick={this.onGoodsPopupClick.bind(this, 'reservedGoods')}><FaClock />예약 상품</Button>
                                                 <div className={'small text-center text-secondary f6'}>
                                                     <div className={'mb-2'}>
                                                         - 채소 등과 같이 <b className={'text-info'}>재배기간 동안 주문을 받고 수확/출하 후 일괄 발송하는 상품</b>입니다.
@@ -790,7 +772,7 @@ export default class WebGoodsList extends Component {
                                                 </div>
                                             </Col>
                                             <Col xs={6}>
-                                                <Button className={'mb-2'} color={'warning'} size={'lg'} block onClick={this.onGoodsPopupClick.bind(this, 'directGoods')}><FontAwesomeIcon icon={faBolt}/> 즉시 상품</Button>
+                                                <Button className={'mb-2'} color={'warning'} size={'lg'} block onClick={this.onGoodsPopupClick.bind(this, 'directGoods')}><FaBolt />즉시 상품</Button>
                                                 <div className={'small text-center text-secondary f6'}>
                                                     <div className={'mb-2'}>
                                                         - 상품이 판매가 되면  <b className={'text-warning'}>즉시 발송하는 상품</b>으로 소비자와 판매가를 입력할 수 있습니다.

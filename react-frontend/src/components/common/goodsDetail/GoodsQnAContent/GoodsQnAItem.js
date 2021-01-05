@@ -1,10 +1,7 @@
 import React, {Fragment, useState} from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faComments } from '@fortawesome/free-solid-svg-icons'
+import {FaComments} from 'react-icons/fa'
 import ComUtil from '~/util/ComUtil'
-
 import { Hr } from '~/components/common'
-
 const whiteSpace = {whiteSpace: 'pre-line'}
 
 const GoodsQnAItem = (props) => {
@@ -40,7 +37,7 @@ const GoodsQnAItem = (props) => {
                     <Fragment>
                         <hr className='m-0'/>
                         <div className={'p-3 text-center text-secondary'}>
-                            <FontAwesomeIcon icon={faComments} className={'mr-2'} />
+                            <FaComments className={'mr-2'} />
                             판매자의 답변을 기다리고 있습니다
                         </div>
                     </Fragment>
@@ -52,7 +49,6 @@ const GoodsQnAItem = (props) => {
                         <hr className='m-0'/>
                         <div className={'p-3 f6 text-dark bg-light'}>
 
-                            {/*<FontAwesomeIcon icon={faCommentDots}/>*/}
                             <div className='mb-2'>
                                 <span className={'mr-2'}>L</span>
                                 <span className={'text-info mr-2'}>판매자 답변</span>

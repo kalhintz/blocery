@@ -5,11 +5,20 @@ import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { Button } from 'reactstrap'
 import { ExcelDownload } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
+import moment from 'moment-timezone'
 
 import { getAllBlctBountyHistory } from "~/lib/eventApi"
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/src/stylesheets/datepicker.scss";
+
 
 const BountyEventHistory = (props) => {
+
+    const [search, setSearch] = useState({
+        year:moment().format('YYYY')
+    });
+
     const [agGrid, setAgGrid] = useState({
         columnDefs: [
             {headerName: "날짜", field: "date", sort: "desc", width:170},
@@ -27,43 +36,51 @@ const BountyEventHistory = (props) => {
         },
         overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
         overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
-    })
+    });
 
     const [dataList, setDataList] = useState([]);
     const [excelData, setDataExcel] = useState([]);
     const [totalBlct, setTotalBlct] = useState(0);
 
-    useEffect(()=> {
-        // console.log('useEffect dataList : ', dataList)
+    useEffect(() => {
+        async function getData() {
+            await getSearch();
+        }
+        getData();
+    }, []);
 
+    useEffect(()=> {
         async function excelData() {
             await setExcelData();
         }
-
         excelData();
-
     }, [dataList]);
 
     useEffect(() => {
-
         async function getData() {
-            const {data} = await getAllBlctBountyHistory();
-            console.log("getAllBlctBountyHistory",data);
-
-            let r_toto_blct_sum = 0;
-
-            data.map(item => {
-                r_toto_blct_sum = r_toto_blct_sum + item.amount ;
-                let date = item.date ? ComUtil.utcToString(item.date,'YYYY-MM-DD HH:mm'):null;
-                item.date = date;
-            });
-            console.log("r_toto_blct_sum",r_toto_blct_sum);
-            setTotalBlct(r_toto_blct_sum);
-            setDataList(data)
+            await getSearch();
         }
         getData();
+    }, [search]);
 
-    }, []);
+    const getSearch = async () => {
+        const params = {
+            year:search.year
+        };
+        const {data} = await getAllBlctBountyHistory(params);
+        console.log("getAllBlctBountyHistory",data);
+
+        let r_toto_blct_sum = 0;
+
+        data.map(item => {
+            r_toto_blct_sum = r_toto_blct_sum + item.amount ;
+            let date = item.date ? ComUtil.utcToString(item.date,'YYYY-MM-DD HH:mm'):null;
+            item.date = date;
+        });
+        //console.log("r_toto_blct_sum",r_toto_blct_sum);
+        setTotalBlct(r_toto_blct_sum);
+        setDataList(data)
+    };
 
     const setExcelData = async () => {
         let excelData = await getExcelData();
@@ -94,40 +111,61 @@ const BountyEventHistory = (props) => {
         }]
     };
 
+    const onSearchDateChange = (date) => {
+        //console.log("",date.getFullYear())
+        const search = Object.assign({}, search);
+        search.year = date.getFullYear();
+        setSearch(search);
+    }
+
+    const ExampleCustomDateInput = ({ value, onClick }) => (
+        <Button
+            color="secondary"
+            active={true}
+            onClick={onClick}>검색 {value} 년</Button>
+    );
+
     return(
         <div>
-            <div className="d-flex"> <div>총 지급된 BLCT : {totalBlct} </div>
-
-                <div className="ml-2">
-                    <ExcelDownload data={excelData}
-                                   fileName="이벤트 BLCT 지급목록"
-                                   button={<Button color={'success'} size={'sm'} block>
-                                       <div>
-                                           엑셀 다운로드
-                                       </div>
-                                   </Button>}/>
+            <div className="d-flex align-items-center p-1">
+                <div className='ml-2'>
+                    <DatePicker
+                        selected={new Date(moment().set('year',search.year))}
+                        onChange={onSearchDateChange}
+                        showYearPicker
+                        dateFormat="yyyy"
+                        customInput={<ExampleCustomDateInput />}
+                    />
                 </div>
-
+                <div className='ml-2 mr-2'>
+                    <Button color={'info'} onClick={getSearch}>검색</Button>
+                </div>
+                <ExcelDownload data={excelData} size={'md'} fileName="이벤트 BLY 지급목록"/>
+                <div className="ml-2">
+                    총 지급된 BLY : {totalBlct}
+                </div>
             </div>
 
-            <div
-                className="ag-theme-balham"
-                style={{
-                    height: '700px'
-                }}
-            >
-                <AgGridReact
-                    enableSorting={true}
-                    enableFilter={true}
-                    columnDefs={agGrid.columnDefs}
-                    defaultColDef={agGrid.defaultColDef}
-                    rowSelection={'single'}  //멀티체크 가능 여부
-                    enableColResize={true}
-                    overlayLoadingTemplate={agGrid.overlayLoadingTemplate}
-                    overlayNoRowsTempalte={agGrid.overlayNoRowsTemplate}
-                    rowData={dataList}
-                    //onRowClicked={selectRow}
-                />
+            <div className="p-1">
+                <div
+                    className="ag-theme-balham"
+                    style={{
+                        height: '600px'
+                    }}
+                >
+                    <AgGridReact
+                        enableSorting={true}
+                        enableFilter={true}
+                        columnDefs={agGrid.columnDefs}
+                        defaultColDef={agGrid.defaultColDef}
+                        rowSelection={'single'}  //멀티체크 가능 여부
+                        enableColResize={true}
+                        overlayLoadingTemplate={agGrid.overlayLoadingTemplate}
+                        overlayNoRowsTempalte={agGrid.overlayNoRowsTemplate}
+                        rowData={dataList}
+                        //onRowClicked={selectRow}
+                    />
+                </div>
             </div>
         </div>
     )

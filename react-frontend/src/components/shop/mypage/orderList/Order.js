@@ -38,9 +38,9 @@ const Order = (props) => {
 
     return(
         <>
-        <ShopXButtonNav fixed underline history={props.history} historyBack> 주문 상세내역 </ShopXButtonNav>
+        <ShopXButtonNav fixed underline historyBack> 주문 상세내역 </ShopXButtonNav>
         {
-            orderSeqs.map(orderSeq => <OrderDetail orderSeq={orderSeq}/>)
+            orderSeqs.map(orderSeq => <OrderDetail key={`orderDetail_${orderSeq}`} orderSeq={orderSeq}/>)
         }
         </>
     )

@@ -1,14 +1,12 @@
-import React, {Fragment, useState, useEffect} from 'react'
+import React, {Fragment} from 'react'
 import PropTypes from 'prop-types'
 import { QtyInputGroup } from '../../common'
-import { Label } from 'reactstrap';
-import { Checkbox } from '@material-ui/core'
-import { CloseSharp } from '@material-ui/icons'
+import {MdClose} from 'react-icons/md'
+
+import Checkbox from '~/components/common/checkboxes/Checkbox'
 import ComUtil from '../../../util/ComUtil'
 import { Server } from '../../Properties'
-
 import { Div, Img } from '~/styledComponents/shared'
-import Style from './CartList.module.scss'
 import {Link} from 'react-router-dom'
 
 const CartItem = (props) => {
@@ -71,9 +69,16 @@ const CartItem = (props) => {
                 {/* 제품명 박스 start */}
                 {/*<div className='text-secondary mb-2'>{props.farmName}</div>*/}
                 <div className='d-flex align-items-center mb-3'>
-                    <Checkbox id={checkBoxId} className={Style.mdCheckbox} color={'default'} checked={props.checked} onChange={onCheckboxChange} />
-                    <Label for={checkBoxId} className='m-0'>{props.goodsNm} <span className='text-danger f6'>{props.directGoods !== true && ' (예약상품/묶음배송 불가)'}</span></Label>
-                    <div className='ml-auto'><span onClick={onDeleteClick}><CloseSharp /></span></div>
+                    {/*<Checkbox id={checkBoxId} className={Style.mdCheckbox} color={'default'} checked={props.checked} onChange={onCheckboxChange} />*/}
+
+                    <Checkbox bg={'green'} onChange={onCheckboxChange} checked={props.checked} m={10} size={'sm'}>
+                        {props.goodsNm}
+                        <span className='text-danger f6'>{props.directGoods !== true && ' (예약상품/묶음배송 불가)'}</span>
+                    </Checkbox>
+
+
+                    {/*<Label for={checkBoxId} className='m-0'>{props.goodsNm} <span className='text-danger f6'>{props.directGoods !== true && ' (예약상품/묶음배송 불가)'}</span></Label>*/}
+                    <div className='ml-auto'><span onClick={onDeleteClick}><MdClose size={22}/></span></div>
                 </div>
                 {/* 제품명 박스 end */}
 

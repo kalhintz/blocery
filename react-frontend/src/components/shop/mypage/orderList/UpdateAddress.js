@@ -1,9 +1,8 @@
 import React, { Fragment, Component } from 'react'
-import { Container, Label, Row, Col, Input, InputGroup, FormGroup, Button,Modal, ModalHeader, ModalBody, ModalFooter, Table, Form, Badge } from 'reactstrap'
-import { JusoSearch } from '~/components/common'
-import { updateReceiverInfo } from '../../../../lib/shopApi'
-import ComUtil from '../../../../util/ComUtil'
-
+import { Container, Label, Row, Col, Input, InputGroup, FormGroup, Button,Modal } from 'reactstrap'
+import { updateReceiverInfo } from '~/lib/shopApi'
+import ComUtil from '~/util/ComUtil'
+import DaumPostcode from 'react-daum-postcode';
 export default class UpdateAddress extends Component {
     constructor(props) {
         super(props);
@@ -51,11 +50,32 @@ export default class UpdateAddress extends Component {
         }));
     }
 
-    jusoModalOnChange = (obj) => {
+    jusoModalOnChange = (data) => {
+
+        let zipNo = data.zonecode;
+        let fullAddress = data.address;
+        let extraAddress = '';
+
+        if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+            fullAddress = data.roadAddress;
+        } else { // 사용자가 지번 주소를 선택했을 경우(J)
+            fullAddress = data.jibunAddress;
+        }
+
+        if (data.addressType === 'R') {
+            if (data.bname !== '') {
+                extraAddress += data.bname;
+            }
+            if (data.buildingName !== '') {
+                extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+            }
+            fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+        }
+        let v_address = fullAddress;
 
         const order = Object.assign({}, this.state.order);
-        order.receiverZipNo = obj.zipNo;
-        order.receiverAddr = obj.address;
+        order.receiverZipNo = zipNo;
+        order.receiverAddr = v_address;
 
         this.setState({
             order
@@ -138,14 +158,13 @@ export default class UpdateAddress extends Component {
                 </Container>
                 <div>
                     {/* 주소검색 모달 */}
-                    <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
-                        <ModalHeader toggle={this.modalToggle}> 주소 검색 </ModalHeader>
-                        <ModalBody>
-                            <JusoSearch onChange={this.jusoModalOnChange} />
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="secondary" onClick={this.modalToggle}>취소</Button>
-                        </ModalFooter>
+                    <Modal isOpen={this.state.modal} toggle={this.modalToggle}>
+                        <div style={{padding:0, height:'450px'}}>
+                            <DaumPostcode
+                                style={{height:'450px'}}
+                                onComplete={this.jusoModalOnChange}
+                            />
+                        </div>
                     </Modal>
                 </div>
 

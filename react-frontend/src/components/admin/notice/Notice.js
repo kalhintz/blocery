@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { getNoticeByNoticeNo } from '~/lib/adminApi'
-import ComUtil from '~/util/ComUtil'
 import { NoticeTemplate } from '~/components/common/templates'
 const Notice = (props) => {
 

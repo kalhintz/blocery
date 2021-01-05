@@ -1,19 +1,20 @@
 //Home.js 원본
-import React, { Fragment, useState, useEffect, useRef, lazy, Suspense } from 'react'
+import React, { Fragment, useEffect, lazy, Suspense } from 'react'
 import { Route, Switch } from 'react-router-dom'
 import { ModalPopup, Sticky } from '~/components/common'
 import HeaderSectionTab from './headerSectionTab'
-import { NotificationsActive } from '@material-ui/icons'
+import {MdNotificationsActive} from "react-icons/md";
 import EventPopup from './EventPopup'
 
 import { B2cHeader } from'~/components/common/headers'
-import { BLCT_TO_WON, exchangeWon2BLCTHome } from "~/lib/exchangeApi"
+import { BLCT_TO_WON } from "~/lib/exchangeApi"
 
 const TodaysDeal = lazy(() => import('./todaysDeal'))
 const BlyTime  = lazy(() => import('./blyTime'))
 const TimeSale  = lazy(() => import('./timeSale'))
 const NewestGoods  = lazy(() => import('./newestGoods'))
 const DeadlineGoods  = lazy(() => import('./deadlineGoods'))
+const SuperReward  = lazy(() => import('./superReward'))
 const BestDeal  = lazy(() => import('./bestDeal'))
 const FavoriteGoods  = lazy(() => import('./favoriteGoods'))
 
@@ -50,10 +51,15 @@ const Home = (props) => {
             <div>
                 <Suspense fallback={''}>
                     <Switch>
+                        <Route exact path="/" component={TodaysDeal} />
                         <Route path="/home/1" component={TodaysDeal} />
+
                         <Route path="/home/2" component={BlyTime} />
                         <Route path="/home/3" component={TimeSale} />
+
+                        <Route path="/home/superReward" component={SuperReward} />
                         <Route path="/home/4" component={DeadlineGoods} />
+
                         <Route path="/home/5" component={BestDeal} />
                         <Route path="/home/6" component={NewestGoods} />
                         <Route path="/home/7" component={FavoriteGoods} />
@@ -70,7 +76,7 @@ const Home = (props) => {
                         title={
                             <Fragment>
                                 <div style={{display:'flex', alignItems:'center'}}>
-                                    <NotificationsActive/>{' '}
+                                    <MdNotificationsActive/>{' '}
                                     <div>Blocery 이벤트 종료 알림</div>
                                 </div>
                             </Fragment>

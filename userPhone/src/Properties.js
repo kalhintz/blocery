@@ -4,8 +4,8 @@ export const Server = {
 
     //private TEST 용도
     _isDeviceEmulator: function() {
-        // return true;  //폰에서도 pc개발환경 강제 접속용 - 안드로이드는 adb reverse tcp:8080 tcp:8080 -> 3000, 8080 둘 다 필요
-        return DeviceInfo.isEmulatorSync(); // master소스는 항상 이걸로 세팅.   4.0에서 Sync()
+        return true;  //폰에서도 pc개발환경 강제 접속용 - 안드로이드는 adb reverse tcp:8080 tcp:8080 -> 3000, 8080 둘 다 필요
+        // return DeviceInfo.isEmulatorSync(); // master소스는 항상 이걸로 세팅.   4.0에서 Sync()
     },
 
     /* 중요: google Play 배포용도 */
@@ -14,7 +14,7 @@ export const Server = {
         return true;   //AWS서버 이용
     },
 
-    majorB2cVersion: 3, //강제업그레이듯시 단말앱 먼저 버전 변경후 배포하고, 한참 시간이 지난 후 서버support버전을 변경하도록 함.
+    majorB2cVersion: 4, //강제업그레이듯시 단말앱 먼저 버전 변경후 배포하고, 한참 시간이 지난 후 서버support버전을 변경하도록 함.
     useTabMenu: false, //서버버전이 0(.xx)로 시작하면 true로 세팅해서 베타이전버전 대응. 1.xx이후에서는 tabMenu삭제
 
     getServerURL: function() {
@@ -29,7 +29,7 @@ export const Server = {
         return isProducer ? (this.getServerURL()+'/producer/goodsList') : (this.getServerURL() + '/category');
     },
     getSearchPage: function(isProducer) {
-        return  isProducer ? (this.getServerURL() + '/producer/orderList') : (this.getServerURL()+'/search');
+        return  isProducer ? (this.getServerURL() + '/producer/orderList') : (this.getServerURL()+'/mdPick');
     },
     // getDiaryPage: function(isProducer) {
     //     return  isProducer ? (this.getServerURL() + '/producer/orderList') : (this.getServerURL()+'/fintech/home/1');

@@ -74,29 +74,61 @@ export default class ComUtil {
     }
 
     /*******************************************************
+     INT 날짜타입 => String 변환
+     @Param : intDate, formatter
+     @Return : yyyy-MM-dd (formatter 형식에 맞게 반환)
+     *******************************************************/
+    static intToDateMoment(intDate) {
+
+        let strDate = intDate.toString();
+        let dateTo = strDate.replace(/\-/g,'').replace(/\./g,'').replace(/\//g,'');
+
+        let pYear 	= dateTo.substr(0,4);
+        let pMonth 	= dateTo.substr(4,2) - 1;
+        let pDay 	= dateTo.substr(6,2);
+
+        const vDate = new Date(pYear, pMonth, pDay);
+
+        const utcDate = moment(vDate);
+        return utcDate.tz(moment.tz.guess());
+    }
+
+    /*******************************************************
+     INT 날짜타입 => String 변환
+     @Param : intDate, formatter
+     @Return : yyyy-MM-dd (formatter 형식에 맞게 반환)
+     *******************************************************/
+    static intToDateString(intDate, formatter) {
+
+        let strDate = intDate.toString();
+        let dateTo = strDate.replace(/\-/g,'').replace(/\./g,'').replace(/\//g,'');
+
+        let pYear 	= dateTo.substr(0,4);
+        let pMonth 	= dateTo.substr(4,2) - 1;
+        let pDay 	= dateTo.substr(6,2);
+
+        const vDate = new Date(pYear, pMonth, pDay);
+
+        const format = formatter ? formatter : "YYYY-MM-DD";
+
+        const utcDate = moment(vDate);
+        return utcDate.tz(moment.tz.guess()).format(format);
+    }
+
+    /*******************************************************
      UTC 날짜타입 => String 변환
      @Param : utcTime, formatter
      @Return : yyyy-MM-dd (formatter 형식에 맞게 반환)
      *******************************************************/
     static utcToString(utcTime, formatter) {
 
-        const format = formatter ? formatter : "YYYY.MM.DD"
+        if (!utcTime)
+            return null
+
+        const format = formatter ? formatter : "YYYY-MM-DD";
 
         const utcDate = moment(utcTime);
         return utcDate.tz(moment.tz.guess()).format(format)
-
-        /*
-        var d = new Date(utcTime);
-
-        // UTC version of the date
-        var yyyy = d.getUTCFullYear();
-        var mmUTC = this.zeroPad(d.getUTCMonth() + 1);
-        var ddUTC = this.zeroPad(d.getUTCDate());
-        var hhUTC = this.zeroPad(d.getUTCHours());
-        let minUTC = this.zeroPad(d.getUTCMinutes());
-
-        return yyyy + '-' + mmUTC + '-' + ddUTC + ' ' + hhUTC + ':' + minUTC;
-        */
     }
 
     /*******************************************************
@@ -432,9 +464,7 @@ export default class ComUtil {
         const length = moment.duration( future.diff(now)).format(format).length
 
         let result
-        if(length === 11) {
-            result = moment.duration( future.diff(now)).format(format).slice(0,6) +"00:" + moment.duration( future.diff(now)).format(format).slice(6,11)
-        } else if(length === 8) {
+        if(length === 8) {
             result = moment.duration( future.diff(now)).format(format).slice(0,6) + "00:00:" + moment.duration( future.diff(now)).format(format).slice(6,8)
         } else {
             result = moment.duration( future.diff(now)).format(format)
@@ -499,6 +529,19 @@ export default class ComUtil {
     }
 
     /**
+     * 현재 환경이 모바일 App-iOS 이면서 apple사의 검수중일때 kakaoLogin방지용.(애플에서 카카오로그인 하려면 apple로그인도 해야한다고 202004월부터 정책)
+     */
+    static isMobileAppIosAppleReivew() {
+        // alert(navigator.userAgent);
+
+        // if (navigator.userAgent.startsWith('BloceryAppQR-iOS')) {  //test code
+        if (navigator.userAgent.startsWith('BloceryAppQR-iOS-apple')) { //real code
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 현재 환경이 모바일 App(React Native App)이고 QR이 지원되는 경우에만 true 반환
      * (android, ios 모두 가능)
      */
@@ -508,6 +551,24 @@ export default class ComUtil {
         }
         return false;
     }
+
+    /**
+     * 현재 환경이 모바일 Web일 때, true 반환
+     */
+    static isMobileWeb() {
+        if (this.isPcWeb() || this.isMobileApp()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 현재 환경이 IOS 모바일 Web일 때, true 반환
+     */
+    static isMobileWebIos() {
+        return navigator.userAgent.match(/iPhone|iPad|iPod/i) == null ? false : true;
+    }
+
 
     /**
      * 현재 환경이 PC용 웹브라우저일 때, true 반환 -> 생산자쪽에서 화면을 크게 그리는데 사용
@@ -805,4 +866,24 @@ export default class ComUtil {
             return newValue
         }
     }
+
+    static doubleAdd(a, b) {
+        return (ComUtil.toNum(a) + ComUtil.toNum(b)).toFixed(2);
+    }
+
+    static doubleSub(a, b) {
+        return (ComUtil.toNum(a) - ComUtil.toNum(b)).toFixed(2);
+    }
+    static getFirstImageSrc(images, isThumbnail = true) {
+
+        if (images && images.length > 0) {
+            const image = images[0]
+            const imageTypeUrl = isThumbnail ? Server.getThumbnailURL() : Server.getImageURL()
+            const src = imageTypeUrl + image.imageUrl;
+
+            return src
+        }
+        return 'https://askleo.askleomedia.com/wp-content/uploads/2004/06/no_image-300x245.jpg'
+    }
+
 }

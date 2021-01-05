@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { Route, Switch, Redirect } from 'react-router-dom'
 
-import { Header } from '../components/shop/header'
+import Header from '../components/shop/header'
 import { ImageCompressor, KycImageUploader } from '../components/sample'
 
 class SampleContainer extends Component {

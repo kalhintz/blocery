@@ -1,10 +1,10 @@
 import React, { Component, Fragment } from 'react'
 import { Container, Row, Col, Button, FormGroup, Label, InputGroup, Input, Fade, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import { ShopXButtonNav } from '../../../common/index'
-import { Webview } from "../../../../lib/webviewApi";
-import { getConsumerByConsumerNo } from "../../../../lib/shopApi";
-import { getProducerByProducerNo } from "../../../../lib/producerApi";
-import { Server } from '../../../Properties';
+import { ShopXButtonNav } from '~/components/common/index'
+import { Webview } from "~/lib/webviewApi";
+import { getConsumerByConsumerNo } from "~/lib/shopApi";
+import { getProducerByProducerNo } from "~/lib/producerApi";
+import { Server } from '~/components/Properties';
 import axios from 'axios'
 
 export default class CheckCurrentValword extends Component {
@@ -141,7 +141,7 @@ export default class CheckCurrentValword extends Component {
     render() {
         return(
             <Fragment>
-                <ShopXButtonNav underline history={this.props.history} historyBack>비밀번호 확인</ShopXButtonNav>
+                <ShopXButtonNav underline historyBack>비밀번호 확인</ShopXButtonNav>
                 <Container fluid>
                     <p></p>
                     <Row>

@@ -37,6 +37,12 @@ class TimeText extends Component{
             // m.set({hour:0,minute:0,second:0,millisecond:0})
             // m.toISOString()
             // diff = m.format('HH:mm:ss') //00:00:00
+
+            //0초 일 경우 콜백실행
+            if (this.props.whenTimeFinished){
+                this.props.whenTimeFinished()
+            }
+
         }
 
         diff = ((this.props.displayD)? 'D - ':'') + diff

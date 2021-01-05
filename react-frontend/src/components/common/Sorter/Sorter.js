@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Nav, NavItem, Dropdown, DropdownItem, DropdownToggle, DropdownMenu, NavLink } from 'reactstrap'
+import { Nav, Dropdown, DropdownItem, DropdownToggle, DropdownMenu } from 'reactstrap'
 
 //TODO 재배일지 상단의 정렬로 사용 가능하나, 현재 미완성(MVP에서 정렬기능이 필요없을 것으로 판단되 제거하거나 디자인 변경해야 될 것으로 예상됨)
 export default class Sorter extends Component{

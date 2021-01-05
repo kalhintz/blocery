@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Col, Button, FormGroup, Label, Input, Container, InputGroup, Row, Fade, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import { getProducerEmail, addProducer } from "../../../lib/producerApi"
+import { getProducerEmail, addProducer } from "~/lib/producerApi"
 
 
 import Terms from '../../common/Terms/Terms'
@@ -54,7 +54,7 @@ export default class ProducerJoin extends Component{
 
     findOverlapEmail = async (email) => {
         const response = await getProducerEmail(email)
-        if (response.data == '' || response.data == null) {
+        if (!response.data) {
             this.setState({ fadeOverlapEmail: false })
         } else {
             this.setState({ fadeOverlapEmail: true })
@@ -166,7 +166,7 @@ export default class ProducerJoin extends Component{
     onRegisterClick = () => {
         const state = Object.assign({}, this.state)
 
-        if(state.email == '' || state.valword == '' || state.name == '' || state.farmName == '' || state.coRegistrationNo == '' ||
+        if(state.email === '' || state.valword === '' || state.name === '' || state.farmName === '' || state.coRegistrationNo === '' ||
             state.coRegistrationNo.length !== 10 || state.fadeEmail || state.fadeOverlapEmail || state.fadeValword || state.fadeValwordCheck) {
             alert('필수항목 정보를 정확하게 입력해주세요.')
             return false;
@@ -228,7 +228,7 @@ export default class ProducerJoin extends Component{
     }
 
     modalToggleOk = () => {
-        if(this.state.modalPassPhrase == true) {
+        if(this.state.modalPassPhrase) {
             this.setState({
                 modalPassPhrase: false
             });
@@ -247,7 +247,7 @@ export default class ProducerJoin extends Component{
         const data = Object.assign({}, this.state)
         return(
             <Fragment>
-                <ShopXButtonNav back history={this.props.history}>생산자 회원가입</ShopXButtonNav>
+                <ShopXButtonNav historyBack>생산자 회원가입</ShopXButtonNav>
                 <Container fluid>
                     <p></p>
                     <Row>

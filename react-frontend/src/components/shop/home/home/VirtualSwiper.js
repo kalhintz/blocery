@@ -1,16 +1,8 @@
 import React from 'react';
-// import Swiper from 'swiper/js/swiper.esm.bundle';
 import Swiper from 'react-id-swiper'
 import TodaysDeal from './todaysDeal'
-import DeadlineGoods from './deadlineGoods'
 import BestDeal from './bestDeal'
 import FavoriteGoods from './favoriteGoods'
-import Footer from './footer'
-
-// const TodaysDeal = React.lazy(()=> import('./todaysDeal'))
-// const DeadlineGoods = React.lazy(()=> import('./deadlineGoods'))
-// const BestDeal = React.lazy(()=> import('./bestDeal'))
-// const FavoriteGoods = React.lazy(()=> import('./favoriteGoods'))
 
 export default class VirtualSwiper extends React.Component {
     constructor(props) {

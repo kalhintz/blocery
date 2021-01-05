@@ -31,7 +31,7 @@ const B2cHeader = (props) => {
                     mypage ? <span className={Css.myPage}>마이페이지</span> :
                         category ? <span className={Css.category}>카테고리</span> :
                             mdPick ? <span className={Css.category}>기획전</span> : (
-                        <Link to={'/home/1'} className={'text-dark f1'} >
+                        <Link to={'/'} className={'text-dark f1'} >
                             <MarketBlyMainLogo style={{height: 40}} />
                         </Link>
                     )
@@ -55,7 +55,7 @@ const B2cHeader = (props) => {
                     </Link>
                 </div>
                 <div>
-                    <Link to={'/mypage/notificationList'} noti={isNewNotification} notiRight={-5}>
+                    <Link to={'/mypage/notificationList'} noti={isNewNotification ? 1 : 0} notiRight={-5}>
                         {
                             (mypage)?  <IconNotificationWhite />
                                 :  <IconNotification />

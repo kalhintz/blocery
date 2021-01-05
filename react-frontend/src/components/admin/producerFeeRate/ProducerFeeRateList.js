@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, ModalHeader, ModalBody } from 'reactstrap';
-
-import { ModalConfirm } from '~/components/common/index';
 import { getLoginAdminUser } from "~/lib/loginApi";
 import { getProducerFeeRate } from "~/lib/adminApi"
 import ProducerFeeRateReg from './ProducerFeeRateReg';

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, Fragment } from 'react'
-import ComUtil from '../../../util/ComUtil'
-import { getDeliveryFee } from '../../../util/bzLogic'
+import ComUtil from '~/util/ComUtil'
+import { getDeliveryFee } from '~/util/bzLogic'
 import PropTypes from 'prop-types';
-import { InputGroup, InputGroupAddon, InputGroupText, Input, Button, Alert } from 'reactstrap';
-import { addCart } from '../../../lib/cartApi'
-import { getGoodsByGoodsNo } from '../../../lib/goodsApi'
-import { ShoppingCartOutlined } from '@material-ui/icons'
+import { Button, Alert } from 'reactstrap';
+import { addCart } from '~/lib/cartApi'
+import { getGoodsByGoodsNo } from '~/lib/goodsApi'
+
+import {MdShoppingCart} from 'react-icons/md'
+
 
 import { QtyInputGroup } from '../../common'
 
@@ -13,9 +15,9 @@ import classNames from 'classnames'
 
 import Style from './AddCart.module.scss'
 
-import { useSelector, useDispatch, connect } from 'react-redux'
+import { useDispatch, connect } from 'react-redux'
 
-import * as actions  from '../../../reducers/CartReducer'
+import * as actions  from '~/reducers/CartReducer'
 
 
 
@@ -125,7 +127,7 @@ const AddCart = (props) => {
                     isAdded ? (
                         <Fragment>
                             <div className='d-flex justify-content-center align-items-center'>
-                                <i ><ShoppingCartOutlined style={{fontSize: 60}}/></i>
+                                <i ><MdShoppingCart style={{fontSize: 60}}/></i>
                             </div>
                             <div className='d-flex justify-content-center align-items-center m-3'>
                                 장바구니에 추가되었습니다

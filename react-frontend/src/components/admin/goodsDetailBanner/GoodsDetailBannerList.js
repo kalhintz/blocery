@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import {Button} from 'reactstrap'
 import { getLoginAdminUser } from '~/lib/loginApi'
 import { getGoodsBannerList, delGoodsBanner } from '~/lib/adminApi'

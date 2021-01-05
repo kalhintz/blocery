@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Col, Button, Form, FormGroup, Label, Input, Container, InputGroup, Table, Badge, Row, Fade } from 'reactstrap'
-import ComUtil from "../../../../util/ComUtil"
+import ComUtil from "~/util/ComUtil"
 import { getConsumerByConsumerNo, updateValword } from "~/lib/shopApi";
 import { updValword } from "~/lib/producerApi"
 import { doLogout } from "~/lib/loginApi"
@@ -134,7 +134,7 @@ export default class ModifyValword extends Component {
         if(this.state.redirect) return <Redirect to={this.state.redirect} />
         return(
             <Fragment>
-                <ShopXButtonNav underline back history={this.props.history}>비밀번호 변경</ShopXButtonNav>
+                <ShopXButtonNav underline historyBack>비밀번호 변경</ShopXButtonNav>
                 <Container fluid>
                     <p></p>
                     <Row>

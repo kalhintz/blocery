@@ -3,7 +3,6 @@ import { Alert, Container, Input, Row, Col, Label, Button } from 'reactstrap'
 
 import Textarea from 'react-textarea-autosize'
 import { regNotice } from '~/lib/adminApi'
-import { Checkbox } from '@material-ui/core'
 import { SingleDatePicker } from 'react-dates';
 import moment from 'moment-timezone'
 import Select from 'react-select'
@@ -223,13 +222,13 @@ const NoticeReg = (props) => { // props에 수정할 공지사항 key를 넘겨�
             />
 
             <br/><br/>
-            {
-                userType === 'consumer' &&
-                <div className={'text-right'}>
-                    <Checkbox id={'sendPush'} className={'p-0'} color={'default'} checked={props.noticeData.sendPush} onChange={onCheckboxChange} />
-                    전체 push 전송
-                </div>
-            }
+            {/*{*/}
+                {/*userType === 'consumer' &&*/}
+                {/*<div className={'text-right'}>*/}
+                    {/*<Checkbox id={'sendPush'} className={'p-0'} color={'default'} checked={props.noticeData.sendPush} onChange={onCheckboxChange} />*/}
+                    {/*전체 push 전송*/}
+                {/*</div>*/}
+            {/*}*/}
             <div className={'text-right'}>
                 <Button className={'rounded-2 '} style={{width:"100px"}} onClick={onSaveNotice} >등 록</Button>
             </div>

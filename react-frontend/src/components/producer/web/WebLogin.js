@@ -1,20 +1,15 @@
 import React, { Component, Fragment } from 'react'
-import { Container, Button, Row, Col, Form, Input, Modal, ModalHeader, ModalBody, ModalFooter, Fade } from 'reactstrap'
+import { Button, Row, Col, Form, Input, Modal, ModalHeader, ModalBody, ModalFooter, Fade } from 'reactstrap'
 import axios from 'axios'
 import { Server } from '../../Properties'
 import ComUtil from '../../../util/ComUtil'
-import { Redirect } from 'react-router-dom'
 import { MarketBlyLogoColorRectangle } from '../../common'
 import Style from './WebLogin.module.scss'
 import ModalPopup from "../../common/modals/ModalPopup";
-import {getProducerEmail} from "../../../lib/producerApi";
-import {resetPassword} from "../../../lib/adminApi";
-import {EMAIL_RESET_TITLE, getEmailResetContent} from "../../../lib/mailApi";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
+import {getProducerEmail} from "~/lib/producerApi";
+import {resetPassword} from "~/lib/adminApi";
+import {EMAIL_RESET_TITLE, getEmailResetContent} from "~/lib/mailApi";
 import classNames from 'classnames'
-
-
 
 export default class WebLogin extends Component {
 
@@ -37,11 +32,11 @@ export default class WebLogin extends Component {
 
     async componentDidMount() {
 
-        //http로 첫페이지 접속시 https로 자동전환. 20200220
-        if ( window.location.protocol === 'http:' && Server._serverMode() === 'production') {
-            console.log('window.location.protocol:' + window.location.protocol + 'redirecting to Https');
-            window.location = 'https://blocery.com/producer/webLogin';  //HARD CODING
-        }
+        // AWS에서 자동처리:202012 //http로 첫페이지 접속시 https로 자동전환. 20200220
+        // if ( window.location.protocol === 'http:' && Server._serverMode() === 'production') {
+        //     console.log('window.location.protocol:' + window.location.protocol + 'redirecting to Https');
+        //     window.location = 'https://blocery.com/producer/webLogin';  //HARD CODING
+        // }
     }
 
     onLoginClicked = (event) => {
@@ -50,7 +45,7 @@ export default class WebLogin extends Component {
         let data = {};
         data.email = event.target[0].value;
         data.valword = event.target[1].value;
-        data.userType = 'producer'
+        //data.userType = 'producer'
 
         if(!data.email) {
             this.setState({fadeEmail: true});
@@ -68,7 +63,7 @@ export default class WebLogin extends Component {
             return;
         }
 
-        axios(Server.getRestAPIHost() + '/login',
+        axios(Server.getRestAPIHost() + '/producerLogin',
             {
                 method: "post",
                 data:data,
@@ -80,19 +75,18 @@ export default class WebLogin extends Component {
                     this.setState({fadeError: true});
                 else
                 {
-                    let loginInfo = response.data;
+                    let loginProducerInfo = response.data;
 
-                    localStorage.clear();
+                    //localStorage.clear();
 
                     //쿠키(localStorage)에 login된 userType저장. - 필요하려나.
-                    localStorage.setItem('userType', data.userType);
-                    localStorage.setItem('account', loginInfo.account); //geth Account
-                    localStorage.setItem('email', data.email);
-                    localStorage.setItem('valword', ComUtil.encrypt(data.valword));
-                    localStorage.setItem('autoLogin', this.state.autoLogin? 1:0);
-
-                    sessionStorage.setItem('logined', 1);
-                    console.log('loginInfo : ===========================',loginInfo);
+                    //localStorage.setItem('userType', data.userType);
+                    //localStorage.setItem('producerAccount', loginProducerInfo.account); //geth Account
+                    localStorage.setItem('producerEmail', data.email);
+                    localStorage.setItem('producerValword', ComUtil.encrypt(data.valword));
+                    localStorage.setItem('producerAutoLogin', this.state.autoLogin? 1:0);
+                    sessionStorage.setItem('producerLogined', 1);
+                    console.log('loginProducerInfo : ===========================',loginProducerInfo);
                     this.props.history.push('/producer/web/home/home')
 
                 }

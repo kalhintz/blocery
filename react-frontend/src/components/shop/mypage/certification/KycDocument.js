@@ -1,13 +1,10 @@
 import React, { Component, Fragment } from 'react'
-import { Label } from 'reactstrap'
 import {ShopXButtonNav} from '~/components/common'
-import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed, Button, Link } from '~/styledComponents/shared'
-import { Checkbox } from '@material-ui/core'
-
+import { Div, Span, Flex, Button } from '~/styledComponents/shared'
+import Checkbox from '~/components/common/checkboxes/Checkbox'
 import KycSingleImageUploader from '~/components/common/ImageUploader/KycSingleImageUploader'
-
 import { Webview } from '~/lib/webviewApi'
-import { regConsumerKyc, getConsumerKyc } from '~/lib/shopApi'
+import { regConsumerKyc } from '~/lib/shopApi'
 import { getLoginUserType } from '~/lib/loginApi'
 import { getConsumer } from '~/lib/shopApi'
 import { BlocerySpinner } from '~/components/common'
@@ -17,7 +14,6 @@ import {color, hoverColor} from "~/styledComponents/Properties";
 import {ScrollDummy, scrollIntoView} from '~/components/common/scrollDummy/ScrollDummy'
 
 let validatedObj = {};
-
 
 const btnScaleUp = keyframes`
     0% {}
@@ -100,6 +96,8 @@ const CheckBoxFlex = styled(Flex)`
         padding: 0;
         margin-right: ${getValue(8)};
     }
+    
+    margin-bottom: ${getValue(16)};
 `;
 
 
@@ -128,9 +126,9 @@ export default class KycDocument extends Component {
         const loginUserType = await getLoginUserType();
         let loginUser;
 
-        if(loginUserType.data == 'consumer') {
+        if(loginUserType.data === 'consumer') {
             loginUser = await getConsumer();
-        } else if (loginUserType.data == 'producer') {
+        } else if (loginUserType.data === 'producer') {
             //생산자용 mypage로 자동이동.
             Webview.movePage('/producer/mypage');
         }
@@ -182,7 +180,7 @@ export default class KycDocument extends Component {
             kycImages: obj.kycImages.length === 2 ? null : '신원 확인 이미지를 모두 업로드 해주세요',
             check1: obj.check1 === true ? null : '확인사항을 모두 체크 해주세요',
             check2: obj.check2 === true ? null : '확인사항을 모두 체크 해주세요',
-            check2: obj.check2 === true ? null : '확인사항을 모두 체크 해주세요'
+            check3: obj.check2 === true ? null : '확인사항을 모두 체크 해주세요'
         }
     }
 
@@ -276,16 +274,34 @@ export default class KycDocument extends Component {
                         <Heading>03. 확인 및 제출</Heading>
                         <Div my={20}>
                             <CheckBoxFlex alignItems={'flex-start'}>
-                                <Checkbox id={'check1'} onChange={this.onCheckBoxChange} />
-                                <Label for={'check1'}><Span fontSize={13} fg={this.state.check1 ? 'darkBlack' : 'dark'}>신분증의 주민등록번호 뒷자리를 가리셨나요?</Span></Label>
+
+                                <Checkbox id={'check1'} bg={'green'} onChange={this.onCheckBoxChange}
+                                          size={'sm'}>
+                                    <Span fontSize={13} fg={this.state.check1 ? 'darkBlack' : 'dark'}>신분증의 주민등록번호 뒷자리를 가리셨나요?</Span>
+                                </Checkbox>
+
+                                {/*<Checkbox id={'check1'} onChange={this.onCheckBoxChange} />*/}
+                                {/*<Label for={'check1'}><Span fontSize={13} fg={this.state.check1 ? 'darkBlack' : 'dark'}>신분증의 주민등록번호 뒷자리를 가리셨나요?</Span></Label>*/}
                             </CheckBoxFlex>
                             <CheckBoxFlex>
-                                <Checkbox id={'check2'} onChange={this.onCheckBoxChange} />
-                                <Label for={'check2'}><Span fontSize={13} fg={this.state.check2 ? 'darkBlack' : 'dark'}>신원확인용 사진은 얼굴, 신분증, 메모가 모두 나오게 촬영하셨나요?</Span></Label>
+                                {/*<Checkbox id={'check2'} onChange={this.onCheckBoxChange} />*/}
+                                {/*<Label for={'check2'}><Span fontSize={13} fg={this.state.check2 ? 'darkBlack' : 'dark'}>신원확인용 사진은 얼굴, 신분증, 메모가 모두 나오게 촬영하셨나요?</Span></Label>*/}
+
+
+                                <Checkbox id={'check2'} bg={'green'} onChange={this.onCheckBoxChange}
+                                          size={'sm'}>
+                                    <Span fontSize={13} fg={this.state.check2 ? 'darkBlack' : 'dark'}>신원확인용 사진은 얼굴, 신분증, 메모가 모두 나오게 촬영하셨나요?</Span>
+                                </Checkbox>
+
                             </CheckBoxFlex>
                             <CheckBoxFlex>
-                                <Checkbox id={'check3'} onChange={this.onCheckBoxChange} />
-                                <Label for={'check3'}><Span fontSize={13} fg={this.state.check3 ? 'darkBlack' : 'dark'}>메모에 '블로서리(또는 마켓블리)'와 '날짜'를 적어 주셨나요?</Span></Label>
+                                {/*<Checkbox id={'check3'} onChange={this.onCheckBoxChange} />*/}
+                                {/*<Label for={'check3'}><Span fontSize={13} fg={this.state.check3 ? 'darkBlack' : 'dark'}>메모에 '블로서리(또는 마켓블리)'와 '날짜'를 적어 주셨나요?</Span></Label>*/}
+
+                                <Checkbox id={'check3'} bg={'green'} onChange={this.onCheckBoxChange}
+                                          size={'sm'}>
+                                    <Span fontSize={13} fg={this.state.check3 ? 'darkBlack' : 'dark'}>메모에 '블로서리(또는 마켓블리)'와 '날짜'를 적어 주셨나요?</Span>
+                                </Checkbox>
                             </CheckBoxFlex>
                         </Div>
                         <Flex justifyContent={'center'}>

@@ -1,14 +1,11 @@
 import React, { Fragment } from 'react'
 import {  Modal, ModalBody, ModalHeader, ModalFooter } from 'reactstrap'
-import {Div, Flex, Span, Button} from '~/styledComponents/shared'
+import {Div, Span, Button} from '~/styledComponents/shared'
 
 import PropTypes from 'prop-types'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faImages, faImage } from '@fortawesome/free-solid-svg-icons'
 import ComUtil from "../../../util/ComUtil"
 import { Server } from '../../Properties'
 import axios from 'axios'
-import { Delete } from '@material-ui/icons'
 import Style from './KycSingleImageUploader.module.scss'
 import Compressor from 'compressorjs'
 
@@ -21,7 +18,6 @@ import 'react-toastify/dist/ReactToastify.css'
 import styled from 'styled-components'
 import {color} from '~/styledComponents/Properties'
 import {getValue} from '~/styledComponents/Util';
-import {RiCheckboxCircleLine} from 'react-icons/ri'
 import {RiInformationLine} from 'react-icons/ri'
 import {Webview} from '~/lib/webviewApi'
 

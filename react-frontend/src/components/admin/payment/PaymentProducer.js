@@ -1,20 +1,15 @@
 import React, { Component, Fragment } from 'react';
-import Select from 'react-select'
 import { FormGroup, Button, Input } from 'reactstrap'
-import classNames from 'classnames';
 import { getAllProducers, getPaymentProducer } from '~/lib/adminApi'
-import { getLoginAdminUser } from '~/lib/loginApi'
 import ComUtil from '~/util/ComUtil'
 import { BlockChainSpinner, BlocerySpinner, ExcelDownload, MonthBox } from '~/components/common'
-import PaymentCheck from './PaymentCheck';
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/src/styles/ag-grid.scss";
 import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
-
-import { Refresh } from '@material-ui/icons'
+import {MdRefresh} from "react-icons/md";
 import 'react-month-picker/css/month-picker.css'
 import MonthPicker from 'react-month-picker'
 import moment from 'moment-timezone'
@@ -56,27 +51,34 @@ export default class PaymentProducer extends Component{
             columnSummaryDefs: [
                 {headerName: "과세여부", field: "vatFlag", cellStyle:{"textAlign":"left", 'background-color': '#f1fff1'}, width: 90},
                 {
-                    headerName: "매출내역 (소비자판매가 A = B + C + D)",
+                    headerName: "매출내역 (소비자결제금액 A = B + C)",
                     cellStyle:this.getHeaderCellStyle,
                     children: [
-                        {headerName: '소비자판매가(A)',width: 150, field: 'summaryConsumerGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '소비자결제금액(A)',width: 150, field: 'summaryConsumerGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
                         {headerName: '판매원가(B)',width: 120, field: 'summaryTotalGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
-                        {headerName: '판매지원금(C)',width: 120, field: 'summaryTotalSupportPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
-                        {headerName: '배송비(D)',width: 110, field: 'summaryDeliveryFee', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '배송비(C)',width: 110, field: 'summaryDeliveryFee', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
                     ]
                 },
                 {
-                    headerName: "수수료",
+                    headerName: "지원금",
                     cellStyle:this.getHeaderCellStyle,
                     children: [
-                        {headerName: '판매원가 * 수수료율(E)',width: 170, field: 'summaryTotalFeeRateMoney', cellStyle: {"textAlign":"left", 'background-color': '#ffe3ee'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '판매지원금(D)',width: 120, field: 'summaryTotalSupportPrice', cellStyle: {"textAlign":"left", 'background-color': '#d9d9d9'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
                     ]
                 },
                 {
-                    headerName: "정산내역(소비자판매가 - 수수료)",
+                    headerName: "수수료(판매원가*수수료율)",
                     cellStyle:this.getHeaderCellStyle,
                     children: [
-                        {headerName: '총정산금액 (F)=A-E',width: 200, field: 'summarySimplePayoutAmount', cellStyle: {"textAlign":"left", 'background-color': '#EBFBFF'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '수수료율(%)',width: 170, field: 'summaryFeeRate', cellStyle: {"textAlign":"left", 'background-color': '#ffe3ee'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '수수료(E)',width: 170, field: 'summaryTotalFeeRateMoney', cellStyle: {"textAlign":"left", 'background-color': '#ffe3ee'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                    ]
+                },
+                {
+                    headerName: "정산내역",
+                    cellStyle:this.getHeaderCellStyle,
+                    children: [
+                        {headerName: '총정산금액 (F)=A+D-E',width: 200, field: 'summarySimplePayoutAmount', cellStyle: {"textAlign":"left", 'background-color': '#EBFBFF'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
                         {headerName: '공급가액(G)=F/1.1',width: 200, field: 'summaryTotalSupplyValue', cellStyle: {"textAlign":"left", 'background-color': '#EBFBFF'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
                         {headerName: '부가세(H)=G*10%',width: 200, field: 'summaryTotalVat', cellStyle: {"textAlign":"left", 'background-color': '#EBFBFF'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true},},
                     ]
@@ -123,10 +125,10 @@ export default class PaymentProducer extends Component{
                     ]
                 },
                 {
-                    headerName: "매출내역 (소비자판매가 A = B + C + D)",
+                    headerName: "매출내역 (소비자결제금액 A = B + C)",
                     cellStyle:this.getHeaderCellStyle,
                     children: [
-                        {headerName: '소비자판매가(A)',width: 130, field: 'totalGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'},
+                        {headerName: '소비자결제금액(A)',width: 130, field: 'totalGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'},
                             cellRenderer: 'formatCurrencyRenderer',
                             filterParams:{clearButton: true},
                             valueGetter: function(params) {
@@ -134,8 +136,14 @@ export default class PaymentProducer extends Component{
                             }
                         },
                         {headerName: '판매원가(B)',width: 100, field: 'totalGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
-                        {headerName: '판매지원금(C)',width: 120, field: 'totalSupportPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
-                        {headerName: '배송비(D)',width: 90, field: 'deliveryFee', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '배송비(C)',width: 90, field: 'deliveryFee', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                    ]
+                },
+                {
+                    headerName: "지원금",
+                    cellStyle:this.getHeaderCellStyle,
+                    children: [
+                        {headerName: '판매지원금(D)',width: 120, field: 'totalSupportPrice', cellStyle: {"textAlign":"left", 'background-color': '#d9d9d9'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
                     ]
                 },
                 {
@@ -155,10 +163,10 @@ export default class PaymentProducer extends Component{
                     ]
                 },
                 {
-                    headerName: "정산금액(F)",
+                    headerName: "총정산금액(F)",
                     cellStyle:this.getHeaderCellStyle,
                     children: [
-                        {headerName: '(F)=A-E',width: 100, field: 'simplePayoutAmount', cellStyle: {"textAlign":"left", 'background-color': '#EBFBFF'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '(F)=A+D-E',width: 100, field: 'simplePayoutAmount', cellStyle: {"textAlign":"left", 'background-color': '#EBFBFF'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
                     ]
                 },
                 {
@@ -319,6 +327,7 @@ export default class PaymentProducer extends Component{
             summaryTotalGoodsPrice:0,
             summaryTotalSupportPrice:0,
             summaryDeliveryFee:0,
+            summaryFeeRate:0,
             summaryTotalFeeRateMoney:0,
             summarySimplePayoutAmount:0,
             summaryTotalSupplyValue:0,
@@ -330,6 +339,7 @@ export default class PaymentProducer extends Component{
             summaryTotalGoodsPrice:0,
             summaryTotalSupportPrice:0,
             summaryDeliveryFee:0,
+            summaryFeeRate:0,
             summaryTotalFeeRateMoney:0,
             summarySimplePayoutAmount:0,
             summaryTotalSupplyValue:0,
@@ -337,7 +347,7 @@ export default class PaymentProducer extends Component{
         };
 
         data.map(orderDetail => {
-            let consumerGoodsPrice = orderDetail.totalGoodsPrice + orderDetail.totalSupportPrice + orderDetail.deliveryFee;
+            let consumerGoodsPrice = orderDetail.totalGoodsPrice + orderDetail.deliveryFee;
             let totalFeeRateMoney = (orderDetail.currentPrice * orderDetail.feeRate / 100).toFixed(0) * orderDetail.orderCnt;
 
             if(orderDetail.vatFlag && !orderDetail.refundFlag) {
@@ -345,6 +355,7 @@ export default class PaymentProducer extends Component{
                 vatSummary.summaryTotalGoodsPrice = vatSummary.summaryTotalGoodsPrice + orderDetail.totalGoodsPrice;
                 vatSummary.summaryTotalSupportPrice = vatSummary.summaryTotalSupportPrice + orderDetail.totalSupportPrice;
                 vatSummary.summaryDeliveryFee = vatSummary.summaryDeliveryFee + orderDetail.deliveryFee;
+                vatSummary.summaryFeeRate = orderDetail.feeRate;
                 vatSummary.summaryTotalFeeRateMoney = vatSummary.summaryTotalFeeRateMoney + totalFeeRateMoney;
                 vatSummary.summarySimplePayoutAmount = vatSummary.summarySimplePayoutAmount + orderDetail.simplePayoutAmount;
                 vatSummary.summaryTotalSupplyValue = vatSummary.summaryTotalSupplyValue + Math.round(orderDetail.simplePayoutAmount / 1.1);
@@ -355,6 +366,7 @@ export default class PaymentProducer extends Component{
                 notVatSummary.summaryTotalGoodsPrice = notVatSummary.summaryTotalGoodsPrice + orderDetail.totalGoodsPrice;
                 notVatSummary.summaryTotalSupportPrice = notVatSummary.summaryTotalSupportPrice + orderDetail.totalSupportPrice;
                 notVatSummary.summaryDeliveryFee = notVatSummary.summaryDeliveryFee + orderDetail.deliveryFee;
+                notVatSummary.summaryFeeRate = orderDetail.feeRate;
                 notVatSummary.summaryTotalFeeRateMoney = notVatSummary.summaryTotalFeeRateMoney + totalFeeRateMoney;
                 notVatSummary.summarySimplePayoutAmount = notVatSummary.summarySimplePayoutAmount + orderDetail.simplePayoutAmount;
                 notVatSummary.summaryTotalSupplyValue = notVatSummary.summaryTotalSupplyValue + orderDetail.simplePayoutAmount;
@@ -386,9 +398,9 @@ export default class PaymentProducer extends Component{
     getExcelData = () => {
         const columns = [
             '주문일', '주문번호', '주문자', '상품번호', '품목', '상품구분', '환불여부', '판매가', '판매지원금', '수량', '과세여부',
-            '소비자판매가(A) A = B+C+D', '판매원가(B)', '판매지원금(C)', '배송비(D)',
+            '소비자결제금액(A) A = B+C', '판매원가(B)', '배송비(C)', '판매지원금(D)',
             '수수료율', '수수료(E)',
-            '정산금액(F = A-E)', '공급가액(G = F/1.1)', '부가세(H = G*10%)'
+            '총정산금액(F = A+D-E)', '공급가액(G = F/1.1)', '부가세(H = G*10%)'
         ]
 
         const excelData = this.state.data.map((orderDetail) => {
@@ -404,7 +416,7 @@ export default class PaymentProducer extends Component{
 
             return [
                 orderDate, orderDetail.orderSeq, orderDetail.consumerNm, orderDetail.goodsNo, orderDetail.goodsNm, timeSaleGoods, refundFlag, orderDetail.currentPrice, timeSaleSupportPrice, orderDetail.orderCnt, vatFlag,
-                totalGoodsPrice, orderDetail.totalGoodsPrice, orderDetail.totalSupportPrice, orderDetail.deliveryFee,
+                totalGoodsPrice, orderDetail.totalGoodsPrice, orderDetail.deliveryFee, orderDetail.totalSupportPrice,
                 orderDetail.feeRate, feeRateMoney,
                 orderDetail.simplePayoutAmount, supplyValue, vat
             ]
@@ -472,7 +484,7 @@ export default class PaymentProducer extends Component{
                                 <Button color={'info'} size={'sm'} block  style={{width: '100px'}}
                                         onClick={this.onRefreshClick}>
                                     <div className="d-flex">
-                                        <Refresh fontSize={'small'}/> 조회
+                                        <MdRefresh fontSize={'small'}/> 조회
                                     </div>
                                 </Button>
                             </div>
@@ -509,7 +521,7 @@ export default class PaymentProducer extends Component{
 
                             {this.state.tipOpen &&
                             <div className='mt-4 text-secondary small'>
-                                1. 소비자판매가는 소비자의 총 결제 금액으로 판매원가와 판매지원금, 배송비로 구성되어 있습니다. <br/>
+                                1. 소비자결제금액은 소비자의 총 결제 금액으로 판매원가, 배송비로 구성되어 있습니다. <br/>
                                 * '판매원가'란 결제금액에서 배송비와 판매지원금을 뺀 금액입니다.(수수료 적용 O) <br/>
                                 * 배송비와 판매지원금에는 판매수수료가 적용되지 않습니다. <br/>
                                 <br/>

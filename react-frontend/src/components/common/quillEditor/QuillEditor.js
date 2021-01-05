@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { Div, Button } from '~/styledComponents/shared'
+import React from 'react'
 import { Server } from '~/components/Properties'
 import ResizeModule from '@ssumo/quill-resize-module';
 import ReactQuill, { Quill } from 'react-quill';
@@ -230,7 +229,7 @@ class Editor extends React.Component {
             }
         },
         imageUpload: {
-            url: Server.getRestAPIFileServerHost()+'/blyReviewContentImgFile', // server url. If the url is empty then the base64 returns
+            url: Server.getRestAPIFileServerHost()+'/contentImgFile', // server url. If the url is empty then the base64 returns
             method: 'POST', // change query method, default 'POST'
             name: 'image', // custom form name
             withCredentials: true, // withCredentials

@@ -5,7 +5,7 @@ import { Div, Span, Input, Button, Flex, Hr } from '~/styledComponents/shared'
 import { BlockChainSpinner, PassPhrase } from '~/components/common'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import 'react-toastify/dist/ReactToastify.css'
-import { toChecksumAddress, isValidAddress, isValidChecksumAddress } from 'ethereumjs-util';
+import { toChecksumAddress, isValidAddress } from 'ethereumjs-util';
 import { swapBlctToBly, getTodayAmountBlctToBly } from '~/lib/swapApi'
 import { BLCT_TO_WON } from "~/lib/exchangeApi"
 import { scOntGetBalanceOfBlct } from "~/lib/smartcontractApi";

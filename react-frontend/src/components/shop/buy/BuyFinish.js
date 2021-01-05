@@ -1,30 +1,22 @@
 import React, {Fragment, Component } from 'react'
-import { Container, InputGroup, InputGroupAddon, InputGroupText, Input, Form, Row, Col, FormGroup, Label, Button, Table } from 'reactstrap';
+import { Button } from 'reactstrap';
 import axios from 'axios'
-import { Link } from 'react-router-dom'
 import { map } from 'lodash'
-import { getGoodsByGoodsNo } from '../../../lib/goodsApi'
-import { Server } from '../../Properties'
-import ComUtil from '../../../util/ComUtil'
-import { getLoginUser } from '../../../lib/loginApi'
-import { getOrderByOrderNo, getOrdersByOrderGroupNo } from '../../../lib/shopApi'
-import { Webview } from '../../../lib/webviewApi'
-import { BLCT_TO_WON } from "../../../lib/exchangeApi"
-import Style from './Buy.module.scss'
-import { BlockChainSpinner, ShopXButtonNav } from '../../common'
-import { getProducerByProducerNo } from '../../../lib/producerApi';
+import { getGoodsByGoodsNo } from '~/lib/goodsApi'
+import { Server } from '~/components/Properties'
+import ComUtil from '~/util/ComUtil'
+import { getLoginUser } from '~/lib/loginApi'
+import { getOrdersByOrderGroupNo } from '~/lib/shopApi'
+import { Webview } from '~/lib/webviewApi'
+import { BLCT_TO_WON } from "~/lib/exchangeApi"
+import { ShopXButtonNav } from '../../common'
 
 import { ToastContainer, toast } from 'react-toastify'     //토스트
 import 'react-toastify/dist/ReactToastify.css'
 
-import classNames from 'classnames'
-
-
 import {Div, Right, Flex, Span, Img, Sticky, Fixed} from '~/styledComponents/shared/Layouts'
 import {Button as Btn} from '~/styledComponents/shared/Buttons'
 import {Header} from '~/styledComponents/mixedIn/Headers'
-import {HrThin, HrHeavy} from '~/styledComponents/mixedIn/Hrs'
-import DetailPaymentInfoCard from './DetailPaymentInfoCard'
 
 export default class BuyFinish extends Component {
 
@@ -32,18 +24,19 @@ export default class BuyFinish extends Component {
         super(props);
 
         this.state = {
-            headTitle:null,
-            imp_uid:"",
-            merchant_uid:"",
-            imp_success:false,
-            resultStatus:false,
-            error_msg:"",
+            headTitle: null,
+            imp_uid: "",
+            merchant_uid: "",
+            imp_success: false,
+            resultStatus: false,
+            error_msg: "",
 
             consumer: {},
-            orderGroup : null,
-            orders : null,
+            orderGroup: null,
+            orders: null,
             directGoods: null,
-            blctToWon: ''           // BLCT 환율
+            blctToWon: '',           // BLCT 환율
+            sumOrders: null
         }
     }
 
@@ -118,6 +111,9 @@ export default class BuyFinish extends Component {
                             });
                         }
                         Promise.all(result).then( (response) => {
+
+                            const sumOrders = this.getSumOrders(r_OrderList)
+
                             this.setState({
                                 headTitle: "구매완료",
                                 resultStatus: true,
@@ -129,7 +125,8 @@ export default class BuyFinish extends Component {
 
                                 consumer: consumer,
                                 orderGroup: r_OrderGroup,
-                                orders: r_OrderList
+                                orders: r_OrderList,
+                                sumOrders: sumOrders
                             });
 
                         });
@@ -190,6 +187,9 @@ export default class BuyFinish extends Component {
                         });
 
                         Promise.all(result).then( (response) => {
+
+                            const sumOrders = this.getSumOrders(r_OrderList)
+
                             this.setState({
                                 headTitle: "구매완료",
                                 resultStatus: true,
@@ -201,7 +201,8 @@ export default class BuyFinish extends Component {
 
                                 consumer: consumer,
                                 orderGroup: r_OrderGroup,
-                                orders: r_OrderList
+                                orders: r_OrderList,
+                                sumOrders: sumOrders
                             });
                         })
 
@@ -229,10 +230,28 @@ export default class BuyFinish extends Component {
         }
 
 
-        setTimeout(()=>{
-            console.log({state: this.state})
+        // setTimeout(()=>{
+        //     console.log({state: this.state})
+        //
+        // }, 10000)
+    }
 
-        }, 10000)
+    getSumOrders = (orders) => {
+
+        let
+            sumBlctToken = 0,
+            sumExchangedBlctToWon = 0
+
+        //orderBlctExchangeRate
+        orders.map(order => {
+            sumBlctToken += order.blctToken
+            sumExchangedBlctToWon += order.blctToken * order.orderBlctExchangeRate
+        })
+
+        return {
+            sumBlctToken,
+            sumExchangedBlctToWon : sumExchangedBlctToWon
+        }
     }
 
     //array의 첫번째 이미지 썸네일 url 리턴
@@ -306,16 +325,54 @@ export default class BuyFinish extends Component {
                                     </Div>
                                     <Div fontSize={12} fg='dark'>
                                         <Div mb={7} fontSize={14} fg={'black'}>{order.goodsNm}</Div>
-                                        <Div>주문일련번호 : {order.orderSeq}</Div>
-                                        <Div>수량 : {ComUtil.addCommas(order.orderCnt)}개</Div>
-                                        <Div>금액 : {ComUtil.addCommas(order.orderPrice)} 원 {(order.payMethod.startsWith('card'))? '': '(' + ComUtil.addCommas(order.blctToken) +'BLY)'}</Div>
-                                        <Div>배송예정 :
-                                            {
-                                                order.expectShippingStart ?
-                                                    ` ${ComUtil.utcToString(order.expectShippingStart)} ~ ${ComUtil.utcToString(order.expectShippingEnd)}` :
-                                                    ` 구매 후 3일 이내`
-                                            }
-                                        </Div>
+
+                                        <Flex>
+                                            <Div minWidth={90}>주문일련번호</Div>
+                                            <Div>{order.orderSeq}</Div>
+                                        </Flex>
+
+                                        <Flex>
+                                            <Div minWidth={90}>수량</Div>
+                                            <Div>{ComUtil.addCommas(order.orderCnt)}개</Div>
+                                        </Flex>
+
+                                        <Flex>
+                                            <Div minWidth={90}>금액</Div>
+                                            <Div>{ComUtil.addCommas(order.orderPrice)} 원 {(order.payMethod.startsWith('card'))? '': '(' + ComUtil.addCommas(order.blctToken) +'BLY)'}</Div>
+                                        </Flex>
+
+                                        <Flex>
+                                            <Div minWidth={90}>배송예정</Div>
+                                            <Div>
+
+                                                {
+                                                    order.hopeDeliveryFlag ? `희망 수령일에 맞게 배송 예정` :
+                                                        order.directGoods ? `구매 후 3일 이내 발송` : `${ComUtil.utcToString(order.expectShippingStart)} ~ ${ComUtil.utcToString(order.expectShippingEnd)}`
+                                                }
+                                            </Div>
+                                        </Flex>
+
+                                        {
+                                            order.hopeDeliveryFlag && (
+                                                <Flex>
+                                                    <Div minWidth={90}>희망수령일</Div>
+                                                    <Div>{ComUtil.utcToString(order.hopeDeliveryDate)}</Div>
+                                                </Flex>
+                                            )
+                                        }
+
+
+
+                                        {/*<Div>주문일련번호 : {order.orderSeq}</Div>*/}
+                                        {/*<Div>수량 : {ComUtil.addCommas(order.orderCnt)}개</Div>*/}
+                                        {/*<Div>금액 : {ComUtil.addCommas(order.orderPrice)} 원 {(order.payMethod.startsWith('card'))? '': '(' + ComUtil.addCommas(order.blctToken) +'BLY)'}</Div>*/}
+                                        {/*<Div>배송예정 :*/}
+                                            {/*{*/}
+                                                {/*order.expectShippingStart ?*/}
+                                                    {/*` ${ComUtil.utcToString(order.expectShippingStart)} ~ ${ComUtil.utcToString(order.expectShippingEnd)}` :*/}
+                                                    {/*` 구매 후 3일 이내`*/}
+                                            {/*}*/}
+                                        {/*</Div>*/}
                                     </Div>
                                 </Flex>
                             )
@@ -326,45 +383,56 @@ export default class BuyFinish extends Component {
                             <Div fontSize={14}>최종결제내역</Div>
                         </Header>
 
-                        <Div m={16}>
-                            <Flex mb={7} fontSize={12}>
-                                <Div fg='adjust'>총 상품가격</Div>
+                        <Div p={16} lineHeight={30}>
+                            <Flex>
+                                <Div>상품가격</Div>
                                 <Right>
-                                    {ComUtil.addCommas((this.state.orderGroup.payMethod === 'cardBlct')? this.state.orders[0].orderPrice-this.state.orderGroup.totalDeliveryFee
-                                        :this.state.orderGroup.totalOrderPrice - this.state.orderGroup.totalDeliveryFee)}
-                                        &nbsp;원
+                                    {`${ComUtil.addCommas(this.state.orderGroup.totalCurrentPrice)} 원`}
                                 </Right>
                             </Flex>
-                            <Flex mb={15} fontSize={12}>
-                                <Div fg='adjust'>총 배송비</Div>
+                            <Flex>
+                                <Div>배송비</Div>
                                 <Right>
-                                    {ComUtil.addCommas(this.state.orderGroup.totalDeliveryFee)} 원
+                                    {`+ ${ComUtil.addCommas(this.state.orderGroup.totalDeliveryFee)} 원`}
                                 </Right>
                             </Flex>
-                            <HrThin mb={15}/>
-                            <Flex mb={4} fontSize={16} bold>
+                            {
+                                this.state.orders.length === 1 && this.state.orders[0].usedCouponNo !== 0 &&
+                                    <Flex>
+                                        <Div>쿠폰 사용</Div>
+                                        <Right>
+                                            {`${ComUtil.addCommas(ComUtil.roundDown(this.state.orders[0].usedCouponBlyAmount,2))} BLY ( - ${ComUtil.addCommas(ComUtil.roundDown(this.state.orders[0].usedCouponBlyAmount*this.state.blctToWon, 0))} 원)`}
+                                        </Right>
+                                    </Flex>
+                            }
+                            <Flex alignItems={'flex-start'}>
+                                <Div>BLY 토큰 사용</Div>
+                                <Right textAlign={'right'}>
+                                    {
+                                        this.state.orders.length === 1 && this.state.orders[0].usedCouponNo !== 0 ?
+                                            <Div>
+                                                {
+                                                    `${ComUtil.addCommas(ComUtil.roundDown(this.state.sumOrders.sumBlctToken-this.state.orders[0].usedCouponBlyAmount, 2))} BLY
+                                                    ( - ${ComUtil.addCommas(ComUtil.roundDown((this.state.sumOrders.sumBlctToken-this.state.orders[0].usedCouponBlyAmount)*this.state.blctToWon, 0))} 원)`
+                                                }
+                                            </Div>
+                                            :
+                                            <Div>
+                                                {`${ComUtil.addCommas(ComUtil.roundDown(this.state.sumOrders.sumBlctToken, 2))} BLY ( - ${ComUtil.addCommas(ComUtil.roundDown(this.state.sumOrders.sumExchangedBlctToWon, 0))} 원)`}
+                                            </Div>
+
+                                    }
+                                </Right>
+                            </Flex>
+                            <Flex bold fontSize={16}>
                                 <Div>최종 결제 금액</Div>
-                                <Right bold fg='green'>{ComUtil.addCommas(this.state.orderGroup.totalCurrentPrice + this.state.orderGroup.totalDeliveryFee)} 원</Right>
+                                <Right fg={'green'}>
+                                    {`${ComUtil.addCommas(this.state.orderGroup.totalOrderPrice)} 원`}
+                                </Right>
                             </Flex>
-                            <Div fontSize={12} fg='adjust' bold>
-                                1 BLY = {this.state.blctToWon} 원
-                            </Div>
+
                         </Div>
 
-                        <DetailPaymentInfoCard
-                            blctToWon={this.state.blctToWon}
-                            won={
-                                this.state.orderGroup.payMethod === 'card' ? this.state.orderGroup.totalOrderPrice
-                                    : this.state.orderGroup.payMethod === 'blct' ? 0
-                                    : this.state.orderGroup.totalOrderPrice
-                            }
-                            // blct={(this.state.selectedPayMethod === 'cardBlct' || this.state.selectedPayMethod === 'blct') ? ComUtil.addCommas(ComUtil.roundDown(this.state.cardBlctUseToken, 2)) : 0}
-                            blct={
-                                this.state.orderGroup.payMethod === 'card' ? 0
-                                    : this.state.orderGroup.payMethod === 'blct' ? this.state.orderGroup.totalBlctToken
-                                    : this.state.orderGroup.totalBlctToken
-                            }
-                        />
 
                         {/* empty box */}
                         <Div height={52}></Div>

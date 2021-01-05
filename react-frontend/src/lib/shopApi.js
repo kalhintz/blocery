@@ -8,6 +8,10 @@ export const getConsumerEmail = (email) => axios(Server.getRestAPIHost() + '/con
 // 소비자 정보 찾기
 export const getConsumer = () => axios(Server.getRestAPIHost() + '/consumer', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
+// 카카오 폰번호 소비자찾기
+// export const getKakaoPhoneConsumer = (phone) => axios(Server.getRestAPIHost() + '/consumer/kakaoPhone', { method: "get", params: {phone: phone}, withCredentials: true, credentials: 'same-origin' })
+export const getKakaoPhoneConsumer = (phone) => axios(Server.getRestAPIHost() + '/consumer/kakaoPhone', { method: "get", withCredentials: true, credentials: 'same-origin', params: { phone: phone} })
+
 // 소비자 정보 조회(consumerNo로)
 export const getConsumerByConsumerNo = (consumerNo) => axios(Server.getRestAPIHost() + '/consumer/consumerNo', { method: "get", params: {consumerNo: consumerNo}, withCredentials: true, credentials: 'same-origin' })
 
@@ -169,8 +173,17 @@ export const isTimeSaleBadge = () => axios(Server.getRestAPIHost() + '/isTimeSal
 // 블리타임 조회
 export const getBlyTimeList = () => axios(Server.getRestAPIHost() + '/b2cBlyTimeList', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
+// 슈퍼리워드 조회
+export const getSuperRewardList = () => axios(Server.getRestAPIHost() + '/b2cSuperRewardList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+// 슈퍼리워드 이전내역 조회
+export const getPrevSuperRewardList = () => axios(Server.getRestAPIHost() + '/b2cPrevSuperRewardList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
 // 블리타임 진행중여부(배지용도)
 export const isBlyTimeBadge = () => axios(Server.getRestAPIHost() + '/isBlyTimeBadge', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+// 슈퍼리워드 진행중여부(배지용도)
+export const isSuperRewardBadge = () => axios(Server.getRestAPIHost() + '/isSuperRewardBadge', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 
 //마지막 기획전 (배지용도,로그인한 사용자에한함)
@@ -179,6 +192,8 @@ export const getLastMdPickNotSeen = () => axios(Server.getRestAPIHost() + '/last
 //마지막 기획전본시간 저장. (로그인한 사용자에한함)
 export const setLastSeenMdPick = () => axios(Server.getRestAPIHost() + '/lastSeenMdPick', { method: "post", withCredentials: true, credentials: 'same-origin' })
 
+// 이벤트 정보 조회
+export const getEventInfo = (eventNo) => axios(Server.getRestAPIHost() + '/eventInfo', { method: "get", params:{eventNo: eventNo}, withCredentials: true, credentials: 'same-origin' })
 
 // 기획전 조회
 export const getMdPickListFront = () => axios(Server.getRestAPIHost() + '/shop/b2cMdPickList', { method: "get", withCredentials: true, credentials: 'same-origin' })
@@ -194,3 +209,24 @@ export const regConsumerKyc = (data) => axios(Server.getRestAPIHost() + '/consum
 
 // 상품 공지 배너 조회
 export const getGoodsBannerList = () => axios(Server.getRestAPIHost() + '/shop/goodsBannerList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+// 홈 공지 배너 조회
+export const getHomeBannerList = () => axios(Server.getRestAPIHost() + '/shop/homeBannerList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+// 도서산간 우편번호 조회
+export const getNotDeliveryZipNo = (zipNo) => axios(Server.getRestAPIHost() + '/shop/notDelivery', { method: "get", params:{zipNo: zipNo}, withCredentials: true, credentials: 'same-origin' })
+
+// 사용가능 쿠폰 리스트 조회
+export const getUsableCouponList = () => axios(Server.getRestAPIHost() + '/shop/usableCouponList', { method: "get", params:{}, withCredentials:true, credentials: 'same-origin'})
+
+// 마이페이지 사용가능 쿠폰 리스트 조회(바로사용가능 + 구매확정시 발급되는것)
+export const getUnusedCouponList = () => axios(Server.getRestAPIHost() + '/shop/unusedCouponList', { method: "get", params:{}, withCredentials:true, credentials: 'same-origin'})
+
+// 사용불가 쿠폰 리스트 조회
+export const getExpriedCouponList = () => axios(Server.getRestAPIHost() + '/shop/expiredCouponList', { method: "get", params:{}, withCredentials:true, credentials: 'same-origin'})
+
+// 슈퍼리워드 주문체크(수퍼리워드 기간안에 주문일자가 포함되어있는지 체크하여 메세지를 리턴)
+export const checkSuperRewardOrder = (data) => axios(Server.getRestAPIHost() + '/isSuperRewardGoodsOrderChk', { method: "post", data: data, withCredentials: true, credentials: 'same-origin' })
+
+// 상품 쿠폰 리스트 조회
+export const getGoodsCouponMasters = (goodsNo) => axios(Server.getRestAPIHost() + '/shop/goodsCouponMasters', { method: "get", params:{goodsNo}, withCredentials:true, credentials: 'same-origin'})

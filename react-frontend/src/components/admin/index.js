@@ -16,29 +16,26 @@ import TransportCompanyList from './transportCompanyList'
 import TransportCompanyReg from './transportCompanyReg'
 import ItemList from './itemList'
 import ItemReg from './itemReg'
-import B2bItemList from './b2bItemList'
-import B2bItemReg from './b2bItemReg'
-import FoodsList from './b2bFoodsList'
 import NoticeList from './noticeList'
 import NoticeReg from './noticeReg'
+import {PushNotiList, PushNotiReg} from './pushNotification'
 import EventPaymentList from './event'
-import B2bBuyerList from './b2bBuyerList'
-import B2bSellerList from './b2bSellerList'
-import B2bSellerPayout from './b2bSellerPayout'
-import B2bDealList from './b2bDealList'
 import B2cHomeSetting from './b2cHomeSetting'
+import EventInfoList from './eventList'
 import {B2cMdPickList,B2cMdPickReg} from './b2cMdPick'
 import {B2cTimeSaleList,B2cTimeSaleReg} from './b2cTimeSale'
 import {B2cBlyTimeList,B2cBlyTimeReg} from './b2cBlyTime'
+import {B2cSuperRewardList,B2cSuperRewardReg} from './b2cSuperReward'
 import ProducerFeeRateList from './producerFeeRate'
 import BlctStats from './blctStats'
 import BlctToWon from './blctToWon'
 import BountyEventHistory from './eventBountyHistory'
-import {PaymentAll, PaymentProducer} from './payment'
+import {CouponMasterList, ConsumerCouponList} from './coupon'
+import {PaymentAll, PaymentProducer, TempProducerList} from './payment'
 import { TokenSiseCorrectionList } from './tokenSiseCorrection'
 import {GoodsDetailBannerList,GoodsDetailBannerReg} from './goodsDetailBanner'
-
-import FintechConsumerList from './fintechConsumerList'
+import {HomeBannerList,HomeBannerReg} from './homeBanner'
+import {GoPaxJoinEventList, GoPaxCardEventList} from './goPaxEvent'
 
 export {
     AdminLogin,
@@ -62,25 +59,24 @@ export {
     TransportCompanyReg,
     ItemList,
     ItemReg,
-    B2bItemList,
-    B2bItemReg,
     NoticeList,
-    FoodsList,
+    PushNotiList, PushNotiReg,
     NoticeReg,
     EventPaymentList,
-    B2bDealList,
-    B2bBuyerList,
-    B2bSellerList,
-    B2bSellerPayout,
-    FintechConsumerList,
     B2cHomeSetting,
+    EventInfoList,
     B2cMdPickList, B2cMdPickReg,
     ProducerFeeRateList,
     BlctStats,
     BlctToWon,
     B2cTimeSaleList,B2cTimeSaleReg,
     B2cBlyTimeList, B2cBlyTimeReg,
+    B2cSuperRewardList,B2cSuperRewardReg,
     BountyEventHistory,
-    PaymentAll, PaymentProducer,
-    GoodsDetailBannerList, GoodsDetailBannerReg
+    CouponMasterList,
+    ConsumerCouponList,
+    PaymentAll, PaymentProducer, TempProducerList,
+    GoodsDetailBannerList, GoodsDetailBannerReg,
+    HomeBannerList, HomeBannerReg,
+    GoPaxJoinEventList, GoPaxCardEventList
 }

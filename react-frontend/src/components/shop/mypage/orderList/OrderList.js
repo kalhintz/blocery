@@ -1,29 +1,23 @@
 import React, { Component, Fragment } from 'react'
-import { Container, Row, Col, FormGroup, Label, Button, Modal, ModalBody, ModalFooter } from 'reactstrap'
-import Style from './OrderList.module.scss'
+import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap'
 import { Server } from '~/components/Properties'
 import ComUtil from '~/util/ComUtil'
-import OrderDetail from './OrderDetail'
 
-import { faGift } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {FaGift} from 'react-icons/fa'
 
-import { Webview } from '~/lib/webviewApi'
+
 import { BlockChainSpinner, ShopXButtonNav, ModalConfirm } from '~/components/common/index'
-import { BLCT_TO_WON } from "~/lib/exchangeApi"
-import { getTransportCompany, getOrderDetailListByConsumerNo, getOrderDetailByOrderSeq, updateConsumerOkDate } from '~/lib/shopApi'
-import { scOntCalculateOrderBlct } from '~/lib/smartcontractApi';
-import { getLoginUser, getLoginUserType } from '~/lib/loginApi'
+import { getOrderDetailListByConsumerNo, getOrderDetailByOrderSeq, updateConsumerOkDate } from '~/lib/shopApi'
+import { getLoginUser } from '~/lib/loginApi'
 
-import { ToastContainer, toast } from 'react-toastify'     //토스트
+import { toast } from 'react-toastify'     //토스트
 import { Button as Btn } from '~/styledComponents/shared/Buttons'
 import { Link } from '~/styledComponents/shared/Links'
 import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed } from '~/styledComponents/shared/Layouts'
-import { HrThin, Badge } from '~/styledComponents/mixedIn'
+import { Badge } from '~/styledComponents/mixedIn'
 import { Icon } from '~/components/common/icons'
 
 import styled from 'styled-components'
-import { pseudo } from '~/styledComponents/CoreStyles'
 import { color } from '~/styledComponents/Properties'
 
 import Skeleton from '~/components/common/cards/Skeleton'
@@ -37,61 +31,42 @@ const OrderGroup = styled(Div)`
 `;
 
 const OrderGroupDetail = styled(Div)`
-    ${pseudo.hover}
-    ${pseudo.active}
     border: 1px solid ${color.light};
     margin: 16px;
+    
+    & > div {
+        border-bottom: 1px solid ${color.light};
+    }
+    
+    & > div:last-child {
+        border: 0;
+    }
     
 `;
 
 const Order = ({orderSeq, orderCnt, goodsNo, goodsNm, orderPrice, cardPrice, orderBlctExchangeRate, blctToken, orderDate, orderImg, itemName, trackingNumber, farmName
-                   , trackingNumberTimestamp, consumerOkDate, payMethod, payStatus, expectShippingStart, expectShippingEnd, notDeliveryDate, onConfirmed, gift, partialRefundCount}) => (
-    <Fragment>
-            <Link p={16} to={`/mypage/orderDetail?orderSeq=${orderSeq}`} display={'block'}>
-                {/*<Flex mb={8}>*/}
-                    {/*<Div fg={'dark'} fontSize={12}>{ComUtil.utcToString(orderDate)}</Div>*/}
-                    {/*<Right>*/}
-                        {/*{*/}
-                            {/*notDeliveryDate ? <Badge fg={'white'} bg={'danger'}>미배송</Badge> :*/}
-                                {/*(payStatus === 'cancelled') ? <Badge fg={'white'} bg={'danger'}>취소완료</Badge> :*/}
-                                    {/*consumerOkDate ? <Badge fg={'white'} bg={'green'}>구매확정</Badge> :*/}
-                                        {/*trackingNumber ?*/}
-                                            {/*<Badge fg={'white'} bg={'green'}>배송중</Badge> : <Badge fg={'white'} bg={'secondary'}>발송예정</Badge>*/}
-                        {/*}*/}
-                    {/*</Right>*/}
-                {/*</Flex>*/}
-                {/*<HrThin mb={12}/>*/}
-                <Flex mb={8} alignItems={'flex-start'}>
-                    <Div width={63} height={63} mr={9} flexShrink={0}>
-                        <Img cover src={Server.getThumbnailURL()+orderImg} alt={'상품사진'}/>
-                    </Div>
-                    <Div flexGrow={1}>
-                        <Div>{goodsNm}</Div>
-                        {
-                            (payMethod === 'card') ?
-                                <Div>
-                                    <Div mb={4} fontSize={14} bold>{ComUtil.addCommas(orderPrice)}원</Div>
-                                    <Right fontSize={10} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드결제</Right>
-                                </Div>
-                                : payMethod === 'blct' ?
-                                <Div alignItems={'center'}>
-                                    <Div mb={4} fontSize={14} bold><Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken)}({ComUtil.addCommas(orderPrice)}원)</Div>
-                                    <Right fontSize={10} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''}| BLY결제</Right>
-                                </Div>
-                                :
-                                <Div alignItems={'center'}>
-                                    <Div mb={4} fontSize={14} bold>
-                                        {ComUtil.addCommas(cardPrice)}원 +
-                                        <Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken)}({ComUtil.addCommas(ComUtil.roundDown(blctToken*orderBlctExchangeRate, 1))}원)
-                                    </Div>
-                                    <Right fontSize={10} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드+BLY결제</Right>
-                                </Div>
-                        }
+                   , trackingNumberTimestamp, consumerOkDate, payMethod, payStatus, expectShippingStart, expectShippingEnd, notDeliveryDate, onConfirmed, gift, partialRefundCount,
+                   hopeDeliveryFlag,
+                   hopeDeliveryDate,
+                   blyTimeGoods,        //블리타임 상품여부
+                   blyTimeReward,       //블리타임 리워드 %
+                   superRewardGoods,    //슈퍼리워드 상품 여부
+                   superRewardReward,   //슈퍼리워드 %
 
-                    </Div>
-                    <Flex flexShrink={0}>
+
+               }) => (
+    <Div p={16}>
+        <Link to={`/mypage/orderDetail?orderSeq=${orderSeq}`} display={'block'}>
+            <Flex alignItems={'flex-start'}>
+                <Div width={63} height={63} mr={9} flexShrink={0}>
+                    <Img cover src={Server.getThumbnailURL()+orderImg} alt={'상품사진'}/>
+                </Div>
+
+                <Div flexGrow={1}>
+
+                    <Flex justifyContent={'flex-start'}>
                         {
-                            gift && <FontAwesomeIcon icon={faGift} className={'text-danger mr-1'} size={'md'} />
+                            gift && <Div fg={'danger'} mr={5}><FaGift /></Div>
                         }
                         {
                             notDeliveryDate ? <Badge fg={'white'} bg={'danger'}>미배송</Badge> :
@@ -101,21 +76,70 @@ const Order = ({orderSeq, orderCnt, goodsNo, goodsNm, orderPrice, cardPrice, ord
                                             <Badge fg={'white'} bg={'green'}>배송중</Badge> : <Badge fg={'white'} bg={'secondary'}>발송예정</Badge>
                         }
                     </Flex>
-                </Flex>
-            </Link>
-            {
-                notDeliveryDate ? null :
-                    (payStatus === 'cancelled') ? null :
-                        consumerOkDate ? null :
-                            trackingNumber &&
-                            <Div px={10}>
-                                <ModalConfirm title={'구매확정'} content={<div>구매확정 하시겠습니까?<br/>구매확정 후 교환 및 반품이 불가합니다.</div>} onClick={onConfirmed.bind(this, orderSeq)}>
-                                    <Btn mb={8} block bc={'secondary'} rounded={5}>구매확정</Btn>
-                                </ModalConfirm>
-                            </Div>
-            }
+                    <Div>
+                        {goodsNm}
+                    </Div>
 
-    </Fragment>
+                    {
+                        (payMethod === 'card') ?
+                            <Div>
+                                <Div mb={4} fontSize={14} bold>{ComUtil.addCommas(orderPrice)}원</Div>
+                                <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드결제
+                                    <Span fg={'danger'}>
+                                        {(superRewardGoods)?'(슈퍼리워드 적용)':''} {(blyTimeGoods)?'(블리타임 적용)':''}
+                                    </Span>
+                                </Right>
+                            </Div>
+                            : payMethod === 'blct' ?
+                            <Div alignItems={'center'}>
+                                <Div mb={4} fontSize={14} bold><Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken)}({ComUtil.addCommas(orderPrice)}원)</Div>
+                                <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''}| BLY결제</Right>
+                            </Div>
+                            :
+                            <Div alignItems={'center'}>
+                                <Div mb={4} fontSize={14} bold>
+                                    {ComUtil.addCommas(cardPrice)}원 +
+                                    <Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken)}({ComUtil.addCommas(ComUtil.roundDown(blctToken*orderBlctExchangeRate, 1))}원)
+                                </Div>
+                                <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드+BLY결제
+                                    <Span fg={'danger'}>
+                                        {(superRewardGoods)?'(슈퍼리워드 적용)':''} {(blyTimeGoods)?'(블리타임 적용)':''}
+                                    </Span>
+                                </Right>
+                            </Div>
+                    }
+
+                    {
+                        hopeDeliveryFlag && (
+                            <Div fontSize={12} fg={'dark'}>희망 수령일 : {ComUtil.utcToString(hopeDeliveryDate)}</Div>
+                        )
+                    }
+
+                </Div>
+            </Flex>
+
+        </Link>
+        {
+            notDeliveryDate ? null :
+                (payStatus === 'cancelled') ? null :
+                    consumerOkDate ? null :
+                        trackingNumber &&
+                        <Div mt={16}>
+                            <ModalConfirm title={'구매확정'} content={<div>구매확정 하시겠습니까?<br/>구매확정 후 교환 및 반품이 불가합니다.</div>} onClick={onConfirmed.bind(this, orderSeq)}>
+                                <Btn block bg={'green'} fg={'white'} rounded={5}>
+                                    구매확정
+                                    <Div fontSize={13} fg={'light'}>
+                                        {
+                                            (cardPrice > 0 && (blyTimeGoods || superRewardGoods)) && (
+                                                `(지급 예정 리워드 ${ComUtil.addCommas(Math.round(cardPrice * ((blyTimeGoods ? blyTimeReward : superRewardReward) / 100)))}원)`
+                                            )
+                                        }
+                                    </Div>
+                                </Btn>
+                            </ModalConfirm>
+                        </Div>
+        }
+    </Div>
 )
 export default class OrderList extends Component {
     constructor(props) {
@@ -295,7 +319,7 @@ export default class OrderList extends Component {
                 {
                     this.state.chainLoading && <BlockChainSpinner/>
                 }
-                <ShopXButtonNav underline fixed history={this.props.history} historyBack>주문목록</ShopXButtonNav>
+                <ShopXButtonNav underline fixed historyBack>주문목록</ShopXButtonNav>
                 <Flex fontSize={14} m={16}>
                     <Div bold>총 <Span fg='green'>{(data)?data.length + '개':'0개'}</Span> 주문목록</Div>
                 </Flex>
@@ -307,49 +331,49 @@ export default class OrderList extends Component {
                         const orderGroupKeyList = this.state.orderGroupKeyList.filter(orderGroupKey => orderGroupKey.orderGroupNo === orderGroupNo)
 
                         return(
-                                <OrderGroup key={orderGroupNo}>
-                                    {
-                                        orderGroupKeyList.map(({orderGroupNo, producerNo, producerWrapDelivered, directGoods}, pIndex) => {
-                                            const orderList = this.state.orderList.filter(order =>
-                                                order.orderGroupNo === orderGroupNo
-                                                && order.producerNo === producerNo
-                                                && order.producerWrapDelivered === producerWrapDelivered
-                                                && order.directGoods === directGoods)
-                                            return (
-                                                <Fragment key={'orderGroup'+pIndex}>
-                                                    {
-                                                        pIndex === 0 && <OrderDate fontSize={14} bg={'white'} fg={'dark'}>{ComUtil.utcToString(orderList[0].orderDate)}</OrderDate>
-                                                    }
+                            <OrderGroup key={orderGroupNo}>
+                                {
+                                    orderGroupKeyList.map(({orderGroupNo, producerNo, producerWrapDelivered, directGoods}, pIndex) => {
+                                        const orderList = this.state.orderList.filter(order =>
+                                            order.orderGroupNo === orderGroupNo
+                                            && order.producerNo === producerNo
+                                            && order.producerWrapDelivered === producerWrapDelivered
+                                            && order.directGoods === directGoods)
+                                        return (
+                                            <Fragment key={'orderGroup'+pIndex}>
+                                                {
+                                                    pIndex === 0 && <OrderDate fontSize={14} bg={'white'} fg={'dark'}>{ComUtil.utcToString(orderList[0].orderDate)}</OrderDate>
+                                                }
 
-                                                    <OrderGroupDetail key={orderGroupNo+"_"+producerNo+"_"+pIndex} bg={'white'}>
-                                                        {
-                                                            orderList.map((order, index) =><Order key={'order_'+index} {...order} onConfirmed={this.onConfirmed}/>)
-                                                        }
-                                                    </OrderGroupDetail>
-                                                </Fragment>
-                                            )
-                                        })
-                                    }
-                                </OrderGroup>
-                            )
+                                                <OrderGroupDetail key={orderGroupNo+"_"+producerNo+"_"+pIndex} bg={'white'}>
+                                                    {
+                                                        orderList.map((order, index) =><Order key={'order_'+index} {...order} onConfirmed={this.onConfirmed}/>)
+                                                    }
+                                                </OrderGroupDetail>
+                                            </Fragment>
+                                        )
+                                    })
+                                }
+                            </OrderGroup>
+                        )
                     })
                 }
 
                 {/*{*/}
-                    {/*this.state.orderGroupKeyList.map(({orderGroupNo, producerNo, producerWrapDelivered, directGoods}, pIndex) => {*/}
-                        {/*const orderList = this.state.orderList.filter(order =>*/}
-                            {/*order.orderGroupNo === orderGroupNo*/}
-                            {/*&& order.producerNo === producerNo*/}
-                            {/*&& order.producerWrapDelivered === producerWrapDelivered*/}
-                            {/*&& order.directGoods === directGoods)*/}
-                        {/*return (*/}
-                            {/*<OrderGroupDetail key={orderGroupNo+"_"+producerNo+"_"+pIndex} m={16} bg={'white'} bc={'secondary'}>*/}
-                                {/*{*/}
-                                    {/*orderList.map((order, index) =><Order key={'order_'+index} {...order}/>)*/}
-                                {/*}*/}
-                            {/*</OrderGroupDetail>*/}
-                        {/*)*/}
-                    {/*})*/}
+                {/*this.state.orderGroupKeyList.map(({orderGroupNo, producerNo, producerWrapDelivered, directGoods}, pIndex) => {*/}
+                {/*const orderList = this.state.orderList.filter(order =>*/}
+                {/*order.orderGroupNo === orderGroupNo*/}
+                {/*&& order.producerNo === producerNo*/}
+                {/*&& order.producerWrapDelivered === producerWrapDelivered*/}
+                {/*&& order.directGoods === directGoods)*/}
+                {/*return (*/}
+                {/*<OrderGroupDetail key={orderGroupNo+"_"+producerNo+"_"+pIndex} m={16} bg={'white'} bc={'secondary'}>*/}
+                {/*{*/}
+                {/*orderList.map((order, index) =><Order key={'order_'+index} {...order}/>)*/}
+                {/*}*/}
+                {/*</OrderGroupDetail>*/}
+                {/*)*/}
+                {/*})*/}
                 {/*}*/}
 
                 <Modal isOpen={this.state.reviewModalOpen} centered>

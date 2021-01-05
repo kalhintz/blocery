@@ -1,9 +1,6 @@
 import React, { Fragment, Component } from 'react'
-import { Col, Button, Form, FormGroup, Label, Input, Container, InputGroup, Table, Badge, Row, Fade } from 'reactstrap'
-import ComUtil from "../../../../util/ComUtil"
-import { getConsumerByConsumerNo, updateValword } from "../../../../lib/shopApi";
-import { updValword } from "../../../../lib/producerApi"
-import { doLogout } from "../../../../lib/loginApi"
+import { Label, Container } from 'reactstrap'
+import { getConsumerByConsumerNo } from "~/lib/shopApi";
 import { ShopXButtonNav } from '../../../common/index'
 
 export default class HintPassPhrase extends Component {
@@ -34,7 +31,7 @@ export default class HintPassPhrase extends Component {
     render() {
         return(
             <Fragment>
-                <ShopXButtonNav underline back history={this.props.history}>결제 비밀번호 관리</ShopXButtonNav>
+                <ShopXButtonNav underline historyBack >결제 비밀번호 관리</ShopXButtonNav>
                 <Container fluid>
                 <p></p>
                     <div>

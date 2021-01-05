@@ -11,8 +11,7 @@ import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/src/styles/ag-grid.scss";
 import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
-
-import { Refresh } from '@material-ui/icons'
+import {MdRefresh} from "react-icons/md";
 import 'react-month-picker/css/month-picker.css'
 import MonthPicker from 'react-month-picker'
 import moment from 'moment-timezone'
@@ -452,7 +451,7 @@ export default class PaymentAll extends Component{
 
         console.log(data);
         data.forEach((node) => {
-            if (node.blctNotYetPayoutAmount > 0) {
+            if (node.blctNotYetPayoutAmount > 0 && !node.payoutBlct) {  // blct정산 생산자 제외
                 totalBlctNotYetPayoutAmount = totalBlctNotYetPayoutAmount + node.blctNotYetPayoutAmount;
             }
         });
@@ -494,7 +493,7 @@ export default class PaymentAll extends Component{
                                 <Button color={'info'} size={'sm'} block  style={{width: '100px'}}
                                         onClick={this.onRefreshClick}>
                                     <div className="d-flex">
-                                        <Refresh fontSize={'small'}/> 조회
+                                        <MdRefresh fontSize={'small'}/> 조회
                                     </div>
                                 </Button>
                             </div>

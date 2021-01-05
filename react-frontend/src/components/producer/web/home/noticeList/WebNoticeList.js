@@ -1,12 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import { Refresh } from '@material-ui/icons'
+import {MdRefresh} from "react-icons/md";
+
 import { getServerToday } from '~/lib/commonApi'
 import ComUtil from '~/util/ComUtil'
 
-import { getProducer } from '~/lib/producerApi'
-import { getLoginUser, getLoginUserType } from '~/lib/loginApi'
-import { Webview } from '~/lib/webviewApi'
+import { getLoginProducerUser } from '~/lib/loginApi'
 import { getNoticeList } from '~/lib/adminApi'
 import { NoticeTemplate } from '~/components/common/templates'
 
@@ -151,21 +150,11 @@ export default class WebNoticeList extends Component{
 
     async componentDidMount() {
         //로그인 체크
-        const {data: userType} = await getLoginUserType();
-        if(userType == 'consumer') {
-            //소비자용 메인페이지로 자동이동.
-            Webview.movePage('/home/1');
-        } else if (userType == 'producer') {
-            let loginUser = await getProducer();
-            if(!loginUser){
-                this.props.history.push('/producer/webLogin')
-            }
-        } else {
+        const loginUser = await getLoginProducerUser();
+        if(!loginUser){
             this.props.history.push('/producer/webLogin')
         }
-
         //로그인정보
-        const loginUser = await getLoginUser();
         this.setState({
             producerNo: loginUser.uniqueNo
         });
@@ -232,7 +221,7 @@ export default class WebNoticeList extends Component{
                     <div className="flex-grow-1 text-right">
                         <Button color={'info'} size={'sm'} onClick={this.onRefreshClick}>
                             <div className="d-flex">
-                                <Refresh fontSize={'small'}/>새로고침
+                                <MdRefresh/>새로고침
                             </div>
                         </Button>
                     </div>

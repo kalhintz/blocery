@@ -1,8 +1,6 @@
-import React, { Fragment } from 'react'
-import { Link, NavLink as RouterLink } from 'react-router-dom'
+import React from 'react'
+import { NavLink as RouterLink } from 'react-router-dom'
 import Style from './ProducerNav.module.scss'
-import PropTypes from 'prop-types'
-import classnames from 'classnames'
 
 // import { ProducerMenuList } from '../../Properties'
 const ProducerNav = ({data, id}) => {

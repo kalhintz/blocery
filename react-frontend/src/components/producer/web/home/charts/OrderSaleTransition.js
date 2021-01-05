@@ -1,7 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react'
-import { BlocerySpinner, HeaderTitle } from '~/components/common'
-import { Doc } from '~/components/Properties'
-import ComUtil from '~/util/ComUtil'
+import React, { useState, useEffect } from 'react'
 import { getTransitionWithOrderSaleByProducerNo } from '~/lib/producerApi'
 import Highcharts from 'highcharts' // 하이차트
 import HighchartsReact from 'highcharts-react-official' // 하이차트 리액트 오피셜

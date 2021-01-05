@@ -1,28 +1,14 @@
-import React, { Component, PropTypes, Fragment } from 'react';
-import {
-    Container, Row, Col, Input, FormGroup, Label, Button, Fade, Badge, Alert,
-    InputGroup, InputGroupAddon, InputGroupText, DropdownMenu, InputGroupButtonDropdown,
-    DropdownToggle, DropdownItem, Modal, ModalHeader, ModalBody, ModalFooter
-} from 'reactstrap'
+import React, { Component } from 'react';
+import {FormGroup, Label, Button, Alert, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap'
 import Select from 'react-select'
-
 import moment from 'moment-timezone'
-
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
-import { DateRangePicker, SingleDatePicker } from 'react-dates';
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearchPlus, faPlusCircle, faMinusCircle } from '@fortawesome/free-solid-svg-icons'
-import
-{
-    BlocerySpinner,
-    Spinner, RadioButtons, ModalConfirmButton, ProducerFullModalPopupWithNav,
-    SingleImageUploader, FooterButtonLayer ,
-    B2cGoodsSearch
-} from '~/components/common'
+import { SingleDatePicker } from 'react-dates';
+import {FaSearchPlus} from 'react-icons/fa'
+import {BlocerySpinner, B2cGoodsSelSearch} from '~/components/common'
 import ComUtil from '~/util/ComUtil'
-import { getAllGoods, getTimeSaleAdmin, setTimeSaleSave } from '~/lib/adminApi'
+import { getTimeSaleAdmin, setTimeSaleRegist, setTimeSaleUpdate } from '~/lib/adminApi'
 import Style from './B2cTimeSaleReg.module.scss'
 
 export default class B2cTimeSaleReg extends Component{
@@ -32,6 +18,8 @@ export default class B2cTimeSaleReg extends Component{
         const { timeSaleGoodsNo } = this.props;
 
         this.state = {
+            isReg:timeSaleGoodsNo != null ? false:true,
+
             isDidMounted:false,
             focusedInput: null,
 
@@ -370,17 +358,32 @@ export default class B2cTimeSaleReg extends Component{
 
         let params = timeSaleGoods;
 
-        const { status, data } = await setTimeSaleSave(params);
-        if(status !== 200){
-            alert('포텐타임 저장이 실패 하였습니다');
-            return
-        }
-        if(status === 200){
-            // 기획전 닫기 및 목록 재조회
-            let params = {
-                refresh:true
-            };
-            this.props.onClose(params);
+        if(this.state.isReg == true) {
+            const {status, data} = await setTimeSaleRegist(params);
+            if (status !== 200) {
+                alert('포텐타임 저장이 실패 하였습니다');
+                return
+            }
+            if (status === 200) {
+                // 닫기 및 목록 재조회
+                let params = {
+                    refresh: true
+                };
+                this.props.onClose(params);
+            }
+        }else{
+            const {status, data} = await setTimeSaleUpdate(params);
+            if (status !== 200) {
+                alert('포텐타임 저장이 실패 하였습니다');
+                return
+            }
+            if (status === 200) {
+                // 닫기 및 목록 재조회
+                let params = {
+                    refresh: true
+                };
+                this.props.onClose(params);
+            }
         }
     };
 
@@ -522,7 +525,7 @@ export default class B2cTimeSaleReg extends Component{
                                         <div>
                                             <Button color={'info'}
                                                     onClick={this.goodsSearchModalPopup}>
-                                                <FontAwesomeIcon icon={faSearchPlus} /> 상품검색
+                                                <FaSearchPlus /> 상품검색
                                             </Button>
                                         </div>
 
@@ -596,7 +599,7 @@ export default class B2cTimeSaleReg extends Component{
                         상품 검색
                     </ModalHeader>
                     <ModalBody>
-                        <B2cGoodsSearch onChange={this.goodsSearchModalOnChange} />
+                        <B2cGoodsSelSearch onChange={this.goodsSearchModalOnChange} />
                     </ModalBody>
                     <ModalFooter>
                         <Button color="secondary"

@@ -1,7 +1,6 @@
-import React, { Fragment, useState, useEffect }  from 'react'
+import React, { useState, useEffect }  from 'react'
 import Swiper from 'react-id-swiper'
 import { SpinnerBox } from '~/components/common'
-import { getConsumerGoodsSorted } from '~/lib/goodsApi'
 import Css from './WeeklyProducer.module.scss'
 import classNames from 'classnames'
 import { SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'

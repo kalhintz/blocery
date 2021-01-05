@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React from 'react'
 import Css from './B2cSidebar.module.scss'
 import B2cLastSeenGoodsList from './B2cLastSeenGoodsList'
 import {IconBackClose} from '~/components/common/icons'

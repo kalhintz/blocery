@@ -1,45 +1,44 @@
-import React, { Fragment, useState, useEffect } from 'react'
-import { Hr } from '~/components/common'
-import classNames from 'classnames'
-
-import SpecialPriceDeal from './SpecialPriceDeal'           //특가Deal
-import Best from './Best'                                   //베스트
-import PopularCategories from './PopularCategories'         //인기카테고리
-import MdPick from './MdPick'                               //기획전
-import SoonCloseGoods from './SoonCloseGoods'               //마감임박
-import WeeklyProducer from './WeeklyProducer'               //금주의 생산자
-
-
-import BloceryRecommendation from './BloceryRecommendation' //블리추천
-import DeadlineGoods from './DeadlineGoods'                 //마감임박상품
-import BestOfWeekness from './BestOfWeekness'               //이번주 BEST 상품
-import NewestOfWeekness from './NewestOfWeekness'           //금주의 신상품
-import Banner from '../banner'
+import React, { Fragment, useEffect } from 'react'
+import ComUtil from '~/util/ComUtil'
 import {Server} from '~/components/Properties'
-import Footer from '../footer'
+import loadable from '@loadable/component'
 
-
-import {
-    getSpecialDealGoodsList,    //특가 Deal
-    getExGoodsNoList,           //기획전
-    getTodayProducerList        //금주의 생산자
-} from '~/lib/adminApi'
+const Banner = loadable(() => import('../banner'))
+const SpecialPriceDeal = loadable(() => import('./SpecialPriceDeal'))   //특가Deal
+const Best = loadable(() => import('./Best'))                           //베스트
+const PopularCategories = loadable(() => import('./PopularCategories')) //인기카테고리
+const MdPick = loadable(() => import('./MdPick'))                       //기획전
+const SoonCloseGoods = loadable(() => import('./SoonCloseGoods'))       //마감임박
+const WeeklyProducer = loadable(() => import('./WeeklyProducer'))       //금주의 생산자
+const Footer = loadable(() => import('../footer'))
 
 const TodaysDeal = (props) => {
-
     const SubTitle = ({children, onClick = () => null}) =>
         <div className='f4 pl-2 pt-3 pr-2 mb-2 text-dark font-weight-bold' onClick={onClick}>{children}</div>
 
     useEffect(() => {
-        //http로 첫페이지 접속시 https로 자동전환.
-        if ( window.location.protocol === 'http:' && Server._serverMode() === 'production') {
-            console.log('window.location.protocol:' + window.location.protocol);
-            window.location = 'https://blocery.com/home/1';  //HARD CODING
-        }
-        console.log('didMount TodaysDeal')
-        window.scrollTo(0, 0)
+        //AWS에서 자동처리:202012 //http로 첫페이지 접속시 https로 자동전환.
+        // if ( window.location.protocol === 'http:' && Server._serverMode() === 'production') {
+        //     console.log('window.location.protocol:' + window.location.protocol);
+        //     window.location = 'https://blocery.com/home/1';  //HARD CODING
+        // }
 
+        // console.log(props)
+        const params = new URLSearchParams(props.location.search)
+        let moveTo = params.get('moveTo');
+        if (moveTo)  {
+            props.history.push('/home/1'); //back을 대비해서 mypage로 돌아오도록 넣어놔야 함...
+            props.history.push('/' + moveTo);
+        }
+
+        console.log('didMount TodaysDeal')
+
+        localStorage.setItem('today', ComUtil.utcToString(new Date()));
+
+        window.scrollTo(0, 0)
+        //console.log(localStorage)
     }, [])
+
     return(
         <Fragment>
 
@@ -70,8 +69,8 @@ const TodaysDeal = (props) => {
                     <WeeklyProducer style={{marginTop: 76, marginBottom: 105}} history={props.history} />
 
                 </div>
-
             </div>
+
             <Footer/>
         </Fragment>
     )

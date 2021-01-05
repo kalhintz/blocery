@@ -1,14 +1,12 @@
 import React, { Component, Fragment } from 'react'
-import { Container, Button, Row, Col, Label, Input, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import { ShopXButtonNav, ModalConfirm } from '~/components/common/index'
+import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap'
+import { ShopXButtonNav } from '~/components/common/index'
 import Switch from "react-switch";
 
 import { getConsumer, updateConsumerInfo } from '~/lib/shopApi'
 import { getServerVersion } from "~/lib/commonApi";
 
-import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
+import {FaAngleRight} from 'react-icons/fa'
 
 export default class Setting extends Component {
     constructor(props) {
@@ -114,7 +112,11 @@ export default class Setting extends Component {
     render() {
         return (
             <Fragment>
-                <ShopXButtonNav underline history={this.props.history} forceBackUrl={'/mypage'}>설정</ShopXButtonNav>
+                <ShopXButtonNav underline
+                                // history={this.props.history}
+                                // forceBackUrl={'/mypage'}
+                    historyBack
+                >설정</ShopXButtonNav>
                 <div className='p-3 font-weight-bold'>알림</div>
                 <hr className='p-0 m-0'/>
                 <div className='d-flex p-3'>
@@ -132,14 +134,14 @@ export default class Setting extends Component {
                 <div className='d-flex p-3' onClick={this.getTerms}>
                     <div className='flex-grow-1'>이용약관</div>
                     <div className={'text-right d-flex'}>
-                        <FontAwesomeIcon icon={faAngleRight} />
+                        <FaAngleRight />
                     </div>
                 </div>
                 <hr className='p-0 m-0'/>
                 <div className='d-flex p-3' onClick={this.getPrivacyPolicy}>
                     <div className='flex-grow-1'>개인정보처리방침</div>
                     <div className={'text-right d-flex'}>
-                        <FontAwesomeIcon icon={faAngleRight} />
+                        <FaAngleRight />
                     </div>
                 </div>
                 <hr className='p-0 m-0'/>

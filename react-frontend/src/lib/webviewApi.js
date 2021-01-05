@@ -26,7 +26,7 @@ export const Webview = {
 
         //일반 웹접속일 경우(개발환경 등에서는 그냥 이동
         if (!ComUtil.isMobileApp()) {
-            window.location = url;
+            // window.location = url;
             history.push(url, { some: 'state' }); //refresh를 위해 적당한 state 추가.
             return;
         }
@@ -84,6 +84,23 @@ export const Webview = {
         }
     },
 
+    /*******************************************************
+     [public] 카카오 로그인 호출.
+     @Warning :
+     @Param : none
+     *******************************************************/
+    kakaoAppLogin: function(){
+
+        this.appLog('Webview.kakaoApplogin call');
+        //일반 웹접속일 경우(개발환경 등에서는 그냥 이동
+        if (!ComUtil.isMobileApp()) {
+            return;
+        }
+
+        const data = {url: '', type: 'KAKAO_LOGIN'};
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+
+    },
 
     /*******************************************************
      [public] 웹뷰 창 닫기

@@ -137,7 +137,7 @@ class b2cQueInfo extends Component{
         const state = Object.assign({}, this.state)
         return(
             <Fragment>
-                <ShopXButtonNav underline history={this.props.history} historyBack>입점문의</ShopXButtonNav>
+                <ShopXButtonNav underline historyBack>입점문의</ShopXButtonNav>
                 {/*<iframe src={"https://docs.google.com/forms/d/e/1FAIpQLSfD3RtDIWFVfy1bu1z51R8NmvA9kyFlTFJpNH3PBMn8RQjA1Q/viewform"}*/}
                         {/*width={'100%'}*/}
                         {/*height="100vh"*/}

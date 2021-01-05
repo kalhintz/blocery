@@ -1,6 +1,6 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { resetPassword, setCurrentPriceOfAllValidGoods, setNotDeliveryOrder, sendWarnShippingStart, sendNotiDelayShipping,
-    setOrderDetailConfirm, updateConsumerOkDateForBatch, setPayoutAmountBatch, setOrderDetailConfirmBatchOrderSeq, transferTempProducerBlctToEzfarm } from '~/lib/adminApi'
+    setOrderDetailConfirm, setPayoutAmountBatch, setOrderDetailConfirmBatchOrderSeq, transferTempProducerBlctToEzfarm } from '~/lib/adminApi'
 import { isTokenAdminUser } from '~/lib/loginApi'
 import { BlockChainSpinner, Spinner } from '~/components/common'
 

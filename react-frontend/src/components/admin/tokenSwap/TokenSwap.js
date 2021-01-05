@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { scOntGetBalanceOfBlct } from '~/lib/smartcontractApi'
 import { allocateSwapAccount, getBlyBalanceByConsumerNo, swapBlyToBlct, swapBlctToBly } from '~/lib/swapApi'
 

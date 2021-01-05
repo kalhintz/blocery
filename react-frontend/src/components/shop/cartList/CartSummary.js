@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import ComUtil from '../../../util/ComUtil'
 
 import styled from 'styled-components'
-import { Div, Span, Img, Flex, Right, Hr, Fixed } from '~/styledComponents/shared/Layouts'
+import { Div, Flex } from '~/styledComponents/shared/Layouts'
 import { HrThin } from '~/styledComponents/mixedIn'
 
 const Price = styled(Div)`

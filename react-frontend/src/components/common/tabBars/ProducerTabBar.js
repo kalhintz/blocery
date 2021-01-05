@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react'
-import { Home, List, Menu, PhotoLibrary, Face } from '@material-ui/icons'
 import Css from './ProducerTabBar.module.scss'
 import PropTypes from 'prop-types'
 import { tabBarData } from '../../Properties'

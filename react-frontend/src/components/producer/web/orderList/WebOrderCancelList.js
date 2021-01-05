@@ -1,13 +1,13 @@
-import React, { Component, PropTypes, Fragment } from 'react';
-import { getProducer, getCancelOrderByProducerNo } from '~/lib/producerApi'
-import { getLoginUserType, autoLoginCheckAndTry } from '~/lib/loginApi'
+import React, { Component, Fragment } from 'react';
+import { getCancelOrderByProducerNo } from '~/lib/producerApi'
+import { getLoginProducerUser } from '~/lib/loginApi'
 import { getServerToday } from '~/lib/commonApi'
 import "react-table/react-table.css"
+import moment from 'moment-timezone'
 import ComUtil from '~/util/ComUtil'
 import { Button, FormGroup } from 'reactstrap'
 import { ProducerFullModalPopupWithNav, Cell, ExcelDownload } from '~/components/common'
-import Order from '~/components/producer/order'
-import { Webview } from '~/lib/webviewApi'
+import Order from '~/components/producer/web/order'
 import { getItems } from '~/lib/adminApi'
 import Select from 'react-select'
 
@@ -15,6 +15,9 @@ import Select from 'react-select'
 import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/src/styles/ag-grid.scss";
 import "ag-grid-community/src/styles/ag-theme-balham.scss";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/src/stylesheets/datepicker.scss";
 
 export default class WebOrderCancelList extends Component {
     constructor(props) {
@@ -59,6 +62,7 @@ export default class WebOrderCancelList extends Component {
             },
 
             searchFilter: {
+                year:moment().format('YYYY'),
                 itemName: '',
                 payMethod: 'all'
             },
@@ -355,7 +359,7 @@ export default class WebOrderCancelList extends Component {
 
     //Ag-Grid Cell 주문 결제 방법 렌더러
     orderPayMethodRenderer = ({value, data:rowData}) => {
-        let payMethodTxt = rowData.payMethod === "card" ?  "카드결제": rowData.payMethod === "cardBlct" ? "카드 + BLCT결제" : "BLCT결제";
+        let payMethodTxt = rowData.payMethod === "card" ?  "카드결제": rowData.payMethod === "cardBlct" ? "카드 + BLY결제" : "BLY결제";
         return (<span>{payMethodTxt}</span>);
     }
 
@@ -365,11 +369,11 @@ export default class WebOrderCancelList extends Component {
         let orderAmount = rowData.cardPrice + "원";
         switch (rowData.payMethod) {
             case "blct":
-                orderAmount = rowData.blctToken + "BLCT";
+                orderAmount = rowData.blctToken + "BLY";
                 break;
 
             case "cardBlct":
-                orderAmount = rowData.cardPrice + "원 + " + rowData.blctToken + "BLCT";
+                orderAmount = rowData.cardPrice + "원 + " + rowData.blctToken + "BLY";
                 break;
         }
 
@@ -416,20 +420,9 @@ export default class WebOrderCancelList extends Component {
     }
 
     async componentDidMount(){
-        //자동로그인 check & try
-        await autoLoginCheckAndTry();
-
         //로그인 체크
-        const {data: userType} = await getLoginUserType();
-        if(userType == 'consumer') {
-            //소비자용 메인페이지로 자동이동.
-            Webview.movePage('/home/1');
-        } else if (userType == 'producer') {
-            let loginUser = await getProducer();
-            if(!loginUser){
-                this.props.history.push('/producer/webLogin')
-            }
-        } else {
+        const loginUser = await getLoginProducerUser();
+        if(!loginUser){
             this.props.history.push('/producer/webLogin')
         }
         this.setFilter();
@@ -446,9 +439,9 @@ export default class WebOrderCancelList extends Component {
         let { data:serverToday } = await getServerToday();
         this.serverToday = serverToday;
 
-        const filter = Object.assign({},this.state.searchFilter)
+        const filter = Object.assign({},this.state.searchFilter);
 
-        const { status, data } = await getCancelOrderByProducerNo(filter.itemName, filter.payMethod);
+        const { status, data } = await getCancelOrderByProducerNo(filter.year, filter.itemName, filter.payMethod);
         if(status !== 200){
             alert('응답이 실패 하였습니다');
             return
@@ -498,11 +491,15 @@ export default class WebOrderCancelList extends Component {
             },
             {
                 value:'card',
-                label:'신용카드'
+                label:'카드결제'
             },
             {
                 value:'blct',
-                label:'BLCT'
+                label:'BLY결제'
+            },
+            {
+                value:'cardBlct',
+                label:'카드+BLY결제'
             }
         ];
 
@@ -585,7 +582,7 @@ export default class WebOrderCancelList extends Component {
         //필터링 된 데이터에서 sortedData._original 로 접근하여 그리드에 바인딩 원본 값을 가져옴
         const data = sortedData.map((item ,index)=> {
             let payStatusNm = WebOrderCancelList.getPayStatusNm(item);
-            let payMethodNm = item.payMethod === "card" ? "카드결제" : "BLCT결제";
+            let payMethodNm = item.payMethod === "card" ? "카드결제" : item.payMethod === "cardBlct" ? "카드+BLY결제":"BLY결제";
             return [
                 index+1,
                 payStatusNm, payMethodNm,
@@ -619,6 +616,7 @@ export default class WebOrderCancelList extends Component {
     onInitClick= async() => {
         const filter = Object.assign({}, this.state.searchFilter)
 
+        filter.year = moment().format('YYYY');
         filter.itemName = '';
         filter.payMethod = 'all';
         filter.orderStatus = 'all';
@@ -665,14 +663,39 @@ export default class WebOrderCancelList extends Component {
 
     }
 
+    onSearchDateChange = async (date) => {
+        //console.log("",date.getFullYear())
+        const filter = Object.assign({},this.state.searchFilter)
+        filter.year = date.getFullYear();
+        await this.setState({searchFilter:filter});
+        await this.search();
+    }
+
     render() {
         const state = this.state
+
+        const ExampleCustomDateInput = ({ value, onClick }) => (
+            <Button
+                color="secondary"
+                active={true}
+                onClick={onClick}>{value} 년</Button>
+        );
+
         return (
             <Fragment>
                 <FormGroup>
                     <div className='border p-3'>
                         <div className='d-flex'>
                             <div className='d-flex'>
+                                <DatePicker
+                                    selected={new Date(moment().set('year',state.searchFilter.year))}
+                                    onChange={this.onSearchDateChange}
+                                    showYearPicker
+                                    dateFormat="yyyy"
+                                    customInput={<ExampleCustomDateInput />}
+                                />
+                            </div>
+                            <div className='ml-3 d-flex'>
                                 <div className='d-flex justify-content-center align-items-center textBoldLarge' fontSize={'small'}>상품분류</div>
                                 <div className='pl-3' style={{width:200}}>
                                     <Select
@@ -682,7 +705,7 @@ export default class WebOrderCancelList extends Component {
                                     />
                                 </div>
                             </div>
-                            <div className='ml-5 d-flex'>
+                            <div className='ml-3 d-flex'>
                                 <div className='d-flex justify-content-center align-items-center textBoldLarge' fontSize={'small'}>결제수단 &nbsp; &nbsp; | </div>
                                 <div className='pl-3 pt-2 '>
                                     {

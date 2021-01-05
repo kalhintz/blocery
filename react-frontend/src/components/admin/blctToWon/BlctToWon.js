@@ -1,11 +1,10 @@
-import React, { Component, PropTypes } from 'react';
-import { Button, Input } from 'reactstrap'
+import React, { Component } from 'react';
 import "react-table/react-table.css"
 import { getAllBlctToWonCachedLog, } from '~/lib/adminApi'
 import { getLoginAdminUser } from '~/lib/loginApi'
 
 
-import { ExcelDownload, ModalConfirm } from '~/components/common'
+import { ExcelDownload } from '~/components/common'
 
 
 import { AgGridReact } from 'ag-grid-react';

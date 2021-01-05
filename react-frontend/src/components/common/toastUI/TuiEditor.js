@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import ComUtil from '~/util/ComUtil'
 import { Server } from '~/components/Properties'
 import DOMPurify from 'dompurify';

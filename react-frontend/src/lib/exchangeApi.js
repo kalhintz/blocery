@@ -1,3 +1,4 @@
+import React, {useState, useEffect} from 'react'
 import ComUtil from '../util/ComUtil'
 import axios from 'axios'
 import { Server } from "../components/Properties";
@@ -28,21 +29,45 @@ export const CANCEL_FEE_MAX = 10;   //배송시작일 1일전~배송시작일 �
 
 //서버에서 가져온 BLCT를 첫화면에서 쿠키에 저장하고, 쿠키값을 리턴. : 정확한 BLCT값이 아니므로 홈이나 목록에서만 사용
 //결제등에서 정확한 값을 쓰려면 exchangeWon2BLCT 필요.
-export const exchangeWon2BLCTHome = (won) => {
+export const exchangeWon2BLCTHome = async(won) => {
     let blctToWon = sessionStorage.getItem('blctToWon');
-    // console.log('getBlctCookie:' + blctToWon);
     if (!blctToWon) {
-        blctToWon = 40.0; //default 40원
+        let {data} = await BLCT_TO_WON();
+        blctToWon = data;
+        sessionStorage.setItem('blctToWon', blctToWon);
     }
-    //console.log('getBlct:' + blctToWon);
     return ComUtil.roundDown(won/blctToWon, 0);
+}
+{/*<exchangeWon2BlctHom.Tag won={222} />*/}
+exchangeWon2BLCTHome.Tag = ({won}) => {
+
+    const [blctToWon, setBlctToWon] = useState()
+    useEffect(() => {
+        async function fetch() {
+            const blctToWon = await exchangeWon2BLCTHome(won)
+            setBlctToWon(blctToWon)
+        }
+        fetch()
+    }, [])
+    return(
+        <>{ComUtil.addCommas(blctToWon)}</>
+    )
+}
+
+//sessionStorage 에 있는 BLY 기준가로 현재 원화 계산
+export const calcBlyToWon = (bly, blyUnitPrice) => {
+    const unitPrice = blyUnitPrice || sessionStorage.getItem('blctToWon')
+    if (!unitPrice)
+        return null
+
+    return ComUtil.roundDown(bly * parseFloat(unitPrice), 0)
 }
 
 ////B2B_ADDED//////////////////
 export const B2B_DEAL_BLOCERY_ONLY_FEE = 0.00;      // blocery fee
 
 /**
- * param 원
+ * param
  * returns BLCT
  */
 export const exchangeWon2BLCT = async (won) =>  {

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { List } from '../components/List'
-import { getOrderByProducerNo } from '~/lib/producerApi'
 import ComUtil from '~/util/ComUtil'
 import { Modal, ModalHeader, ModalBody, Button, ModalFooter } from 'reactstrap'
 

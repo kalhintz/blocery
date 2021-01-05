@@ -1,17 +1,13 @@
 import React, { Component, Fragment } from 'react';
-import { Col, Button, Form, FormGroup, Label, Input, Container, InputGroup, Row, Fade, Modal, ModalBody, ModalHeader, ModalFooter } from 'reactstrap'
-import { addConsumer, getConsumerEmail } from "../../../lib/shopApi";
+import { Col, Button, FormGroup, Label, Input, Container, InputGroup, Row, Fade, Modal, ModalBody, ModalHeader, ModalFooter } from 'reactstrap'
+import { addConsumer, getConsumerEmail } from "~/lib/shopApi";
 import { PassPhrase } from '../../common'
-// import TokenGethSC from '../../../contracts/TokenGethSC';
-// import {scFrontGetUserEther } from "../../../lib/smartcontractApi";
-import { Const, Server } from "../../Properties";
 import { ShopXButtonNav } from '../../common'
 import Terms from '../../common/Terms/Terms'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import 'react-toastify/dist/ReactToastify.css'
 import ComUtil from '~/util/ComUtil'
-import { faMobileAlt, faBell } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {FaMobileAlt} from 'react-icons/fa'
 import { smsSend, smsConfirm } from '~/lib/smsApi'
 import { Webview } from "~/lib/webviewApi";
 import { B2cPrivatePolicy, B2cTermsOfUse } from '~/components/common/termsOfUses'
@@ -65,7 +61,7 @@ export default class ConsumerJoin extends Component{
 
     findOverlapEmail = async (email) => {
         const response = await getConsumerEmail(email)
-        if (response.data == '' || response.data == null) {
+        if (response.data === '' || response.data == null) {
             this.setState({ fadeOverlapEmail: false })
         } else {
             this.setState({ fadeOverlapEmail: true })
@@ -168,7 +164,7 @@ export default class ConsumerJoin extends Component{
     onRegisterClick = () => {
         const state = Object.assign({}, this.state)
 
-        if(state.email == '' || state.valword == '' || state.name == '' || state.fadeEmail || state.fadeOverlapEmail || state.fadeValword || state.fadeValwordCheck) {
+        if(state.email === '' || state.valword === '' || state.name === '' || state.fadeEmail || state.fadeOverlapEmail || state.fadeValword || state.fadeValwordCheck) {
             alert('필수항목 정보를 정확하게 입력해주세요.')
             return false;
         }
@@ -385,12 +381,12 @@ export default class ConsumerJoin extends Component{
 
                             <span className='lead'>휴대전화 본인인증<Star/></span>
                             <div className={'d-flex'}>
-                                <div className={'d-flex justify-content-center align-items-center'}><FontAwesomeIcon className={'mr-2'} icon={faMobileAlt} /></div>
+                                <div className={'d-flex justify-content-center align-items-center'}><FaMobileAlt className={'mr-2'} /></div>
                                 <Input type="number" name="phone" value={this.state.phone} placeholder="전화번호 입력('-'제외)" onChange={this.handleChange}></Input>
                                 <Button outline size={'sm'} style={{width:'180px'}} onClick={this.onSmsSend}>인증번호 받기</Button>
                             </div>
                             <div className={'d-flex mt-1'}>
-                                <div className={'d-flex justify-content-center align-items-center'}><FontAwesomeIcon className={'mr-2'} icon={faMobileAlt} /></div>
+                                <div className={'d-flex justify-content-center align-items-center'}><FaMobileAlt className={'mr-2'} /></div>
                                 <Input type="number" name="code" value={this.state.code} placeholder="인증번호 입력" onChange={this.handleChange} />
                                 <Button outline size={'sm'} style={{width:'180px'}} onClick={this.onSmsConfirm}>인증번호 확인</Button>
                             </div>

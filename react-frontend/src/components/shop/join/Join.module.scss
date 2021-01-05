@@ -18,6 +18,12 @@
   box-shadow: none;
 }
 
+.kakao input:read-only {
+  //border: none;
+  //background: transparent;
+  //background-color: white !important;
+}
+
 ::placeholder {
   color: blue;
   font-size: 1em;

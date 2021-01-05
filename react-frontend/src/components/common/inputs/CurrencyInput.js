@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import {Input} from 'reactstrap'
 import ComUtil from '../../../util/ComUtil'
 import PropTypes from 'prop-types'

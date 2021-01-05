@@ -38,7 +38,7 @@ const Home = (props) => {
         //console.log('userType',userType)
         if(userType == 'consumer') {
             //소비자용 메인페이지로 자동이동.
-            Webview.movePage('/home/1');
+            Webview.movePage('/');
         } else if (userType == 'producer') {
             let loginUser = await getProducer();
             if(!loginUser){

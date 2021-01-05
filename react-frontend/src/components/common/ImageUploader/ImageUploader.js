@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import axios from 'axios'
 import { Server } from '../../Properties'
 import ImageUploadButton from './ImageUploadButton'
-import { Gallery } from '../Gallery'
+import Gallery from '../gallery'
 import { Spinner } from '../Spinner'
 import ComUtil from "../../../util/ComUtil"
 

@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { Container, Row, Col, Button } from 'reactstrap'
+import { Container, Row, Col } from 'reactstrap'
 import { ShopXButtonNav } from '~/components/common/index'
 import { B2cTermsOfUse } from '~/components/common/termsOfUses'
 
@@ -14,7 +14,7 @@ export default class TermsOfUse extends Component {
     render() {
         return (
             <Fragment>
-                <ShopXButtonNav history={this.props.history} historyBack fixed>이용약관</ShopXButtonNav>
+                <ShopXButtonNav historyBack fixed>이용약관</ShopXButtonNav>
                 <Container>
                     <Row>
                         <Col className={'p-2'}>

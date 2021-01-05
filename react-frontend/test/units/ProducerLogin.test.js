@@ -1,6 +1,5 @@
 import React from 'react'
 import { create } from 'react-test-renderer'
-import OrderList from '../../src/components/producer/orderList/index'
 import { LoginTab } from '../../src/components/shop/index'
 import ComUtil from '../../src/util/ComUtil';
 import { getOrderByProducerNo } from '../../src/lib/producerApi'

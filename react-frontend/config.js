@@ -2,7 +2,6 @@
 
 System.config({
     "paths": {
-        "~/*": "./src/*",
-        "$/*": "./src/contracts/*"
+        "~/*": "./src/*"
     }
 });

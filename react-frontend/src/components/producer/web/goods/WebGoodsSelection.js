@@ -1,13 +1,12 @@
 import React, { Component, Fragment } from 'react'
 import { Container, Row, Col, Button, Badge, Alert } from 'reactstrap'
 import Style from './WebGoodsReg.module.scss'
-import { getLoginUser } from '~/lib/loginApi'
-import { faClock, faBolt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getLoginProducerUser } from '~/lib/loginApi'
+import {FaClock, FaBolt} from 'react-icons/fa'
 
 import { WebGoodsReg, WebDirectGoodsReg } from '~/components/producer'
 
-import { BlocerySpinner, Spinner, BlockChainSpinner, ModalWithNav, ToastUIEditorViewer, PassPhrase } from '~/components/common'
+import { BlocerySpinner, BlockChainSpinner } from '~/components/common'
 
 let bindData = {
     cultivationNm: [],//재배방법
@@ -43,7 +42,7 @@ export default class WebGoodsSelection extends Component {
     }
 
     setLoginUserInfo = async() => {
-        return await getLoginUser();
+        return await getLoginProducerUser();
     }
 
     // 등록할 상품 유형
@@ -100,7 +99,8 @@ export default class WebGoodsSelection extends Component {
                                     <h6>판매상품의 종류를 선택해 주세요.</h6>
                                     <Row className='border pt-3 mb-3'>
                                         <Col xs={6}>
-                                            <Button className={'mb-2'} color={'warning'} size={'lg'} block onClick={this.onGoodsPopupClick.bind(this, 'directGoods')}><FontAwesomeIcon icon={faBolt}/> 즉시 상품</Button>
+                                            <Button className={'mb-2'} color={'warning'} size={'lg'} block onClick={this.onGoodsPopupClick.bind(this, 'directGoods')}>
+                                                <FaBolt />즉시 상품</Button>
                                             <div className={'small text-center text-secondary f6'}>
                                                 <div className={'mb-2'}>
                                                     - 상품이 판매가 되면  <b className={'text-warning'}>즉시 발송하는 상품</b>으로 소비자와 판매가를 입력할 수 있습니다.
@@ -112,7 +112,8 @@ export default class WebGoodsSelection extends Component {
                                             </div>
                                         </Col>
                                         <Col xs={6}>
-                                            <Button className={'mb-2'} color={'info'} size={'lg'} block onClick={this.onGoodsPopupClick.bind(this, 'reservedGoods')}><FontAwesomeIcon icon={faClock}/> 예약 상품</Button>
+                                            <Button className={'mb-2'} color={'info'} size={'lg'} block onClick={this.onGoodsPopupClick.bind(this, 'reservedGoods')}>
+                                                <FaClock />예약 상품</Button>
                                             <div className={'small text-center text-secondary f6'}>
                                                 <div className={'mb-2'}>
                                                     - 채소 등과 같이 <b className={'text-info'}>재배기간 동안 주문을 받고 수확/출하 후 일괄 발송하는 상품</b>입니다.

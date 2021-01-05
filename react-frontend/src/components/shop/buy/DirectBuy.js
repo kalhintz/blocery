@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Buy } from '../../../components/shop/buy';
-import { getGoodsByGoodsNo } from '../../../lib/goodsApi'
-import { getConsumer } from '../../../lib/shopApi'
+import { getGoodsByGoodsNo } from '~/lib/goodsApi'
+import { getConsumer } from '~/lib/shopApi'
 
 export default class DirectBuy extends Component {
 

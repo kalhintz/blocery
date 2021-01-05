@@ -1,14 +1,11 @@
 import React, { Component, Fragment } from 'react';
-import { Container, Row, Col, Button, Form, FormGroup, Label, Input, InputGroup, Fade, Modal, ModalHeader, ModalBody, ModalFooter, Alert, CustomInput } from 'reactstrap'
-import { getProducerEmail, addProducer, getProducer, setProducerShopModify } from "../../../lib/producerApi"
-import { getBankInfoList } from '~/lib/b2bSellerApi'
+import { Container, Row, Col, Button, FormGroup, Label, Input, Fade, Modal, ModalHeader, ModalBody, ModalFooter, Alert, CustomInput } from 'reactstrap'
+import { getBankInfoList, getProducerEmail, addProducer, getProducer, setProducerShopModify } from "~/lib/producerApi"
 import { Redirect } from 'react-router-dom'
-import { Const } from "../../Properties"
 import { PassPhrase } from '../../common'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import 'react-toastify/dist/ReactToastify.css'
 import ComUtil from '~/util/ComUtil'
-import { Webview } from "~/lib/webviewApi"
 import { SingleImageUploader, BlocerySpinner } from '~/components/common'
 import { B2cTermsOfUse, B2cPrivatePolicy } from '~/components/common/termsOfUses'
 import { AddressCard } from '~/components/common/cards'
@@ -153,7 +150,7 @@ export default class ProducerJoinWeb extends Component{
 
     findOverlapEmail = async (email) => {
         const response = await getProducerEmail(email)
-        if (response.data == '' || response.data == null) {
+        if (!response.data) {
             this.setState({ fadeOverlapEmail: false })
         } else {
             this.setState({ fadeOverlapEmail: true })
@@ -240,53 +237,6 @@ export default class ProducerJoinWeb extends Component{
         })
     }
 
-    // 회원가입버튼 클릭시 호출하는 validation api
-    registProducer = async (state) => {
-        this.notify('가입 중입니다. 잠시 기다려주세요', toast.success);
-
-        const response = await addProducer(state)
-        // if(response.data === 100) {
-        //     alert('가입 오류입니다. 잠시 후 다시 시도해주세요.');
-        //     return false;
-        // }
-        if(response.data === -1) {
-            alert('이미 등록된 아이디(이메일)입니다.');
-            return false;
-        } else {
-            let producerNo = response.data;
-            Webview.updateFCMToken({userType: 'producer', userNo: producerNo});
-
-            //alert('가입이 정상처리되었습니다.');
-            this.props.history.push('/joinComplete?name='+state.name+'&email='+state.email+'&farmName='+state.farmName+'&coRegistrationNo='+state.coRegistrationNo);
-        }
-    }
-
-    // 회원가입버튼 클릭
-    onRegisterClick = () => {
-        const state = Object.assign({}, this.state)
-
-        if(state.email == '' || state.valword == '' || state.name == '' || state.farmName == '' || state.coRegistrationNo == '' ||
-            state.coRegistrationNo.length !== 10 || state.fadeEmail || state.fadeOverlapEmail || state.fadeValword || state.fadeValwordCheck) {
-            alert('필수항목 정보를 정확하게 입력해주세요.')
-            return false;
-        }
-        if(state.passPhrase.length !== 6 || state.fadePassPhraseCheck) {
-            alert('블록체인 비밀번호를 정확하게 입력해주세요.')
-            return false;
-        }
-        if(!state.checkbox0 || !state.checkbox1) {
-            alert('약관 동의는 필수사항입니다.')
-            return false;
-        }
-
-        //가입후 자동로그인 용.
-        localStorage.setItem('userType', 'producer');
-        localStorage.setItem('email', state.email);
-        localStorage.setItem('valword', ComUtil.encrypt(state.valword));
-
-        this.registProducer(state);
-    }
-
     modalToggle = () => {
         this.setState(prevState => ({
             modalPassPhrase: !prevState.modalPassPhrase
@@ -327,7 +277,7 @@ export default class ProducerJoinWeb extends Component{
     }
 
     modalToggleOk = () => {
-        if(this.state.modalPassPhrase == true) {
+        if(this.state.modalPassPhrase === true) {
             this.setState({
                 modalPassPhrase: false
             });

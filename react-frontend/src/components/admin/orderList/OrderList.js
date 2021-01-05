@@ -1,22 +1,29 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Button } from 'reactstrap'
 import "react-table/react-table.css"
 import { getAllOrderDetailList } from '~/lib/adminApi'
 import { getLoginAdminUser } from '~/lib/loginApi'
 import { getProducerByProducerNo } from "~/lib/producerApi";
-import ExcelUtil from '~/util/ExcelUtil'
 import { ProducerFullModalPopupWithNav, ProducerProfileCard, ExcelDownload } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
-import Goods from '~/components/shop/goods/Goods'
+import Goods from '~/components/shop/goods'
+import moment from 'moment-timezone'
 
 import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/src/styles/ag-grid.scss";
 import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/src/stylesheets/datepicker.scss";
+
+
 export default class OrderList extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            search: {
+                year:moment().format('YYYY')
+            },
             loading: false,
             data: [],
             excelData: {
@@ -30,23 +37,45 @@ export default class OrderList extends Component {
             producerInfo: null,
             frameworkComponents: {
                 goodsNmRenderer: this.goodsNmRenderer,
+                payMethodNmRenderer: this.payMethodNmRenderer,
                 farmNmRenderer: this.farmNmRenderer,
                 vatRenderer: this.vatRenderer,
-                timeSaleRenderer: this.timeSaleRenderer
+                timeSaleRenderer: this.timeSaleRenderer,
+                addressRenderer: this.addressRenderer
             },
             columnDefs: [
                 {headerName: "주문일련번호", field: "orderSeq", sort:"desc"},
                 {headerName: "주문상태", field: "orderStatus", width: 80},
                 {headerName: "농가명", field: "farmName", cellRenderer: "farmNmRenderer", width: 100},
                 // {headerName: "생산자번호", field: "producerNo", width: 90},
-                {headerName: "상품명", field: "goodsNm", cellRenderer: "goodsNmRenderer", suppressMenu: "false", width: 150},
-                {headerName: "결제수단", field: "payMethod", width: 80},
+                {headerName: "상품명", field: "goodsNm", cellRenderer: "goodsNmRenderer", width: 150},
+                {headerName: "상품종류", field: "directGoods", width: 90,
+                    valueGetter: function(params) {
+                        return params.data.directGoods ? "즉시" : "예약";
+                    }
+                },
+                {
+                    headerName: "결제수단", field: "payMethod", cellRenderer: "payMethodNmRenderer", width: 90,
+                    valueGetter: function(params) {
+                        if(params.data.payMethod === 'blct') {
+                            return 'bly';
+                        } else if(params.data.payMethod === 'cardBlct') {
+                            return 'cardBly';
+                        }
+                        return params.data.payMethod;
+                    }
+                },
                 {headerName: "총주문금액(원)", field: "orderPrice", width: 120},
                 {headerName: "상품구분", field: "timeSaleGoods", width: 100, cellRenderer: "timeSaleRenderer" },
                 {headerName: "커미션(%)", field: "feeRate", width: 90},
                 {headerName: "부가세", field: "vatFlag", cellRenderer: "vatRenderer", width: 80},
                 {headerName: "카드결제(원)", field: "cardPrice", width: 110},
-                {headerName: "토큰결제(blct)", field: "blctToken", width: 130},
+                {headerName: "토큰결제(bly)", field: "blctToken", width: 130},
+                {headerName: "쿠폰", field: "usedCouponNo", width: 90,
+                    valueGetter: function(params) {
+                        return (params.data.usedCouponNo > 0) ? "쿠폰사용" : "-";
+                    }
+                },
                 {headerName: "주문당시환율", field: "orderBlctExchangeRate", width: 110},
                 {headerName: "택배사", field: "transportCompanyName"},
                 {headerName: "송장번호", field: "trackingNumber"},
@@ -65,8 +94,11 @@ export default class OrderList extends Component {
                 {headerName: "주문자전화번호", field: "consumerPhone"},
                 {headerName: "수령자명", field: "receiverName", width: 80},
                 {headerName: "수령자전화번호", field: "receiverPhone"},
+                {headerName: "주소", cellRenderer: "addressRenderer", width: 120},
+                {headerName: "배송메세지", field: "deliveryMsg"},
                 {headerName: "예상배송 시작일", field: "expectShippingStart"},
                 {headerName: "예상배송 종료일", field: "expectShippingEnd"},
+                {headerName: "희망수령일", field: "hopeDeliveryDate"}
 
             ],
             defaultColDef: {
@@ -90,14 +122,17 @@ export default class OrderList extends Component {
 
     search = async () => {
         this.setState({ loading: true });
-
-        const { status, data } = await getAllOrderDetailList();
+        const searchInfo = this.state.search;
+        const params = {
+            year:searchInfo.year
+        };
+        const { status, data } = await getAllOrderDetailList(params);
         if(status !== 200){
             alert('응답이 실패 하였습니다');
             return;
         }
 
-        console.log(data);
+        //console.log(data);
 
         data.map(({orderSeq, consumerOkDate, payStatus, trackingNumber, orderConfirm}, index) => {
             const order = {
@@ -112,6 +147,9 @@ export default class OrderList extends Component {
             let orderDateToString = data[index].orderDate ? ComUtil.utcToString(data[index].orderDate,'YYYY-MM-DD HH:mm'):null;
             let expectShippingStartToString = data[index].expectShippingStart ? ComUtil.utcToString(data[index].expectShippingStart,'YYYY-MM-DD HH:mm'):null;
             let expectShippingEndToString = data[index].expectShippingEnd ? ComUtil.utcToString(data[index].expectShippingEnd,'YYYY-MM-DD HH:mm'):null;
+
+            let hopeDeliveryDateToString = data[index].hopeDeliveryFlag ? (data[index].hopeDeliveryDate ? ComUtil.utcToString(data[index].hopeDeliveryDate,'YYYY-MM-DD'):null):null;
+
             let consumerOkDateToString = data[index].consumerOkDate ? ComUtil.utcToString(data[index].consumerOkDate,'YYYY-MM-DD HH:mm'):null;
             let trackingNumberTimeToString = data[index].trackingNumberTimestamp ? ComUtil.utcToString(data[index].trackingNumberTimestamp,'YYYY-MM-DD HH:mm'):null;
 
@@ -121,6 +159,7 @@ export default class OrderList extends Component {
 
             data[index].expectShippingStart = expectShippingStartToString
             data[index].expectShippingEnd = expectShippingEndToString
+            data[index].hopeDeliveryDate = hopeDeliveryDateToString
             data[index].orderDate = orderDateToString
             data[index].orderStatus = orderStatus
             data[index].consumerOkDate = consumerOkDateToString
@@ -161,9 +200,22 @@ export default class OrderList extends Component {
         return (<span className='text-primary' a href="#" onClick={this.onGoodsNmClick.bind(this, rowData)}><u>{rowData.goodsNm}</u></span>);
     }
 
+    payMethodNmRenderer = ({value, data:rowData}) => {
+        if(value == 'blct') {
+            return 'bly';
+        } else if(value == 'cardBlct') {
+            return 'cardBly';
+        }
+        return value;
+    }
+
+    addressRenderer = ({data:rowData}) => {
+        return (<span>{rowData.receiverAddr} {rowData.receiverAddrDetail}</span>)
+    }
+
     // 상품상세정보 조회
     onGoodsNmClick = (data) => {
-        console.log(data)
+        //console.log(data)
         this.setState({
             goodsNo: data.goodsNo,
             isOpen: true,
@@ -180,7 +232,7 @@ export default class OrderList extends Component {
     }
 
     timeSaleRenderer = ({value, data:item}) => {
-        return item.timeSaleGoods ? "포텐타임" : ( item.blyTimeGoods? "블리타임" : "일반상품" );
+        return item.timeSaleGoods ? "포텐타임" : ( item.blyTimeGoods? "블리타임" : (item.superRewardGoods? "슈퍼리워드" : "일반상품"));
     }
 
     // Ag-Grid Cell 스타일 기본 적용 함수
@@ -201,8 +253,8 @@ export default class OrderList extends Component {
 
     // 농가정보 조회
     onFarmNmClick = async (data) => {
-        const { data : producerInfo } = await getProducerByProducerNo(data.producerNo)
-        console.log(producerInfo)
+        const { data : producerInfo } = await getProducerByProducerNo(data.producerNo);
+        //console.log(producerInfo)
         this.setState({
             producerInfo: producerInfo,
             producerNo: data.producerNo,
@@ -235,36 +287,41 @@ export default class OrderList extends Component {
     getExcelData = () => {
         const columns = [
             '주문번호', '주문확인', '농가명',
-            '상품명', '결제수단', '주문수량', '[받는]사람', '[받는]연락처', '[받는]주소', '[받는]우편번호','배송메세지', '택배사', '송장번호',
+            '상품명', '상품종류', '결제수단', '주문수량', '[받는]사람', '[받는]연락처', '[받는]주소', '[받는]우편번호','배송메세지', '택배사', '송장번호',
             '주문일시', '출고일시', '구매확정일시', '총주문금액(원)', '상품구분', '판매지원금(원)', '커미션(%)', '부가세', '카드결제(원)', '토큰결제(BLCT)', '주문당시 환율', '배송비', '위약금',
             '수수료(보상포함금액)', '소비자 구매보상(BLCT)', '생산자 판매보상(BLCT)', '지연보상', 'Blocery BLCT 수익',
             '취소수수료(원)', '취소수수료(BLCT)','생산자 지급액(원)', '생산자 지급 BLCT',
             '포장 양', '포장단위', '판매개수', '품목명',
             '주문자명', '주문자이메일', '주문자연락처',
-            '예상배송시작일', '예상배송종료일'
+            '예상배송시작일', '예상배송종료일',
+            '희망수령일'
         ]
 
         //필터링 된 데이터에서 sortedData._original 로 접근하여 그리드에 바인딩 원본 값을 가져옴
         const data = this.state.data.map((item ,index)=> {
+            let payMethod = item.payMethod === 'blct' ? 'bly': (item.payMethod === 'cardBlct' ? 'cardBly':item.payMethod);
             let orderStatus = this.getOrderStatus(item);
             let orderDate = item.orderDate ? ComUtil.utcToString(item.orderDate,'YYYY-MM-DD HH:mm'):null;
             let consumerOkDate = item.consumerOkDate ? ComUtil.utcToString(item.consumerOkDate,'YYYY-MM-DD HH:mm'):null;
             let trackingNumberTimestamp = item.trackingNumberTimestamp ? ComUtil.utcToString(item.trackingNumberTimestamp,'YYYY-MM-DD HH:mm'):null;
             let bloceryOnlyFeeBlct = item.payMethod === 'blct' ? item.bloceryOnlyFeeBlct : 0;
-            let timeSale = item.timeSaleGoods ? "포텐타임" : ( item.blyTimeGoods? "블리타임" : "일반상품" );
+            let timeSale = item.timeSaleGoods ? "포텐타임" : ( item.blyTimeGoods? "블리타임" : ( item.superRewardGoods? "슈퍼리워드" : "일반상품" ) );
             let vatFlag = item.vatFlag ? "과세" : "면세";
             let expectShippingStart = item.expectShippingStart ? ComUtil.utcToString(item.expectShippingStart):null;
             let expectShippingEnd = item.expectShippingEnd ? ComUtil.utcToString(item.expectShippingEnd):null;
+            let hopeDeliveryDate = item.hopeDeliveryFlag ? (item.hopeDeliveryDate ? ComUtil.utcToString(item.hopeDeliveryDate,'YYYY-MM-DD'):null):null;
+            let directGoods = item.directGoods ? "즉시" : "예약";
 
             return [
                 item.orderSeq, orderStatus, item.farmName,
-                item.goodsNm, item.payMethod, item.orderCnt, item.receiverName, item.receiverPhone, `${item.receiverAddr} ${item.receiverAddrDetail || ''}`, item.zipNo,item.deliveryMsg, item.transportCompanyName, item.trackingNumber,
+                item.goodsNm, directGoods, payMethod, item.orderCnt, item.receiverName, item.receiverPhone, `${item.receiverAddr} ${item.receiverAddrDetail || ''}`, item.zipNo,item.deliveryMsg, item.transportCompanyName, item.trackingNumber,
                 orderDate, trackingNumberTimestamp, consumerOkDate, item.orderPrice, timeSale, item.timeSaleSupportPrice, item.feeRate, vatFlag, item.cardPrice, item.blctToken, item.orderBlctExchangeRate ,item.deliveryFee, item.deposit,
                 item.bloceryOnlyFee+item.consumerReward+item.producerReward, item.consumerRewardBlct, item.producerRewardBlct, item.delayPenalty, bloceryOnlyFeeBlct,
                 item.cancelFee, item.cancelBlctTokenFee, item.payoutAmount, item.payoutAmountBlct,
                 item.packAmount, item.packUnit, item.packCnt, item.itemName,
                 item.consumerNm, item.consumerEmail, item.consumerPhone,
-                expectShippingStart, expectShippingEnd
+                expectShippingStart, expectShippingEnd,
+                hopeDeliveryDate
             ]
         })
 
@@ -278,16 +335,44 @@ export default class OrderList extends Component {
         }]
     }
 
+    onSearchDateChange = async (date) => {
+        //console.log("",date.getFullYear())
+        const search = Object.assign({}, this.state.search);
+        search.year = date.getFullYear();
+        await this.setState({search:search});
+        await this.search();
+    }
+
     render() {
         if(this.state.data.length <= 0)
             return null
 
+        const ExampleCustomDateInput = ({ value, onClick }) => (
+            <Button
+                color="secondary"
+                active={true}
+                onClick={onClick}>검색 {value} 년</Button>
+        );
+
         return(
             <div>
-                <div className="d-flex p-1">
+                <div className="d-flex align-items-center p-1">
+                    <div className='ml-2'>
+                        <DatePicker
+                            selected={new Date(moment().set('year',this.state.search.year))}
+                            onChange={this.onSearchDateChange}
+                            showYearPicker
+                            dateFormat="yyyy"
+                            customInput={<ExampleCustomDateInput />}
+                        />
+                    </div>
+                    <div className='ml-2 mr-2'>
+                        <Button color={'info'} onClick={this.search}>검색</Button>
+                    </div>
 
                     <ExcelDownload data={this.state.excelData}
                                    fileName="관리자전체주문확인"
+                                   size={'md'}
                                    buttonName = "Excel 다운로드"
                                   />
 
@@ -304,11 +389,11 @@ export default class OrderList extends Component {
                     </div>
 
                 </div>
-                <div>
+                <div className="p-1">
                     <div
                         className="ag-theme-balham"
                         style={{
-                            height: '700px'
+                            height: '600px'
                         }}
                     >
                         <AgGridReact

@@ -1,16 +1,14 @@
 import React, { Fragment, Component } from 'react'
 import { ShopXButtonNav, ModalPopup } from '~/components/common'
-import { Server } from '~/components/Properties'
 
 import { Webview } from '~/lib/webviewApi'
 import { getLoginUserType } from '~/lib/loginApi'
-import { getConsumer, getConsumerKyc } from '~/lib/shopApi'
+import { getConsumer } from '~/lib/shopApi'
 
-import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed, Button, Link } from '~/styledComponents/shared'
+import { Div, Img, Button, Link } from '~/styledComponents/shared'
 import kycSampleImg3 from '~/images/kyc/licence_man_none.svg';
 
 import styled from 'styled-components'
-import {getValue} from '~/styledComponents/Util'
 
 const KycBody = styled(Div)`
     height: calc(100vh - 56px - 54px);
@@ -33,10 +31,10 @@ export default class KycCertification extends Component {
         const loginUserType = await getLoginUserType();
         let loginUser;
 
-        if(loginUserType.data == 'consumer') {
+        if(loginUserType.data === 'consumer') {
             loginUser = await getConsumer();
 
-        } else if (loginUserType.data == 'producer') {
+        } else if (loginUserType.data === 'producer') {
             //생산자용 mypage로 자동이동.
             Webview.movePage('/producer/mypage');
         }

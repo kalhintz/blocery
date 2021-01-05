@@ -1,7 +1,8 @@
 import React from 'react';
-import styled, {css} from 'styled-components';
+import styled, {css, keyframes} from 'styled-components';
 import {color, hoverColor, activeColor} from './Properties'
-import {getValue} from './Util'
+import {getValue, hasValue} from './Util'
+import aniKey from "~/styledComponents/Keyframes";
 
 export const position = css`
     ${props => props.relative && 'position: relative;'};
@@ -12,13 +13,13 @@ export const position = css`
 
 export const margin = css`
     margin: ${props => getValue(props.m)};
-    margin-top: ${props => props.mt && getValue(props.mt)};
-    margin-right: ${props => props.mr && getValue(props.mr)};
-    margin-bottom: ${props => props.mb && getValue(props.mb)};
-    margin-left: ${props => props.ml && getValue(props.ml)};    
+    margin-top: ${props => hasValue(props.mt) && getValue(props.mt)};
+    margin-right: ${props => hasValue(props.mr) && getValue(props.mr)};
+    margin-bottom: ${props => hasValue(props.mb) && getValue(props.mb)};
+    margin-left: ${props => hasValue(props.ml) && getValue(props.ml)};    
     
-    ${props => props.my && `margin-top: ${getValue(props.my)}; margin-bottom: ${getValue(props.my)};`}
-    ${props => props.mx && `margin-left: ${getValue(props.mx)}; margin-right: ${getValue(props.mx)};`}
+    ${props => hasValue(props.my) && `margin-top: ${getValue(props.my)}; margin-bottom: ${getValue(props.my)};`}
+    ${props => hasValue(props.mx) && `margin-left: ${getValue(props.mx)}; margin-right: ${getValue(props.mx)};`}
     
 `;
 
@@ -94,6 +95,17 @@ export const notiNew = css`
 //     align-items: ${props => props.justifyContent};
 // `;
 
+// 계속 회전
+export const spin = css`
+    animation: ${aniKey.spin} ${props => props.duration || 3}s infinite linear;
+`;
+
+// 스케일이 잠시동안 커지고 원래 사이즈로 돌아감
+export const scaleUp = css`
+    animation: ${aniKey.scaleUp} 0.3s ease-in-out;
+`;
+
+
 //TODO : pc일 경우만 hover가 되도록 작성해야함
 const hover = css`
     // ${props => (props.bg && !props.noHover) && `&:hover{background-color: ${hoverColor[props.bg]}}`};            
@@ -103,8 +115,8 @@ const active = css`
     ${props => (props.bg && !props.noActive) && `&:active{background-color: ${activeColor[props.bg]}}`};
 `;
 
-
 export const pseudo = {
     hover: hover,
     active: active,
 }
+

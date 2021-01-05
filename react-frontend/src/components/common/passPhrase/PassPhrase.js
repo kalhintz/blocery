@@ -1,8 +1,6 @@
 import React from 'react'
-import { Table, Container, Row, Col, Button } from 'reactstrap';
 import Style from './PassPhrase.module.scss'
-import { faStarOfLife, faEraser,faBackspace, faRandom } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {FaStarOfLife, FaBackspace, FaRandom} from 'react-icons/fa'
 
 class PassPhrase extends React.Component {
 
@@ -186,7 +184,7 @@ class PassPhrase extends React.Component {
                                         [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
 
                                 }
-                            >{this.state.passPhraseClass1 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            >{this.state.passPhraseClass1 ? <FaStarOfLife /> : ""}</div>
                             <div
                                 id="key_2"
                                 className={
@@ -194,7 +192,7 @@ class PassPhrase extends React.Component {
                                         [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
                                         [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
                                 }
-                            >{this.state.passPhraseClass2 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            >{this.state.passPhraseClass2 ? <FaStarOfLife /> : ""}</div>
                             <div
                                 id="key_3"
                                 className={
@@ -202,7 +200,7 @@ class PassPhrase extends React.Component {
                                         [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
                                         [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
                                 }
-                            >{this.state.passPhraseClass3 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            >{this.state.passPhraseClass3 ? <FaStarOfLife /> : ""}</div>
                             <div
                                 id="key_4"
                                 className={
@@ -210,7 +208,7 @@ class PassPhrase extends React.Component {
                                         [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
                                         [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
                                 }
-                            >{this.state.passPhraseClass4 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            >{this.state.passPhraseClass4 ? <FaStarOfLife /> : ""}</div>
                             <div
                                 id="key_5"
                                 className={
@@ -218,7 +216,7 @@ class PassPhrase extends React.Component {
                                         [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
                                         [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
                                 }
-                            >{this.state.passPhraseClass5 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            >{this.state.passPhraseClass5 ? <FaStarOfLife /> : ""}</div>
                             <div
                                 id="key_6"
                                 className={
@@ -226,7 +224,7 @@ class PassPhrase extends React.Component {
                                         [Style.character,Style.on,'mr-1 p-1 rounded-sm'].join(' ') :
                                         [Style.character,'mr-1 p-1 rounded-sm'].join(' ')
                                 }
-                            >{this.state.passPhraseClass6 ? <FontAwesomeIcon icon={faStarOfLife} /> : ""}</div>
+                            >{this.state.passPhraseClass6 ? <FaStarOfLife /> : ""}</div>
                             </>
                         ) : (
                             <div className={Style.fadeIn}>
@@ -257,9 +255,9 @@ class PassPhrase extends React.Component {
                     <figure onClick={this.passPhraseDoClick}>{this.pad[8]}</figure>
                 </div>
                 <div class={Style.row}>
-                    <figure onClick={this.passPhraseDoAllClearClick}><FontAwesomeIcon icon={faRandom} size={'1x'} /></figure>
+                    <figure onClick={this.passPhraseDoAllClearClick}><FaRandom size={30} /></figure>
                     <figure onClick={this.passPhraseDoClick}>{this.pad[9]}</figure>
-                    <figure onClick={this.passPhraseDoClearClick}><FontAwesomeIcon icon={faBackspace} /></figure>
+                    <figure onClick={this.passPhraseDoClearClick}><FaBackspace size={30} /></figure>
                 </div>
                 </div>
 

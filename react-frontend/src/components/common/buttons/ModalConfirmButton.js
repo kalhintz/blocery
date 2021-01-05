@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { Modal, ModalHeader, ModalBody, Input, Button, ModalFooter } from 'reactstrap'
+import { Modal, ModalHeader, ModalBody, Button, ModalFooter } from 'reactstrap'
 import PropTypes from 'prop-types'
 class ModalConfirmButton extends Component {
     constructor(props){

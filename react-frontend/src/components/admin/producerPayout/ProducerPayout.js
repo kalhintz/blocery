@@ -1,4 +1,4 @@
-import React, { Fragment, Component, PropTypes } from 'react';
+import React, { Fragment, Component } from 'react';
 import { getAllProducerPayoutList, setProducerPayoutStatus, getAllTempProducerBlctMonth } from '~/lib/adminApi'
 import { getLoginAdminUser } from '~/lib/loginApi'
 import ComUtil from '~/util/ComUtil'
@@ -11,7 +11,7 @@ import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { ExcelDownload, MonthBox } from '~/components/common'
 import { Button, Row, Col, Container, Label} from 'reactstrap'
 import '~/styles/agGridStyle.css'
-import { Refresh } from '@material-ui/icons'
+import {MdRefresh} from "react-icons/md";
 import 'react-month-picker/css/month-picker.css'
 import MonthPicker from 'react-month-picker'
 import moment from 'moment-timezone'
@@ -369,7 +369,7 @@ export default class ProducerPayout extends Component{
                             <Button color={'info'} size={'sm'} block  style={{width: '100px'}}
                                     onClick={this.onRefreshClick}>
                                 <div className="d-flex">
-                                    <Refresh fontSize={'small'}/> 조회
+                                    <MdRefresh fontSize={'small'}/> 조회
                                 </div>
                             </Button>
                         </Col>

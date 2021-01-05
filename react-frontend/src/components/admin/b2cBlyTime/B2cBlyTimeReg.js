@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
 import { FormGroup, Label, Alert, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import Select from 'react-select'
 import moment from 'moment-timezone'
@@ -7,11 +7,10 @@ import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
 import { SingleDatePicker } from 'react-dates';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearchPlus } from '@fortawesome/free-solid-svg-icons'
-import { BlocerySpinner, B2cGoodsSearch } from '~/components/common'
+import {FaSearchPlus} from 'react-icons/fa'
+import { BlocerySpinner, B2cGoodsSelSearch } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
-import { getTimeSaleAdmin, setBlyTimeSave } from '~/lib/adminApi'
+import { getTimeSaleAdmin, setBlyTimeRegist, setBlyTimeUpdate } from '~/lib/adminApi'
 import Style from './B2cBlyTimeReg.module.scss'
 
 export default class B2cBlyTimeReg extends Component {
@@ -21,6 +20,8 @@ export default class B2cBlyTimeReg extends Component {
         const { blyTimeGoodsNo } = this.props;
 
         this.state = {
+            isReg:blyTimeGoodsNo != null ? false:true,
+
             isDidMounted:false,
             focusedInput: null,
 
@@ -337,19 +338,34 @@ export default class B2cBlyTimeReg extends Component {
         let params = blyTimeGoods;
 
         //console.log("onConfirmClick",params);
+        if(this.state.isReg == true){
+            const { status, data } = await setBlyTimeRegist(params);
+            if(status !== 200){
+                alert('블리타임 저장이 실패 하였습니다');
+                return
+            }
+            if(status === 200){
+                // 기획전 닫기 및 목록 재조회
+                let params = {
+                    refresh:true
+                };
+                this.props.onClose(params);
+            }
+        }else{
+            const { status, data } = await setBlyTimeUpdate(params);
+            if(status !== 200){
+                alert('블리타임 저장이 실패 하였습니다');
+                return
+            }
+            if(status === 200){
+                // 기획전 닫기 및 목록 재조회
+                let params = {
+                    refresh:true
+                };
+                this.props.onClose(params);
+            }
+        }
 
-        const { status, data } = await setBlyTimeSave(params);
-        if(status !== 200){
-            alert('블리타임 저장이 실패 하였습니다');
-            return
-        }
-        if(status === 200){
-            // 기획전 닫기 및 목록 재조회
-            let params = {
-                refresh:true
-            };
-            this.props.onClose(params);
-        }
     };
 
     render() {
@@ -490,7 +506,7 @@ export default class B2cBlyTimeReg extends Component {
                                         <div>
                                             <Button color={'info'}
                                                     onClick={this.goodsSearchModalPopup}>
-                                                <FontAwesomeIcon icon={faSearchPlus} /> 상품검색
+                                                <FaSearchPlus /> 상품검색
                                             </Button>
                                         </div>
 
@@ -553,7 +569,7 @@ export default class B2cBlyTimeReg extends Component {
                         상품 검색
                     </ModalHeader>
                     <ModalBody>
-                        <B2cGoodsSearch onChange={this.goodsSearchModalOnChange} />
+                        <B2cGoodsSelSearch onChange={this.goodsSearchModalOnChange} />
                     </ModalBody>
                     <ModalFooter>
                         <Button color="secondary"

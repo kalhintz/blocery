@@ -1,26 +1,23 @@
 import React, { Component, Fragment } from 'react'
-import { Container, Row, Col, Input, FormGroup, Label, Button, Fade, Badge, Alert, InputGroup, InputGroupAddon, InputGroupText, DropdownMenu, InputGroupButtonDropdown, DropdownToggle, DropdownItem, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap'
-import { RadioButtons, ProducerFullModalPopupWithNav, SingleImageUploader, ModalConfirm } from '~/components/common'
+import { Container, Row, Col, Input, FormGroup, Label, Button, Fade, Badge, InputGroup, InputGroupAddon, InputGroupText, DropdownMenu, InputGroupButtonDropdown, DropdownToggle, DropdownItem, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap'
+import { RadioButtons, SingleImageUploader, ModalConfirm } from '~/components/common'
 import Style from './WebGoodsReg.module.scss'
-import { Server } from '~/components/Properties'
 import { addGoods, copyGoodsByGoodsNo } from '~/lib/goodsApi'
-import { scOntPayProducerDeposit, scOntGetBalanceOfBlct } from '~/lib/smartcontractApi'
-import { exchangeWon2BLCT, GOODS_TOTAL_DEPOSIT_RATE } from '~/lib/exchangeApi'
+import { scOntPayProducerDeposit } from '~/lib/smartcontractApi'
 import { getProducer } from '~/lib/producerApi'
 import { getGoodsByGoodsNo, deleteGoods, updateConfirmGoods, updateGoodsSalesStop, getGoodsContent, updateSalePaused, getBlyReview } from '~/lib/goodsApi'
-import { Webview } from '~/lib/webviewApi'
 import { getItems } from '~/lib/adminApi'
-import { getLoginUser, checkPassPhrase } from '~/lib/loginApi'
-import Goods from '~/components/shop/goods/Goods'
+import { getLoginProducerUser, checkPassPhraseForProducer } from '~/lib/loginApi'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import ComUtil from '~/util/ComUtil'
 import Select from 'react-select'
 import moment from 'moment-timezone'
 import 'react-dates/initialize';
 import { DateRangePicker, SingleDatePicker } from 'react-dates';
-import { BlocerySpinner, Spinner, BlockChainSpinner, ModalWithNav, ToastUIEditorViewer, PassPhrase, Agricultural } from '~/components/common'
+import { BlocerySpinner, Spinner, BlockChainSpinner, ModalWithNav, PassPhrase, Agricultural } from '~/components/common'
 
 import CurrencyInput from '~/components/common/inputs/CurrencyInput'
+import {Span} from "~/styledComponents/shared/Layouts";
 
 import { TERMS_OF_DELIVERYFEE } from '~/lib/bloceryConst'
 
@@ -83,6 +80,7 @@ export default class WebDirectGoodsReg extends Component {
                 productionStart: '',      //수확시작일
                 expectShippingStart: '',  //예상출하시작일
                 expectShippingEnd: '',    //예상출하마감일
+                hopeDeliveryFlag:false,     //희망배송여부(소비자용)
                 pesticideYn: '무농약',	        //농약유무
                 vatFlag: '',            // 과세여부
                 packUnit: 'kg',	            //포장단위
@@ -123,10 +121,10 @@ export default class WebDirectGoodsReg extends Component {
 
             loginUser: {},
             selected: null,
-            modal: false,                //모달 여부
-            modalType: '',              //모달 종류
-            passPhrase: '', //비밀번호 6 자리 PIN CODE
-            clearPassPhrase: true,
+            //202012-selfDeposit제외.  modal: false,                //모달 여부
+            //202012-selfDeposit제외.  modalType: '',              //모달 종류
+            //202012-selfDeposit제외.  passPhrase: '', //비밀번호 6 자리 PIN CODE
+            //202012-selfDeposit제외.  clearPassPhrase: true,
             producerInfo: null
 
         }
@@ -184,7 +182,7 @@ export default class WebDirectGoodsReg extends Component {
     }
 
     setLoginUserInfo = async() => {
-        return await getLoginUser();
+        return await getLoginProducerUser();
     }
 
     //기초 데이타 바인딩 정보
@@ -448,8 +446,8 @@ export default class WebDirectGoodsReg extends Component {
     //예상발송일 달력
     onExpectShippingChange = ({ startDate, endDate })=> {
         const goods = Object.assign({}, this.state.goods)
-        goods.expectShippingStart = startDate// && startDate.startOf('day')
-        goods.expectShippingEnd = endDate// && endDate.endOf('day')
+        goods.expectShippingStart = startDate && startDate.startOf('day')
+        goods.expectShippingEnd = endDate && endDate.endOf('day')
         this.setValidatedObj({goods})
         this.setState({goods})
     }
@@ -458,7 +456,7 @@ export default class WebDirectGoodsReg extends Component {
     onInputChange = (e) => {
         let { name, value } = e.target
         const goods = Object.assign({}, this.state.goods)
-        
+
         if(name === 'currentPrice'){
             if(goods.consumerPrice === null || goods.consumerPrice === '') {
                 alert('소비자가를 먼저 입력해주세요.');
@@ -634,58 +632,59 @@ export default class WebDirectGoodsReg extends Component {
         }
     }
 
-    //결재처리
-    modalToggleOk = async () => {
-        let passPhrase = this.state.passPhrase;
-        let {data: checkResult} = await checkPassPhrase(passPhrase);
-        if(!checkResult){
-            alert('블록체인 비밀번호를 확인해주세요.');
+    //결재처리 : 202012-selfDeposit 제외 (DirectGoodsReg에서는 원래 필요없었는데 불필요코드였음.
+    // modalToggleOk = async () => {
+    //     let passPhrase = this.state.passPhrase;
+    //     let {data: checkResult} = await checkPassPhrase(passPhrase);
+    //     if(!checkResult){
+    //         alert('블록체인 비밀번호를 확인해주세요.');
+    //
+    //         //블록체인 비번 초기화
+    //         this.setState({clearPassPhrase: true});
+    //
+    //         return; //블록체인 비번 오류, stop&stay
+    //     }
+    //
+    //     //결제비번 맞으면 일단 modal off - 여러번 구매를 방지.
+    //     this.setState({
+    //         modal: false
+    //     });
+    //
+    //     this.setState({chainLoading: true}); //스플래시 열기
+    //     let result = await scOntPayProducerDeposit(this.state.goods.goodsNo, this.state.goods.totalDepositBlct);
+    //     if(!result){
+    //         alert('블록체인 기록에 실패하였습니다. 다시 한번 시도해주세요.')
+    //
+    //     } else {
+    //         await this.confirmSave()
+    //     }
+    //     this.setState({chainLoading: false});
+    //
+    // }
+    // modalToggle = () => {
+    //     this.setState(prevState => ({
+    //         modal: !prevState.modal
+    //     }));
+    // };
 
-            //블록체인 비번 초기화
-            this.setState({clearPassPhrase: true});
 
-            return; //블록체인 비번 오류, stop&stay
-        }
-
-        //결제비번 맞으면 일단 modal off - 여러번 구매를 방지.
-        this.setState({
-            modal: false
-        });
-
-        this.setState({chainLoading: true}); //스플래시 열기
-        let result = await scOntPayProducerDeposit(this.state.goods.goodsNo, this.state.goods.totalDepositBlct);
-        if(!result){
-            alert('블록체인 기록에 실패하였습니다. 다시 한번 시도해주세요.')
-
-        } else {
-            await this.confirmSave()
-        }
-        this.setState({chainLoading: false});
-
-    }
-
-    modalToggle = () => {
-        this.setState(prevState => ({
-            modal: !prevState.modal
-        }));
-    };
-
+    //202012-selfDeposit 제외
     //6자리 인증 비번 PassPhrase(6 CHAR PIN CODE)
-    onPassPhrase = (passPhrase) => {
-        //console.log(passPhrase);
-        this.setState({
-            passPhrase: passPhrase,
-            clearPassPhrase: false
-        });
-    };
-
-    // 블록체인 비밀번호 힌트
-    findPassPhrase = () => {
-        this.setState({
-            modalType: 'passPhrase',
-            modal: true
-        })
-    }
+    // onPassPhrase = (passPhrase) => {
+    //     //console.log(passPhrase);
+    //     this.setState({
+    //         passPhrase: passPhrase,
+    //         clearPassPhrase: false
+    //     });
+    // };
+    //
+    // // 블록체인 비밀번호 힌트
+    // findPassPhrase = () => {
+    //     this.setState({
+    //         modalType: 'passPhrase',
+    //         modal: true
+    //     })
+    // }
 
     // 마이페이지로 이동
     moveToMypage = () => {
@@ -961,6 +960,14 @@ export default class WebDirectGoodsReg extends Component {
         this.setState({goods});
     }
 
+    onHopeDeliveryFlag = (e) => {
+        const hopeDeliveryFlag = e.target.checked;
+        const state = Object.assign({}, this.state);
+        state.goods.hopeDeliveryFlag = hopeDeliveryFlag;
+        this.setState(state);
+    }
+
+
     render(){
         if(!this.state.isDidMounted) return <BlocerySpinner/>
 
@@ -970,10 +977,15 @@ export default class WebDirectGoodsReg extends Component {
         const saleEndDate = ComUtil.utcToString(goods.saleEnd, 'YYYY-MM-DD');
         const now = ComUtil.utcToString(new Date().getTime(), 'YYYY-MM-DD')
 
-        const compareDate = ComUtil.compareDate(saleEndDate, now)
-
-        let saleEnd;
-        if(compareDate === -1) { saleEnd = true } else { saleEnd = false }
+        let saleEnd = false;
+        if(saleEndDate) {
+            const compareDate = ComUtil.compareDate(saleEndDate, now)
+            if (compareDate === -1) {
+                saleEnd = true
+            } else {
+                saleEnd = false
+            }
+        }
 
         const salesStopText = goods.saleStopped && <div className='p-3 text-center text-danger ml-1 mr-1'>상품이 판매중단되어 판매가 불가능 합니다</div>
         const confirmText = (goods.confirm && !goods.saleStopped) && <div className='p-3 text-center text-danger ml-1 mr-1'>상품이 판매개시되어 수정내용이 제한됩니다</div>
@@ -1381,8 +1393,47 @@ export default class WebDirectGoodsReg extends Component {
                                         verticalHeight={700}
                                         // renderCalendarInfo={this.renderUntilCalendarInfo.bind(this, stepNo)}
                                     />
+
+
                                 </Container>
                                 <hr/>
+                                <Container>
+                                    <h6>발송일</h6>
+                                    <DateRangePicker
+                                        startDateId='expectShippingStart'
+                                        endDateId='expectShippingEnd'
+                                        startDatePlaceholderText="시작일"
+                                        endDatePlaceholderText="종료일"
+                                        startDate={goods.expectShippingStart ? moment(goods.expectShippingStart) : null}
+                                        endDate={goods.expectShippingEnd ? moment(goods.expectShippingEnd) : null}
+                                        onDatesChange={this.onExpectShippingChange}
+                                        focusedInput={this.state.focusedInput}
+                                        onFocusChange={(focusedInput) => { this.setState({ focusedInput })}}
+                                        numberOfMonths={1}          //달력 갯수(2개로 하면 모바일에서는 옆으로 들어가버리기 때문에 orientation='vertical'로 해야함), pc 에서는 상관없음
+                                        orientation={'horizontal'}
+                                        openDirection="up"
+                                        withPortal
+                                        small
+                                        readOnly
+                                        showClearDates
+                                        calendarInfoPosition="top"
+                                        // isDayBlocked={(date)=>{
+                                        //     //상품판매기한보다 작거나 같은 일자는 블록처리하여 선택할 수 없도록 함
+                                        //     if(date.isSameOrBefore(moment(goods.saleEnd))) return true
+                                        //     return false
+                                        // }}
+                                        // renderCalendarInfo={this.renderExpectShippingCalendarInfo}
+                                        // displayFormat={'YYYY.MM.DD'}
+                                    />
+                                    <Span ml={40}>
+                                        <Label check>
+                                            <Input type="checkbox" checked={goods.hopeDeliveryFlag ? true:false} onChange={this.onHopeDeliveryFlag} />소비자 희망수령일 기능 적용
+                                        </Label>
+                                    </Span>
+                                </Container>
+
+                                <hr/>
+
                                 {/*<ProducerFullModalPopupWithNav show={this.state.isOpen} title={'상품미리보기'} onClose={this.onPreviewClose}>*/}
                                 {/*<Goods goodsNo={goods.goodsNo} />*/}
                                 {/*</ProducerFullModalPopupWithNav>*/}
@@ -1399,7 +1450,6 @@ export default class WebDirectGoodsReg extends Component {
                                         </FormGroup>
                                     </FormGroup>
                                 </Container>
-
                                 <hr/>
 
                                 <Container>
@@ -1461,30 +1511,31 @@ export default class WebDirectGoodsReg extends Component {
                         }
                     </ModalWithNav>
 
+                    {/*202012-selfDeposit 제외.*/}
                     {/* 결제비번 입력 모달 */}
-                    <Modal isOpen={this.state.modalType === 'pay' && this.state.modal} toggle={this.modalToggle} className={this.props.className} centered>
-                        <ModalHeader toggle={this.modalToggle}> 블록체인비밀번호 입력</ModalHeader>
-                        <ModalBody className={'p-0'}>
-                            {/* clearPassPhrase 초기화, onChange 결과값 세팅 */}
-                            <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhrase}></PassPhrase>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="link" onClick={this.findPassPhrase}>비밀번호를 잊으셨나요?</Button>
-                            <Button color="info" onClick={this.modalToggleOk} disabled={(this.state.passPhrase.length === 6) ? false:true}>확인</Button>{' '}
-                            <Button color="secondary" onClick={this.modalToggle}>취소</Button>
-                        </ModalFooter>
-                    </Modal>
-                    {/* 결제비밀번호 조회 */}
-                    <Modal isOpen={this.state.modalType === 'passPhrase' && this.state.modal} centered>
-                        <ModalHeader>블록체인비밀번호 안내</ModalHeader>
-                        <ModalBody>
-                            마이페이지에서 블록체인비밀번호 힌트 조회 후 이용해주세요.
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="info" onClick={this.moveToMypage}>마이페이지로 이동</Button>
-                            <Button color="secondary" onClick={this.modalToggle}>취소</Button>
-                        </ModalFooter>
-                    </Modal>
+                    {/*<Modal isOpen={this.state.modalType === 'pay' && this.state.modal} toggle={this.modalToggle} className={this.props.className} centered>*/}
+                    {/*    <ModalHeader toggle={this.modalToggle}> 블록체인비밀번호 입력</ModalHeader>*/}
+                    {/*    <ModalBody className={'p-0'}>*/}
+                    {/*        /!* clearPassPhrase 초기화, onChange 결과값 세팅 *!/*/}
+                    {/*        <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhrase}></PassPhrase>*/}
+                    {/*    </ModalBody>*/}
+                    {/*    <ModalFooter>*/}
+                    {/*        <Button color="link" onClick={this.findPassPhrase}>비밀번호를 잊으셨나요?</Button>*/}
+                    {/*        <Button color="info" onClick={this.modalToggleOk} disabled={(this.state.passPhrase.length === 6) ? false:true}>확인</Button>{' '}*/}
+                    {/*        <Button color="secondary" onClick={this.modalToggle}>취소</Button>*/}
+                    {/*    </ModalFooter>*/}
+                    {/*</Modal>*/}
+                    {/*/!* 결제비밀번호 조회 *!/*/}
+                    {/*<Modal isOpen={this.state.modalType === 'passPhrase' && this.state.modal} centered>*/}
+                    {/*    <ModalHeader>블록체인비밀번호 안내</ModalHeader>*/}
+                    {/*    <ModalBody>*/}
+                    {/*        마이페이지에서 블록체인비밀번호 힌트 조회 후 이용해주세요.*/}
+                    {/*    </ModalBody>*/}
+                    {/*    <ModalFooter>*/}
+                    {/*        <Button color="info" onClick={this.moveToMypage}>마이페이지로 이동</Button>*/}
+                    {/*        <Button color="secondary" onClick={this.modalToggle}>취소</Button>*/}
+                    {/*    </ModalFooter>*/}
+                    {/*</Modal>*/}
 
                     <ToastContainer />  {/* toast 가 그려질 컨테이너 */}
 

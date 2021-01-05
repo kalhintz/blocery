@@ -1,6 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { getProducerRegRequests } from '~/lib/adminApi'
-import { Server } from '~/components/Properties';
 import { getLoginAdminUser } from '~/lib/loginApi'
 import ComUtil from '~/util/ComUtil'
 

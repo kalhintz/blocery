@@ -1,14 +1,8 @@
 // https://github.com/securedeveloper/react-data-export#readme
 
 import React from "react";
-//import ReactExport from "react-export-excel";
 import { Button } from 'reactstrap'
-import PropTypes from 'prop-types'
 import ExcelUtil from '~/util/ExcelUtil'
-
-// const ExcelFile = ReactExport.ExcelFile;
-// const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
-// const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
 
 class ExcelDownload extends React.Component {
     constructor(props){
@@ -19,7 +13,7 @@ class ExcelDownload extends React.Component {
         //if(!this.props.data) return null
 
         return (
-            <Button color={'info'} size={'sm'} onClick = {() => ExcelUtil.download(this.props.fileName, this.props.data)}>
+            <Button color={'info'} size={this.props.size ? this.props.size : 'sm'} onClick = {() => ExcelUtil.download(this.props.fileName, this.props.data)}>
                 <div className="d-flex">
                     {
                         (this.props.buttonName)? this.props.buttonName : '엑셀 다운로드'

@@ -1,7 +1,6 @@
 import React  from 'react'
 import PropTypes from 'prop-types'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faImages, faImage } from '@fortawesome/free-solid-svg-icons'
+import { FaImages } from 'react-icons/fa'
 
 
 export default class ImageUploadButton extends React.Component {
@@ -11,16 +10,10 @@ export default class ImageUploadButton extends React.Component {
     render(){
         return(
         <div className='buttons fadein'>
-            {/*<div>*/}
-            {/*<label htmlFor='single'>*/}
-            {/*<FontAwesomeIcon icon={faImage} color='#3B5998' size='2x' />*/}
-            {/*</label>*/}
-            {/*<input type='file' id='single' onChange={props.onChange} />*/}
-            {/*</div>*/}
 
             <div className='button'>
                 <label htmlFor='multi'>
-                    <FontAwesomeIcon icon={faImages} color='#6d84b4' size='lg' />
+                    <FaImages color='#6d84b4'/>
                 </label>
                 <input type='file' onChange={this.props.onChange} multiple={this.props.multiple}  accept='image/*'/>
             </div>

@@ -3,11 +3,10 @@ import { Alert, Button, FormGroup, Label } from 'reactstrap'
 import moment from 'moment-timezone'
 
 import { BlocerySpinner, SingleImageUploader, FooterButtonLayer } from '~/components/common'
-import ComUtil from '~/util/ComUtil'
 
 import { DateRangePicker } from 'react-dates';
 
-import { setGoodsBannerSave, geGoodsBanner } from '~/lib/adminApi'
+import { setGoodsBannerSave, getGoodsBanner } from '~/lib/adminApi'
 
 export default class GoodsDetailBannerReg extends Component {
     constructor(props){
@@ -35,7 +34,7 @@ export default class GoodsDetailBannerReg extends Component {
             // 기획전 정보 조회
             let goodsDetailBanner = Object.assign({}, this.state.goodsDetailBanner);
             let goodsBannerId = this.state.goodsDetailBanner.goodsBannerId;
-            const { status, data } = await geGoodsBanner(goodsBannerId);
+            const { status, data } = await getGoodsBanner(goodsBannerId);
             console.log("getGoodsBanner==",data);
             if(status !== 200){
                 alert('응답이 실패 하였습니다');
@@ -72,14 +71,6 @@ export default class GoodsDetailBannerReg extends Component {
 
         this.setValidatedObj(goodsDetailBanner);
 
-        // let v_goodsBannerList = goodsDetailBanner.goodsBannerList;
-        // let p_goodsBannerList = [];
-        // v_goodsBannerList.map((items) => {
-        //     if(ComUtil.toNum(items.goodsNo) > 0){
-        //         p_goodsBannerList.push(items.goodsNo);
-        //     }
-        // });
-        // goodsDetailBanner.goodsBannerList = p_goodsBannerList;
         let params = goodsDetailBanner;
 
         const { status, data } = await setGoodsBannerSave(params);

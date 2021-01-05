@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-// import { ProducerXButtonNav } from '../../common'
-import { Close } from '@material-ui/icons'
+import {MdClose} from "react-icons/md";
 import Style from './AdminModalWithNav.module.scss'
 import classNames from 'classnames'
 import { Container, Row, Col } from 'reactstrap'
@@ -33,7 +32,7 @@ class AdminModalWithNav extends React.Component {
                                 <header className={'bg-light text-dark'}>
                                     <div onClick={this.stopPropagation}>{this.props.title}</div>
                                     <div onClick={this.onCancel}>
-                                        <Close/>
+                                        <MdClose/>
                                     </div>
                                 </header>
                                 <hr className={'m-0'}/>

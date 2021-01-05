@@ -1,7 +1,6 @@
 import React, {useState} from 'react'
 import { ListGroup, ListGroupItem } from 'reactstrap'
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCheck } from '@fortawesome/free-solid-svg-icons'
+import {FaCheck} from 'react-icons/fa'
 import classNames from 'classnames'
 const CheckList = (props) => {
     const {data, className = null} = props
@@ -18,7 +17,7 @@ const CheckList = (props) => {
                 data.map((item, index) =>
                     <ListGroupItem key={'checkList_listGroupItem'+index} action className={classNames('d-flex')} onClick={onClick.bind(this, item)}>
                         <span>{item.label}</span>
-                        {item.value === value && <span className='ml-auto'><FontAwesomeIcon icon={faCheck} className='text-info'/></span>}
+                        {item.value === value && <span className='ml-auto'><FaCheck className={'text-info'} /></span>}
                     </ListGroupItem>
                 )
             }

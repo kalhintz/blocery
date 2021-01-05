@@ -1,9 +1,8 @@
-import React, { useState, Fragment } from 'react'
+import React, { Fragment } from 'react'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import { ShopXButtonNav, BlocerySpinner, LoginLinkCard } from '../../common'
 import Css from './CartList.module.scss'
 import CartHeader from './CartHeader'
-import CartItem from './CartItem'
 import CartGroup from './CartGroup'
 import InvalidCartItem from './InvalidCartItem'
 import CartSummary from './CartSummary'
@@ -21,9 +20,7 @@ import { getProducerByProducerNo } from '~/lib/producerApi'
 import { getDeliveryFee } from '~/util/bzLogic'
 import {Button } from 'reactstrap'
 import {BodyFullHeight} from '~/components/common/layouts'
-import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed } from '~/styledComponents/shared/Layouts';
-
-import {Server} from '~/components/Properties'
+import { Div } from '~/styledComponents/shared/Layouts';
 
 class CartList extends React.Component {
     constructor(props){
@@ -472,7 +469,34 @@ class CartList extends React.Component {
     //     return this.state.validCartList.filter(cart => cart.checked)
     // }
 
+
+    checkValidation = () => {
+
+        console.log(this.state.cartGoodsGroupList)
+        const cartGoodsGroupList = this.state.cartGoodsGroupList
+
+        let superRewardGoods = []
+
+        cartGoodsGroupList.map(({cartGoodsList}) => {
+            const ary = cartGoodsList.filter(cartGoods => cartGoods.superReward && cartGoods.inSuperRewardPeriod && cartGoods.qty > 1)
+            superRewardGoods = superRewardGoods.concat(ary)
+        })
+
+        if (superRewardGoods.length > 0) {
+            alert(`[${superRewardGoods[0].goodsNm}] 슈퍼리워드 상품은 하나만 구입 가능합니다`);
+
+            return false
+        }
+
+        return true
+
+    }
+
     onPayClick = async () => {
+
+        if (!this.checkValidation()) {
+            return
+        }
 
         const {data:loginUserType} = await getLoginUserType();
 
@@ -537,7 +561,7 @@ class CartList extends React.Component {
         if(this.state.isLoading) return <BlocerySpinner />
         if(this.state.loginUserType !== 'consumer') return (
             <Fragment>
-                <ShopXButtonNav underline back history={this.props.history}>장바구니</ShopXButtonNav>
+                <ShopXButtonNav underline historyBack>장바구니</ShopXButtonNav>
                 <BodyFullHeight nav bottomTabbar>
                     <LoginLinkCard icon description={'로그인 후 장바구니 서비스를 이용 하실 수 있습니다'} onClick={this.onLoginClick} />
                 </BodyFullHeight>
@@ -552,7 +576,7 @@ class CartList extends React.Component {
 
         return(
             <Fragment>
-                <ShopXButtonNav underline back history={this.props.history}>장바구니</ShopXButtonNav>
+                <ShopXButtonNav underline historyBack>장바구니</ShopXButtonNav>
                 <BodyFullHeight nav bottomTabbar>
                     <div className={Css.wrap}>
 

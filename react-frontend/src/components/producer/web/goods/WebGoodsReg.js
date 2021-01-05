@@ -9,7 +9,7 @@ import { exchangeWon2BLCT, GOODS_TOTAL_DEPOSIT_RATE } from '~/lib/exchangeApi'
 import { getProducerByProducerNo } from '~/lib/producerApi'
 import { getGoodsByGoodsNo, deleteGoods, updateConfirmGoods, updateGoodsSalesStop, getGoodsContent, getBlyReview } from '~/lib/goodsApi'
 import { getItems } from '~/lib/adminApi'
-import { getLoginUser, checkPassPhrase } from '~/lib/loginApi'
+import { getLoginProducerUser, checkPassPhraseForProducer, getLoginAdminUser } from '~/lib/loginApi'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import ComUtil from '~/util/ComUtil'
 import Select from 'react-select'
@@ -17,9 +17,7 @@ import moment from 'moment-timezone'
 import 'react-dates/initialize';
 import { DateRangePicker, SingleDatePicker } from 'react-dates';
 import { BlocerySpinner, Spinner, BlockChainSpinner, ModalWithNav, ToastUIEditorViewer, PassPhrase, Agricultural, ProcessedFoods, HealthFoods } from '~/components/common'
-import { faClock, faBolt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Checkbox } from '@material-ui/core'
+import { BsCheckBox } from "react-icons/bs";
 
 import CurrencyInput from '~/components/common/inputs/CurrencyInput'
 
@@ -90,6 +88,7 @@ export default class WebGoodsReg extends Component {
                 productionStart: '',      //수확시작일
                 expectShippingStart: '',  //예상출하시작일
                 expectShippingEnd: '',    //예상출하마감일
+                hopeDeliveryFlag:false,     //희망배송여부(소비자용)
                 pesticideYn: '무농약',	        //농약유무
                 vatFlag: '',            // 과세여부
                 packUnit: 'kg',	            //포장단위
@@ -125,9 +124,12 @@ export default class WebGoodsReg extends Component {
                     P: [],
                     H: []
                 },
-                blyReviewConfirm: false     // 블리리뷰 노출 여부
+                blyReviewConfirm: false,     // 블리리뷰 노출 여부
+                reservationGoodsSupportPrice: 0
             },
 
+            producerFeeRate: 0,
+            showSupportPrice: true,     // 판매지원금 readOnly 여부(tempProducer만 false)
             loginUser: {},
             selected: null,
             modal: false,                //모달 여부
@@ -247,11 +249,20 @@ export default class WebGoodsReg extends Component {
         await this.bind()
         const loginUser = await this.setLoginUserInfo();
 
+        let adminUser = await getLoginAdminUser();
+
         const state = Object.assign({}, this.state)
+
+        if(adminUser.email === "tempProducer@ezfarm.co.kr") {
+            state.showSupportPrice = false
+        }
         state.isDidMounted = true
         state.loginUser = loginUser
         // state.bindData = bindData
 
+        let {data:producer} = await getProducerByProducerNo(loginUser.uniqueNo);
+
+        this.setState({producerFeeRate: producer.producerFeeRate})
 
         //신규
         if(!state.goods.goodsNo){
@@ -290,7 +301,7 @@ export default class WebGoodsReg extends Component {
     }
 
     setLoginUserInfo = async() => {
-        return await getLoginUser();
+        return await getLoginProducerUser();
     }
 
     //기초 데이타 바인딩 정보
@@ -555,7 +566,7 @@ export default class WebGoodsReg extends Component {
 
         this.setState({goods})
 
-        console.log(goods)
+        //console.log(goods)
         // this.saveGoodsInfo();
 
         await this.save(goods)
@@ -609,21 +620,26 @@ export default class WebGoodsReg extends Component {
 
         if(!window.confirm('상품을 판매개시 하시겠습니까? 이후 수정되는 항목이 제한 됩니다!')) return
 
-        let {data:producer} = await getProducerByProducerNo(this.state.loginUser.uniqueNo);
-        this.saveGoodsSelfDeposit(producer.selfDeposit);
+        //202012-selfDeposit 제외
+        // let {data:producer} = await getProducerByProducerNo(this.state.loginUser.uniqueNo);
+        // console.log(producer)
+        //  this.saveGoodsSelfDeposit(producer.selfDeposit);
 
         await this.saveTemp();
 
-        if(producer.selfDeposit) {
-            let {data:balance} = await scOntGetBalanceOfBlct(this.state.loginUser.account);
-            if(balance < this.state.goods.totalDepositBlct){
-                // TODO 토큰 구매페이지 이동 혹은 안내 필요
-                alert('상품 판매개시에 필요한 미배송보증금의 BLY가 부족합니다');
-                return;
-            }
-        }
+        //202012-selfDeposit 제외.
+        // if(producer.selfDeposit) {
+        //     let {data:balance} = await scOntGetBalanceOfBlct(this.state.loginUser.account);
+        //     if(balance < this.state.goods.totalDepositBlct){
+        //         // TODO 토큰 구매페이지 이동 혹은 안내 필요
+        //         alert('상품 판매개시에 필요한 미배송보증금의 BLY가 부족합니다');
+        //         return;
+        //     }
+        // }
         // 현재 생산자 미배송보증금 납부 실패시 1회 재시도 하도록 되어있음. (이미 UI에는 수정 불가 안내메시지가 노출)
-        await this.payDepositToken(producer.selfDeposit, this.state.goods.totalDepositBlct);
+
+        //202012-selfDeposit 제외.await this.payDepositToken(producer.selfDeposit, this.state.goods.totalDepositBlct);
+        await this.payDepositToken(false, this.state.goods.totalDepositBlct);
     }
 
     //상품수정(노출이후)
@@ -635,14 +651,14 @@ export default class WebGoodsReg extends Component {
         this.loadingToggle('update')
     }
 
-    // 상품의 미배송보증금 납부여부 저장(selfDeposit이 true이면 생산자가 납부
-    saveGoodsSelfDeposit = (selfDeposit) => {
-        const goods = Object.assign({}, this.state.goods);
-        goods.selfDeposit = selfDeposit;
-        this.setState({
-            goods: goods
-        })
-    };
+    ///202012-selfDeposit 제외 상품의 미배송보증금 납부여부 저장(selfDeposit이 true이면 생산자가 납부
+    // saveGoodsSelfDeposit = (selfDeposit) => {
+    //     const goods = Object.assign({}, this.state.goods);
+    //     goods.selfDeposit = selfDeposit;
+    //     this.setState({
+    //         goods: goods
+    //     })
+    // };
 
     //할인율 계산
     getDiscountRate = (goods) => {
@@ -658,7 +674,7 @@ export default class WebGoodsReg extends Component {
         }
 
         //블리리뷰 노출 여부
-        goods.blyReviewConfirm = this.state.goods.blyReviewConfirm
+        goods.blyReviewConfirm = this.state.goods.blyReviewConfirm;
 
 
         let maxPrice = (goods.priceSteps[goods.priceSteps.length-1]).price;
@@ -678,14 +694,14 @@ export default class WebGoodsReg extends Component {
             goods.vatFlag = false;
         }
 
-        console.log({saveGoods: goods})
+        //console.log({saveGoods: goods})
 
         //return false;
 
         //상품이미지의 imageNo로 정렬
-        ComUtil.sortNumber(goods.goodsImages, 'imageNo', false)
+        ComUtil.sortNumber(goods.goodsImages, 'imageNo', false);
 
-        const {data: goodsNo, status} = await addGoods(goods)
+        const {data: goodsNo, status} = await addGoods(goods);
         if(status !== 200) {
             alert('등록이 실패 하였습니다')
             return
@@ -715,7 +731,7 @@ export default class WebGoodsReg extends Component {
         let confirmResult = updateConfirmGoods(this.state.goods.goodsNo, goods.confirm);
 
         if(confirmResult) {
-            this.notify('블록체인에 저장이 완료되었습니다', toast.success)
+            this.notify('저장이 완료되었습니다', toast.success)
             this.setState({
                 goods: goods
             })
@@ -727,49 +743,52 @@ export default class WebGoodsReg extends Component {
         if(!selfDeposit) {
             await this.confirmSave()
 
-        } else {
-            let payConfirm = window.confirm('보유한 BLCT중 미배송 보증금으로 ' + depositToken + 'BLCT를 예치합니다. ');
-            if(payConfirm) {
-                //임시저장
-                this.setState({
-                    modal: true, //결제비번창 오픈.
-                    modalType: 'pay'
-                });
-            } else {
-                alert('미배송 보증금을 예치하지 않으면 물품을 등록할 수 없습니다.');
-            }
         }
+        ///202012-selfDeposit 제외
+        // else {
+        //     let payConfirm = window.confirm('보유한 BLCT중 미배송 보증금으로 ' + depositToken + 'BLCT를 예치합니다. ');
+        //     if(payConfirm) {
+        //         //임시저장
+        //         this.setState({
+        //             modal: true, //결제비번창 오픈.
+        //             modalType: 'pay'
+        //         });
+        //     } else {
+        //         alert('미배송 보증금을 예치하지 않으면 물품을 등록할 수 없습니다.');
+        //     }
+        // }
     };
 
-    //결재처리
-    modalToggleOk = async () => {
-        let passPhrase = this.state.passPhrase;
-        let {data: checkResult} = await checkPassPhrase(passPhrase);
-        if(!checkResult){
-            alert('블록체인 비밀번호를 확인해주세요.');
-
-            //블록체인 비번 초기화
-            this.setState({clearPassPhrase: true});
-
-            return; //블록체인 비번 오류, stop&stay
-        }
-
-        //결제비번 맞으면 일단 modal off - 여러번 구매를 방지.
-        this.setState({
-            modal: false
-        });
-
-        this.setState({chainLoading: true}); //스플래시 열기
-        let result = await scOntPayProducerDeposit(this.state.goods.goodsNo, this.state.goods.totalDepositBlct);
-        if(!result){
-            alert('블록체인 기록에 실패하였습니다. 다시 한번 시도해주세요.')
-
-        } else {
-            await this.confirmSave()
-        }
-        this.setState({chainLoading: false});
-
-    }
+    //결재처리 202012-selfDeposit 제외.
+    // modalToggleOk = async () => {
+    //
+    //     let passPhrase = this.state.passPhrase;
+    //     let {data: checkResult} = await checkPassPhrase(passPhrase);
+    //     if(!checkResult){
+    //         alert('블록체인 비밀번호를 확인해주세요.');
+    //
+    //         //블록체인 비번 초기화
+    //         this.setState({clearPassPhrase: true});
+    //
+    //         return; //블록체인 비번 오류, stop&stay
+    //     }
+    //
+    //     //결제비번 맞으면 일단 modal off - 여러번 구매를 방지.
+    //     this.setState({
+    //         modal: false
+    //     });
+    //
+    //     this.setState({chainLoading: true}); //스플래시 열기
+    //     let result = await scOntPayProducerDeposit(this.state.goods.goodsNo, this.state.goods.totalDepositBlct);
+    //     if(!result){
+    //         alert('블록체인 기록에 실패하였습니다. 다시 한번 시도해주세요.')
+    //
+    //     } else {
+    //         await this.confirmSave()
+    //     }
+    //     this.setState({chainLoading: false});
+    //
+    // }
 
     modalToggle = () => {
         this.setState(prevState => ({
@@ -777,22 +796,23 @@ export default class WebGoodsReg extends Component {
         }));
     };
 
-    //6자리 인증 비번 PassPhrase(6 CHAR PIN CODE)
-    onPassPhrase = (passPhrase) => {
-        //console.log(passPhrase);
-        this.setState({
-            passPhrase: passPhrase,
-            clearPassPhrase: false
-        });
-    };
-
-    // 블록체인 비밀번호 힌트
-    findPassPhrase = () => {
-        this.setState({
-            modalType: 'passPhrase',
-            modal: true
-        })
-    }
+    //202012-selfDeposit 제외.
+    // //6자리 인증 비번 PassPhrase(6 CHAR PIN CODE)
+    // onPassPhrase = (passPhrase) => {
+    //     //console.log(passPhrase);
+    //     this.setState({
+    //         passPhrase: passPhrase,
+    //         clearPassPhrase: false
+    //     });
+    // };
+    //
+    // // 블록체인 비밀번호 힌트
+    // findPassPhrase = () => {
+    //     this.setState({
+    //         modalType: 'passPhrase',
+    //         modal: true
+    //     })
+    // }
 
     // 마이페이지로 이동
     moveToMypage = () => {
@@ -1146,6 +1166,13 @@ export default class WebGoodsReg extends Component {
         else if(goods.totalPriceStep >= 3 && priceStep3 && date.isSameOrBefore(moment(priceStep3.until))) return  <Fragment><div>{date.dates()}</div><div className='small text-secondary'>{ComUtil.addCommas(Math.round(priceStep3.price,0))}</div></Fragment>
 
         return date.dates()
+    }
+
+    onHopeDeliveryFlag = (e) => {
+        const hopeDeliveryFlag = e.target.checked;
+        const state = Object.assign({}, this.state);
+        state.goods.hopeDeliveryFlag=hopeDeliveryFlag;
+        this.setState(state);
     }
 
     //배송정책 드롭다운 클릭
@@ -1513,7 +1540,8 @@ export default class WebGoodsReg extends Component {
                                                                     {stepNo} 단계 가격설정
                                                                 </div>
                                                                 <div className={'ml-auto text-secondary small'}>
-                                                                    {ComUtil.addCommas(Math.round(price - goods.consumerPrice,0))} 원 할인
+                                                                    <span className={'mr-2'}>{ComUtil.addCommas(Math.round(price - goods.consumerPrice,0))} 원 할인</span>
+                                                                    <span>(정산금 : {ComUtil.addCommas(Math.round((price*((100-this.state.producerFeeRate)/100)) + ComUtil.toNum(goods.reservationGoodsSupportPrice),0))} 원)</span>
                                                                 </div>
                                                             </div>
                                                             <div>
@@ -1544,10 +1572,13 @@ export default class WebGoodsReg extends Component {
                                                                         <Label className={'text-secondary d-flex'}>
 
                                                                             <div className={'small'}>{stepNo}단계 가격설정{star}</div>
-                                                                            {/*<div className='flex-grow-1 text-right text-danger'>{discountRate}%</div>*/}
                                                                             {
                                                                                 //할인가, 할인율 둘중 하나라도 값이 있을 경우
-                                                                                ComUtil.toNum(price) > 0 && goods.consumerPrice && <div className='flex-grow-1 text-right small'>{ComUtil.addCommas(Math.round(price - goods.consumerPrice,0))} 원 할인</div>
+                                                                                ComUtil.toNum(price) > 0 && goods.consumerPrice &&
+                                                                                    <div className='flex-grow-1 text-right small'>
+                                                                                        {ComUtil.addCommas(Math.round(price - goods.consumerPrice,0))} 원 할인
+                                                                                        (정산금 : {ComUtil.addCommas(Math.round((price*((100-5)/100)) + ComUtil.toNum(goods.reservationGoodsSupportPrice),0))} 원)
+                                                                                    </div>
                                                                             }
                                                                         </Label>
                                                                         <div className='d-flex align-items-center'>
@@ -1596,6 +1627,7 @@ export default class WebGoodsReg extends Component {
 
                                                                                     //일자 렌더링
                                                                                     renderDayContents={this.renderUntilDayContents}
+                                                                                    // displayFormat={'YYYY.MM.DD'}
                                                                                 />
 
                                                                             </div>
@@ -1648,7 +1680,21 @@ export default class WebGoodsReg extends Component {
                                     }
 
                                     {
-
+                                            <FormGroup>
+                                                <Label className={'text-secondary d-flex'}>
+                                                    <div>
+                                                        <div className={'small'}>예약상품 판매 지원금{star}</div>
+                                                        <div className={'d-flex'}>
+                                                            <div className={'mr-3'}>
+                                                                <CurrencyInput readOnly={this.state.showSupportPrice}
+                                                                               name='reservationGoodsSupportPrice'
+                                                                               value={goods.reservationGoodsSupportPrice}
+                                                                               onChange={this.onInputChange} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Label>
+                                            </FormGroup>
                                     }
                                 </div>
 
@@ -1670,35 +1716,43 @@ export default class WebGoodsReg extends Component {
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>예상발송일{star}</Label>
                                     {
-                                        goods.confirm ? (<div>{`${ComUtil.utcToString(goods.expectShippingStart)} - ${ComUtil.utcToString(goods.expectShippingEnd)}`}</div>) : (
+                                        goods.confirm ? (<div>{`${ComUtil.utcToString(goods.expectShippingStart)} - ${ComUtil.utcToString(goods.expectShippingEnd)}`} {goods.hopeDeliveryFlag ? <span>(소비자 희망수령일 기능 적용<BsCheckBox /></span>:null}) </div>) : (
                                             <Fragment>
-                                                <div>
-                                                    <DateRangePicker
-                                                        startDateId='expectShippingStart'
-                                                        endDateId='expectShippingEnd'
-                                                        startDatePlaceholderText="시작일"
-                                                        endDatePlaceholderText="종료일"
-                                                        startDate={goods.expectShippingStart ? moment(goods.expectShippingStart) : null}
-                                                        endDate={goods.expectShippingEnd ? moment(goods.expectShippingEnd) : null}
-                                                        onDatesChange={this.onExpectShippingChange}
-                                                        focusedInput={this.state.focusedInput}
-                                                        onFocusChange={(focusedInput) => { this.setState({ focusedInput })}}
-                                                        numberOfMonths={1}          //달력 갯수(2개로 하면 모바일에서는 옆으로 들어가버리기 때문에 orientation='vertical'로 해야함), pc 에서는 상관없음
-                                                        orientation={'horizontal'}
-                                                        openDirection="up"
-                                                        withPortal
-                                                        small
-                                                        readOnly
-                                                        showClearDates
-                                                        calendarInfoPosition="top"
-                                                        isDayBlocked={(date)=>{
-                                                            //상품판매기한보다 작거나 같은 일자는 블록처리하여 선택할 수 없도록 함
-                                                            if(date.isSameOrBefore(moment(goods.saleEnd))) return true
-                                                            return false
-                                                        }}
-                                                        renderCalendarInfo={this.renderExpectShippingCalendarInfo}
-                                                    />
-                                                    <Badge pill color='info' className='ml-2' onClick={this.onClickExpectInfo}> i </Badge>
+                                                <div className='d-flex ml-2 align-items-center'>
+                                                    <div>
+                                                        <DateRangePicker
+                                                            startDateId='expectShippingStart'
+                                                            endDateId='expectShippingEnd'
+                                                            startDatePlaceholderText="시작일"
+                                                            endDatePlaceholderText="종료일"
+                                                            startDate={goods.expectShippingStart ? moment(goods.expectShippingStart) : null}
+                                                            endDate={goods.expectShippingEnd ? moment(goods.expectShippingEnd) : null}
+                                                            onDatesChange={this.onExpectShippingChange}
+                                                            focusedInput={this.state.focusedInput}
+                                                            onFocusChange={(focusedInput) => { this.setState({ focusedInput })}}
+                                                            numberOfMonths={1}          //달력 갯수(2개로 하면 모바일에서는 옆으로 들어가버리기 때문에 orientation='vertical'로 해야함), pc 에서는 상관없음
+                                                            orientation={'horizontal'}
+                                                            openDirection="up"
+                                                            withPortal
+                                                            small
+                                                            readOnly
+                                                            showClearDates
+                                                            calendarInfoPosition="top"
+                                                            isDayBlocked={(date)=>{
+                                                                //상품판매기한보다 작거나 같은 일자는 블록처리하여 선택할 수 없도록 함
+                                                                if(date.isSameOrBefore(moment(goods.saleEnd))) return true
+                                                                return false
+                                                            }}
+                                                            renderCalendarInfo={this.renderExpectShippingCalendarInfo}
+                                                            // displayFormat={'YYYY.MM.DD'}
+                                                        />
+                                                        <Badge pill color='info' className='ml-2 mr-2' style={{cursor:'pointer'}} onClick={this.onClickExpectInfo}> i </Badge>
+                                                    </div>
+                                                    <div className='pl-4'>
+                                                        <Label check>
+                                                            <Input type="checkbox" checked={goods.hopeDeliveryFlag ? true:false} onChange={this.onHopeDeliveryFlag} />소비자 희망수령일 기능 적용
+                                                        </Label>
+                                                    </div>
                                                 </div>
                                                 {
                                                     goods.saleEnd && <small className={'text-secondary'}>예상발송일은 <span className={'text-danger'}>상품판매기한 이후 ({ComUtil.utcToString(moment(goods.saleEnd).add(1,'day'))})</span> 부터 가능</small>
@@ -1927,30 +1981,31 @@ export default class WebGoodsReg extends Component {
 
                     </Modal>
 
-                    {/* 결제비번 입력 모달 */}
-                    <Modal isOpen={this.state.modalType === 'pay' && this.state.modal} toggle={this.modalToggle} className={this.props.className} centered>
-                        <ModalHeader toggle={this.modalToggle}> 블록체인비밀번호 입력</ModalHeader>
-                        <ModalBody className={'p-0'}>
-                            {/* clearPassPhrase 초기화, onChange 결과값 세팅 */}
-                            <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhrase}></PassPhrase>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="link" onClick={this.findPassPhrase}>비밀번호를 잊으셨나요?</Button>
-                            <Button color="info" onClick={this.modalToggleOk} disabled={(this.state.passPhrase.length === 6) ? false:true}>확인</Button>{' '}
-                            <Button color="secondary" onClick={this.modalToggle}>취소</Button>
-                        </ModalFooter>
-                    </Modal>
-                    {/* 결제비밀번호 조회 */}
-                    <Modal isOpen={this.state.modalType === 'passPhrase' && this.state.modal} centered>
-                        <ModalHeader>블록체인비밀번호 안내</ModalHeader>
-                        <ModalBody>
-                            마이페이지에서 블록체인비밀번호 힌트 조회 후 이용해주세요.
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="info" onClick={this.moveToMypage}>마이페이지로 이동</Button>
-                            <Button color="secondary" onClick={this.modalToggle}>취소</Button>
-                        </ModalFooter>
-                    </Modal>
+                    {/*202012-selfDeposit 제외.*/}
+                    {/*/!* 결제비번 입력 모달 *!/*/}
+                    {/*<Modal isOpen={this.state.modalType === 'pay' && this.state.modal} toggle={this.modalToggle} className={this.props.className} centered>*/}
+                    {/*    <ModalHeader toggle={this.modalToggle}> 블록체인비밀번호 입력</ModalHeader>*/}
+                    {/*    <ModalBody className={'p-0'}>*/}
+                    {/*        /!* clearPassPhrase 초기화, onChange 결과값 세팅 *!/*/}
+                    {/*        <PassPhrase clearPassPhrase={this.state.clearPassPhrase} onChange={this.onPassPhrase}></PassPhrase>*/}
+                    {/*    </ModalBody>*/}
+                    {/*    <ModalFooter>*/}
+                    {/*        <Button color="link" onClick={this.findPassPhrase}>비밀번호를 잊으셨나요?</Button>*/}
+                    {/*        <Button color="info" onClick={this.modalToggleOk} disabled={(this.state.passPhrase.length === 6) ? false:true}>확인</Button>{' '}*/}
+                    {/*        <Button color="secondary" onClick={this.modalToggle}>취소</Button>*/}
+                    {/*    </ModalFooter>*/}
+                    {/*</Modal>*/}
+                    {/*/!* 결제비밀번호 조회 *!/*/}
+                    {/*<Modal isOpen={this.state.modalType === 'passPhrase' && this.state.modal} centered>*/}
+                    {/*    <ModalHeader>블록체인비밀번호 안내</ModalHeader>*/}
+                    {/*    <ModalBody>*/}
+                    {/*        마이페이지에서 블록체인비밀번호 힌트 조회 후 이용해주세요.*/}
+                    {/*    </ModalBody>*/}
+                    {/*    <ModalFooter>*/}
+                    {/*        <Button color="info" onClick={this.moveToMypage}>마이페이지로 이동</Button>*/}
+                    {/*        <Button color="secondary" onClick={this.modalToggle}>취소</Button>*/}
+                    {/*    </ModalFooter>*/}
+                    {/*</Modal>*/}
 
                     <ToastContainer />  {/* toast 가 그려질 컨테이너 */}
 

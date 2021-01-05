@@ -1,32 +1,20 @@
 import React, { Component, Fragment } from 'react'
-import { Container, Row, Col, Button, Input, Label } from 'reactstrap'
 import { Server } from '../../../Properties'
-import Style from './OrderDetail.module.scss'
 import ComUtil from '~/util/ComUtil'
-import axios from 'axios'
 import { Webview } from '~/lib/webviewApi'
 
-import { BlockChainSpinner, BlocerySpinner, ShopXButtonNav, ModalConfirm, ModalWithNav } from '~/components/common/index'
-import { getTransportCompany, addBlctOrderCancel, addPgOrderCancel, getOrderDetailByOrderSeq, updateConsumerOkDate } from '~/lib/shopApi'
+import { BlockChainSpinner, BlocerySpinner, ModalWithNav } from '~/components/common/index'
+import { getTransportCompany, getOrderDetailByOrderSeq } from '~/lib/shopApi'
 import { getGoodsByGoodsNo } from '~/lib/goodsApi'
-import { getServerToday } from '~/lib/commonApi'
 
 import UpdateAddress from './UpdateAddress'
-import TextStyle from '~/styles/Text.module.scss'
 import { Link } from '~/styledComponents/shared/Links'
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGift, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
-
+import {FaGift} from 'react-icons/fa'
 import { ToastContainer, toast } from 'react-toastify'     //토스트
 import 'react-toastify/dist/ReactToastify.css'
-import moment from 'moment-timezone'
-import classnames from 'classnames'
-import { BLCT_TO_WON, CANCEL_FEE_13TO5, CANCEL_FEE_4TO3, CANCEL_FEE_2TO1, CANCEL_FEE_MAX } from '~/lib/exchangeApi'
-
 import { Button as Btn } from '~/styledComponents/shared/Buttons'
-import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed } from '~/styledComponents/shared/Layouts'
-import { Badge, HrHeavy, HrThin } from "~/styledComponents/mixedIn";
+import { Div, Span, Img, Flex, Right } from '~/styledComponents/shared/Layouts'
+import { Badge, HrThin } from "~/styledComponents/mixedIn";
 import { Icon } from '~/components/common/icons'
 import { Header } from '~/styledComponents/mixedIn/Headers'
 import styled from 'styled-components'
@@ -329,24 +317,29 @@ export default class OrderDetail extends Component {
                             }
                         </Right>
                     </Flex>
-                    <Link to={'/goods?goodsNo='+goods.goodsNo}>
+
+                    <Link to={'/goods?goodsNo='+goods.goodsNo} display={'block'}>
                         <Flex mb={8} alignItems={'flex-start'}>
                             <Div width={63} height={63} mr={9} flexShrink={0}>
                                 <Img cover src={Server.getThumbnailURL()+orderDetail.orderImg} alt={'상품사진'}/>
                             </Div>
-                            <Div>
+                            <Div lineHeight={24}>
                                 <Div fg={'green'} fontSize={12}>{orderDetail.itemName} | {orderDetail.farmName}</Div>
                                 <Div>{orderDetail.goodsNm}</Div>
                                 {
                                     (orderDetail.payMethod === 'card') ?
                                         <Div>
                                             <Div mb={4} fontSize={14} bold>{ComUtil.addCommas(orderDetail.orderPrice)}원</Div>
-                                            <Right fontSize={10} fg={'dark'}>수량 : {orderDetail.orderCnt} | 카드결제</Right>
+                                            <Right fontSize={11} fg={'dark'}>수량 : {orderDetail.orderCnt} | 카드결제
+                                                <Span fg={'danger'}>
+                                                    {(orderDetail.superRewardGoods)?'(슈퍼리워드 적용)':''} {(orderDetail.blyTimeGoods)?'(블리타임 적용)':''}
+                                                </Span>
+                                            </Right>
                                         </Div>
                                         : orderDetail.payMethod === 'blct' ?
                                         <Div alignItems={'center'}>
                                             <Div mb={4} fontSize={14} bold><Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(orderDetail.blctToken)}({ComUtil.addCommas(orderDetail.orderPrice)}원)</Div>
-                                            <Right fontSize={10} fg={'dark'}>수량 : {orderDetail.orderCnt} | BLY결제</Right>
+                                            <Right fontSize={11} fg={'dark'}>수량 : {orderDetail.orderCnt} | BLY결제</Right>
                                         </Div>
                                         :
                                         <Div alignItems={'center'}>
@@ -354,7 +347,11 @@ export default class OrderDetail extends Component {
                                                 {ComUtil.addCommas(orderDetail.cardPrice)}원 +
                                                 <Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(orderDetail.blctToken)}({ComUtil.addCommas(ComUtil.roundDown(orderDetail.orderBlctExchangeRate*orderDetail.blctToken,1))}원)
                                             </Div>
-                                            <Right fontSize={10} fg={'dark'}>수량 : {orderDetail.orderCnt} | 카드+BLY결제</Right>
+                                            <Right fontSize={11} fg={'dark'}>수량 : {orderDetail.orderCnt} | 카드+BLY결제
+                                                <Span fg={'danger'}>
+                                                    {(orderDetail.superRewardGoods)?'(슈퍼리워드 적용)':''} {(orderDetail.blyTimeGoods)?'(블리타임 적용)':''}
+                                                </Span>
+                                            </Right>
                                         </Div>
                                 }
                             </Div>
@@ -362,7 +359,7 @@ export default class OrderDetail extends Component {
                     </Link>
                     {
                         orderDetail.notDeliveryDate ? null : orderPayStatus === 'cancelled' ?
-                            <Btn block bc={'secondary'}><Link to={'/goods?goodsNo='+goods.goodsNo}>재구매</Link></Btn> : orderDetail.consumerOkDate ?
+                            <Link to={'/goods?goodsNo='+goods.goodsNo} display={'block'}><Btn block bc={'secondary'}>재구매</Btn></Link> : orderDetail.consumerOkDate ?
                                 <Flex>
                                     <Div flexGrow={1} pr={4}>
                                         <Btn block bc={'secondary'} onClick={this.deliveryTracking}>배송조회</Btn>
@@ -390,8 +387,8 @@ export default class OrderDetail extends Component {
                             {
                                 orderDetail.gift &&
                                 <span className='mr-2'>
-                                        <FontAwesomeIcon icon={faGift} className={'text-danger mr-1'} size={'lg'} />
-                                    </span>
+                                    <FaGift className={'text-danger mr-1'} />
+                                </span>
                             }
                             {
                                 (orderDetail.notDeliveryDate) ? null :
@@ -417,8 +414,16 @@ export default class OrderDetail extends Component {
                         <Div fg={'adjust'} minWidth={80}>배송요청사항</Div>
                         <Div>{orderDetail.deliveryMsg}</Div>
                     </Flex>
-
+                    {
+                        orderDetail.hopeDeliveryFlag && (
+                            <Flex fontSize={12} mb={3}>
+                                <Div fg={'adjust'} minWidth={80}>희망 수령일</Div>
+                                <Div>{ComUtil.utcToString(orderDetail.hopeDeliveryDate)}</Div>
+                            </Flex>
+                        )
+                    }
                 </Div>
+
                 <HrThin m={0} mb={16} />
 
                 <Div m={16}>
@@ -444,18 +449,26 @@ export default class OrderDetail extends Component {
                         <Div bold alignItems={'center'} fontSize={16}>총 결제금액</Div>
                         <Right bold fontSize={20} fg={'green'}>{ComUtil.addCommas(orderDetail.orderPrice)} 원</Right>
                     </Flex>
-                    <Div fontSize={12}>
-                        <Div fontSize={14} mb={8}>결제상세</Div>
-                        <Flex mb={3}>
-                            <Div fg={'adjust'}>신용카드</Div>
-                            <Right>{(orderDetail.payMethod !== "blct") ? ComUtil.addCommas(orderDetail.cardPrice) + '원' : '-'}</Right>
-                        </Flex>
+                    <Div>
+                        {
+                            orderDetail.usedCouponNo !== 0 &&
+                            <Flex>
+                                <Div fg={'adjust'}>쿠폰</Div>
+                                <Right><Icon name={'blocery'} />&nbsp;{ComUtil.addCommas(orderDetail.usedCouponBlyAmount)} BLY &nbsp;
+                                    <small>({ComUtil.addCommas(ComUtil.roundDown(orderDetail.usedCouponBlyAmount*orderDetail.orderBlctExchangeRate, 0))}원)</small>
+                                </Right>
+                            </Flex>
+                        }
                         <Flex mb={3}>
                             <Div fg={'adjust'}>BLY</Div>
                             {(orderDetail.payMethod !== "card") ?
-                                <Right><Icon name={'blocery'} />&nbsp;{ComUtil.addCommas(orderDetail.blctToken)} BLY &nbsp;
-                                    <small>({ComUtil.addCommas(ComUtil.roundDown(orderDetail.blctToken*orderDetail.orderBlctExchangeRate, 1))}원)</small>
+                                <Right><Icon name={'blocery'} />&nbsp;{ComUtil.addCommas((orderDetail.blctToken-orderDetail.usedCouponBlyAmount).toFixed(2))} BLY &nbsp;
+                                    <small>({ComUtil.addCommas(ComUtil.roundDown((orderDetail.blctToken-orderDetail.usedCouponBlyAmount)*orderDetail.orderBlctExchangeRate, 0))}원)</small>
                                 </Right> : <Right>-</Right>}
+                        </Flex>
+                        <Flex mb={3}>
+                            <Div fg={'adjust'}>신용카드</Div>
+                            <Right>{(orderDetail.payMethod !== "blct") ? ComUtil.addCommas(orderDetail.cardPrice) + '원' : '-'}</Right>
                         </Flex>
                     </Div>
                 </Div>
@@ -468,18 +481,24 @@ export default class OrderDetail extends Component {
                         (orderPayStatus === "cancelled") || (orderDetail.notDeliveryDate) ?
                             <Div>
                                 <Flex mb={16}>
-                                    <Title alignItems={'center'}>총 환불금액</Title>
-                                    <Right fg={'danger'}>
+                                    <Title alignItems={'center'} fontSize={16}>총 환불금액</Title>
+                                    <Right bold fontSize={20} fg={'danger'}>
                                         {
-                                            orderPayMethod === "blct" ?
-                                                ComUtil.addCommas(ComUtil.toNum(orderDetail.blctToken)-ComUtil.toNum(orderDetail.cancelBlctTokenFee)) :
-                                                ComUtil.addCommas(ComUtil.toNum(orderDetail.orderPrice)-ComUtil.toNum(orderDetail.cancelFee))
+                                            orderDetail.usedCouponNo ?
+                                                orderPayMethod === 'blct' ?
+                                                    ComUtil.addCommas(ComUtil.toNum(orderDetail.blctToken)-ComUtil.toNum(orderDetail.cancelBlctTokenFee)-ComUtil.toNum(orderDetail.usedCouponBlyAmount))
+                                                    :
+                                                    ComUtil.addCommas(ComUtil.roundDown(ComUtil.toNum(orderDetail.orderPrice-orderDetail.cancelFee-orderDetail.usedCouponBlyAmount*orderDetail.orderBlctExchangeRate),0))
+                                                :
+                                                orderPayMethod === 'blct' ?
+                                                    ComUtil.addCommas(ComUtil.toNum(orderDetail.blctToken)-ComUtil.toNum(orderDetail.cancelBlctTokenFee))
+                                                    :
+                                                    ComUtil.addCommas(ComUtil.toNum(orderDetail.orderPrice)-ComUtil.toNum(orderDetail.cancelFee))
                                         }
                                         { orderPayMethod === "blct" ? ' BLY' : ' 원' }
                                     </Right>
                                 </Flex>
-                                <Div fontSize={12}>
-                                    <Div fontSize={14} mb={8}>환불상세</Div>
+                                <Div>
                                     {
                                         (orderDetail.notDeliveryDate) ? null :
                                             //주문취소시 취소수수료 표시
@@ -503,25 +522,34 @@ export default class OrderDetail extends Component {
                                         <Right>{ComUtil.addCommas(ComUtil.toNum(orderDetail.cardPrice)-ComUtil.toNum(orderDetail.cancelFee))}원</Right>
                                     </Flex>
                                     <Flex mb={3}>
-                                        <Div fg={'adjust'}>BLCT</Div>
+                                        <Div fg={'adjust'}>BLY</Div>
                                         {
                                             orderPayMethod === "blct" ?
                                                 <Right>
                                                     <Icon name={'blocery'} />&nbsp;
-                                                    {ComUtil.addCommas(ComUtil.toNum(orderDetail.blctToken)-ComUtil.toNum(orderDetail.cancelBlctTokenFee))} BLY &nbsp;
-                                                    <small>({ComUtil.addCommas(ComUtil.roundDown((orderDetail.blctToken-orderDetail.cancelBlctTokenFee)*orderDetail.orderBlctExchangeRate,1))}원)</small>
+                                                    {ComUtil.addCommas(ComUtil.toNum(orderDetail.blctToken)-ComUtil.toNum(orderDetail.cancelBlctTokenFee)-ComUtil.toNum(orderDetail.usedCouponBlyAmount))} BLY &nbsp;
+                                                    <small>({ComUtil.addCommas(ComUtil.roundDown((orderDetail.blctToken-orderDetail.cancelBlctTokenFee-orderDetail.usedCouponBlyAmount)*orderDetail.orderBlctExchangeRate,1))}원)</small>
                                                 </Right>
                                                 :
                                                 orderPayMethod === "cardBlct" ?
-                                                    <Right>
-                                                        <Icon name={'blocery'} />&nbsp;
-                                                        {ComUtil.addCommas(ComUtil.toNum(orderDetail.blctToken))} BLY &nbsp;
-                                                        <small>({ComUtil.addCommas(ComUtil.roundDown(orderDetail.blctToken*orderDetail.orderBlctExchangeRate, 1))}원)</small>
-                                                    </Right>
-                                                    :
-                                                    <Right>-</Right>
+                                                    orderDetail.usedCouponNo && orderDetail.blctToken != orderDetail.usedCouponBlyAmount ?
+                                                        <Right>
+                                                            <Icon name={'blocery'} />&nbsp;
+                                                            {ComUtil.addCommas(ComUtil.toNum(orderDetail.blctToken-orderDetail.usedCouponBlyAmount))} BLY &nbsp;
+                                                            <small>({ComUtil.addCommas(ComUtil.roundDown((orderDetail.blctToken-orderDetail.usedCouponBlyAmount)*orderDetail.orderBlctExchangeRate, 1))}원)</small>
+                                                        </Right>
+                                                        :
+                                                        <Right>-</Right>
+                                                :
+                                                <Right>-</Right>
                                         }
                                     </Flex>
+                                    {
+                                        orderDetail.usedCouponNo ?
+                                            <Flex>
+                                                <Right fg={'danger'}><small>* 사용한 쿠폰은 주문 취소 후 재발급되지 않습니다.</small></Right>
+                                            </Flex> : null
+                                    }
                                 </Div>
                                 {
                                     // 미배송 보상금 표시

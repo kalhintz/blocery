@@ -1,7 +1,7 @@
-import React, { Component, PropTypes } from 'react';
-import { Button,  Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
+import React, { Component } from 'react';
+import { Button} from 'reactstrap'
 import ComUtil from '~/util/ComUtil'
-import { getLoginAdminUser } from '../../../lib/loginApi'
+import { getLoginAdminUser } from '~/lib/loginApi'
 import { getMdPickList, delMdPick, hideMdPick } from '~/lib/adminApi'
 
 import { ModalConfirm, AdminModalFullPopupWithNav } from '~/components/common'
@@ -12,6 +12,7 @@ import "ag-grid-community/src/styles/ag-grid.scss";
 import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { Cell } from '~/components/common'
 import { Server } from '../../Properties'
+import moment from 'moment'
 
 export default class B2cMdPick extends Component{
     constructor(props) {
@@ -240,18 +241,28 @@ export default class B2cMdPick extends Component{
 
     delButtonRenderer = ({value, data:rowData}) => {
         console.log(rowData)
+        const now = ComUtil.utcToString(moment(), "YYYY-MM-DDThh:mm:ss");
+        let validPick = ComUtil.compareDate(rowData.mdPickEndDate, now);
+        let notYetPick = ComUtil.compareDate(rowData.mdPickStartDate, now);
 
         return (
             <Cell>
                 <div className="d-flex" style={{textAlign: 'center'}}>
-                    {(rowData.hideFromHome == false) ?
-                        <ModalConfirm title={'홈화면에서 숨김'} content={<div>선택한 기획전을 홈화면에서 숨김처리 하시겠습니까?</div>} onClick={this.hideMdPickHome.bind(this, rowData.mdPickId)}>
-                            <Button className="mr-3" size='sm' color={'info'}>홈화면출력중</Button>
-                        </ModalConfirm>
-                        :
+                    {(rowData.hideFromHome == true) ?
                         <ModalConfirm title={'홈화면에 노출'} content={<div>선택한 기획전을 홈화면에 노출하시겠습니까?</div>} onClick={this.showMdPickHome.bind(this, rowData.mdPickId)}>
                             <Button className="mr-3" size='sm' color={'info'}>홈화면숨김중</Button>
                         </ModalConfirm>
+                        :
+                        (validPick < 0) ?
+                            <Button disabled={true} className="mr-3" size='sm' color={'secondary'}>기간종료</Button>
+                                :
+                                <ModalConfirm title={'홈화면에서 숨김'} content={<div>선택한 기획전을 홈화면에서 숨김처리 하시겠습니까?</div>} onClick={this.hideMdPickHome.bind(this, rowData.mdPickId)}>
+                                    {(notYetPick >= 0) ?
+                                        <Button className="mr-3" size='sm' color={'info'}>시작 전</Button>
+                                        :
+                                        <Button className="mr-3" size='sm' color={'info'}>홈화면출력중</Button>
+                                    }
+                                </ModalConfirm>
                     }
 
                     <ModalConfirm title={'기획전 삭제'} content={<div>선택한 기획전을 삭제하시겠습니까?</div>} onClick={this.delMdPick.bind(this, rowData.mdPickId)}>

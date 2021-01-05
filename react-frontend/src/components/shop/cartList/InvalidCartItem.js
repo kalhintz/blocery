@@ -1,8 +1,8 @@
-import React, {Fragment, useState} from 'react'
+import React, {Fragment} from 'react'
 import PropTypes from 'prop-types'
-import { CloseSharp } from '@material-ui/icons'
-import ComUtil from '../../../util/ComUtil'
-import { Server } from '../../Properties'
+import {MdClose} from "react-icons/md";
+import ComUtil from '~/util/ComUtil'
+import { Server } from '~/components/Properties'
 import Style from './CartList.module.scss'
 
 const InvalidCartItem = (props) => {
@@ -33,7 +33,7 @@ const InvalidCartItem = (props) => {
                 {/* 제품명 박스 start */}
                 <div className='d-flex align-items-center mb-3'>
                     <span  onClick={onClick.bind(this)} >{props.goodsNm}</span>
-                    <div className='flex-grow-1 text-right'><span onClick={onDeleteClick}><CloseSharp /></span></div>
+                    <div className='flex-grow-1 text-right'><span onClick={onDeleteClick}><MdClose /></span></div>
                 </div>
                 {/* 제품명 박스 end */}
 

@@ -1,10 +1,8 @@
 import React from 'react'
 import Style from './ShopOnlyXButtonNav.module.scss'
 import PropTypes from 'prop-types'
-import { Webview } from '../../../lib/webviewApi'
-import { BrowserHistory } from 'react-router-dom'
-import { XButton } from '../../common'
-import classnames from 'classnames'
+import { Webview } from '~/lib/webviewApi'
+import { XButton } from '~/components/common'
 const ShopOnlyXButtonNav = (props) => {
     const close = () => {
         Webview.closePopup()

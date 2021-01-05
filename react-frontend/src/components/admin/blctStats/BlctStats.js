@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Table } from 'reactstrap';
-import { getBlctStats, getMonthlyBlctStats, getAllSupportersBlct, getAllBlyTimeRewardBlct, getAllEventRewardBlct } from "~/lib/adminApi";
-import { getTotalSwapBlctToBly, getTotalSwapBlctIn } from "~/lib/swapApi"
+
+import { getBlctStats, getMonthlyBlctStats, getAllSupportersBlct, getAllBlyTimeRewardBlct, getAllEventRewardBlct, getAllCouponBlct } from "~/lib/adminApi";
+import { getTotalSwapBlctToBly, getTotalSwapBlctIn, getSwapTempProducerBlctToBly } from "~/lib/swapApi"
+
 import { getManagerBlctBalance } from "~/lib/smartcontractApi"
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -25,7 +27,7 @@ const BlctStats = (props) => {
             {headerName: "[에스크로] 구매추가 BLCT", width: 180, field: "totalBlctOrder"},
             {headerName: "[에스크로] 정산완료 BLCT", width: 180, field: "totalConsumerOkBlctOrder"},
             {headerName: "Blcery 수익(수수료)", width: 150, field: "totalBloceryOnlyFeeBlct"},
-            {headerName: "이지팜 외부지갑 송금 BLCT", width: 180, field: "totalTempProducerSent"},
+            {headerName: "토큰매출정산완료", width: 180, field: "totalTempProducerSent"},
         ],
         defaultColDef: {
             width: 170,
@@ -44,15 +46,18 @@ const BlctStats = (props) => {
     const [supportersBlct, setSupportersBlct] = useState(0);
     const [blyTimeRewardBlct, setBlyTimeRewardBlct] = useState(0);
     const [eventRewardBlct, setEventRewardBlct] = useState(0);
+    const [couponBlct, setCouponBlct] = useState(0);
     const [swapBlctToBly, setSwapBlctToBly] = useState(0);
     const [swapBlctIn, setSwapBlctIn] = useState(0);
+    const [tempProducerBlctToBly, setTempProducerBlctToBly] = useState(0);
 
     const initialBlctEco = 1137800;
+    const addBlctEco = (1000000 + 695262.465).toFixed(3);  // 2020.9월 선물하기용 1,000,000 추가입금 + 2020.9월 토큰현금화과정에서 추가입금
     const mission1EventBlct = 204910;
     const mission2EventBlct = 245250;
     const cobakEventBlct = 74400;  // 4/29일 추가로 400 더 지급함 (74,000 + 400)
     // const supportersBlct = 14500;   // txid: b446b254d1fec8917f3fff47349399ea5e85d128a9cc4b4612d0011c93467af9     6fad71d9558470cafcae535ff879e8af867fa59cfcd3cb548691bfffdb8120f9
-    const loss = 131.98 + 197.5 + 330 + 0.825999069958925 - 19.31000024;  // 2020-08-10 포텐타임 수박 환불 197.5 추가, 2020-08-24 수박 환불 330 추가
+    const loss = 131.98 + 197.5 + 330 + 0.825999069958925 - 19.31000024;  // 2020-08-10 포텐타임 옥수수 환불 197.5 추가, 2020-08-24 수박 환불 330 추가
     // const supportersBlct_April = 16250;
 
 
@@ -93,7 +98,7 @@ const BlctStats = (props) => {
     const getExcelData = async() => {
         const columns = [
             '통계 시작일', '통계 종료일', '[소비자] BLCT 상품구매', '[소비자] 구매보상', '[팜토리] BLCT 상품판매', '[팜토리] 판매보상', '[생산자(팜토리 외)] 상품판매',
-            '[생산자(팜토리 외)] 판매보상', '[에스크로] 구매추가 BLCT', '[에스크로] 정산완료 BLCT', 'Blcery 수익(수수료)', '이지팜 외부지갑 송금 BLCT'
+            '[생산자(팜토리 외)] 판매보상', '[에스크로] 구매추가 BLCT', '[에스크로] 정산완료 BLCT', 'Blcery 수익(수수료)', '토큰매출정산완료'
         ];
 
         const data = dataList.map((item ,index)=> {
@@ -141,8 +146,11 @@ const BlctStats = (props) => {
     const getTotalData = async() => {
 
         const {data:swapBlctToBly} = await getTotalSwapBlctToBly();
-        // console.log("swap :::: " + swapBlctToBly);
         setSwapBlctToBly(swapBlctToBly.blctSum)
+
+        const {data} = await getSwapTempProducerBlctToBly();
+        const tempProducerBlctToBly = data.blctSum;
+        setTempProducerBlctToBly(tempProducerBlctToBly);
 
         const {data:swapBlctIn} = await getTotalSwapBlctIn();
         setSwapBlctIn(swapBlctIn);
@@ -154,7 +162,11 @@ const BlctStats = (props) => {
         setBlyTimeRewardBlct(_blyTimeRewardBlct);
 
         const {data:_eventRewardBlct} = await getAllEventRewardBlct();
-        setEventRewardBlct(_eventRewardBlct);
+        let eventAmount = parseFloat((_eventRewardBlct - 11141.67).toFixed(2));  // 2020.10.05 토큰출금실패로 재지급한 토큰양은 이벤트 적립금에 포함되지 않아야해서 수동으로 뺌
+        setEventRewardBlct(eventAmount);
+
+        const {data: _couponBlct} = await getAllCouponBlct();
+        setCouponBlct(_couponBlct);
 
         const startDate = '20190901'
         const endDate = getTodayYYYYMMDD();
@@ -164,8 +176,13 @@ const BlctStats = (props) => {
             // console.log(response);
 
             let summaryData = {}
-            let totalEventBlct = mission1EventBlct + mission2EventBlct + cobakEventBlct + _supportersBlct + _blyTimeRewardBlct + _eventRewardBlct;
-            summaryData.consumerBlct = totalEventBlct - response.totalBlctOrder + response.totalConsumerRewardBlct - swapBlctToBly.blctSum + swapBlctIn;
+
+            let totalEventBlct = mission1EventBlct + mission2EventBlct + cobakEventBlct + _supportersBlct + _blyTimeRewardBlct + eventAmount + _couponBlct;
+            const consumerSwapBlctToBly = swapBlctToBly.blctSum - tempProducerBlctToBly; // tempProducer@ezfarm.co.kr에 해당하는 토큰출금내역 빼야함.
+
+            //20201103 beforeMerge summaryData.consumerBlct = totalEventBlct - response.totalBlctOrder + response.totalConsumerRewardBlct - swapBlctToBly.blctSum + swapBlctIn;
+            summaryData.consumerBlct = totalEventBlct - response.totalBlctOrder + response.totalConsumerRewardBlct - consumerSwapBlctToBly + swapBlctIn;
+
             summaryData.farmtoryBlct = response.totalFarmtoryOrderBlct + response.totalFarmtoryRewardBlct;
             summaryData.producerRewardBlct = response.totalProducerRewardBlct;
             summaryData.escrow = response.totalBlctOrder - response.totalConsumerOkBlctOrder;
@@ -216,6 +233,7 @@ const BlctStats = (props) => {
                                 <tr>
                                     <td> 소비자 지갑 총 합 : 모든 이벤트 지급 - 상품구매 + 구매보상</td>
                                     <td> {ComUtil.toCurrency(summaryData.consumerBlct)} </td>
+                                    {/*<td> {summaryData.consumerBlct} </td>*/}
                                 </tr>
 
                                 <tr>
@@ -229,9 +247,25 @@ const BlctStats = (props) => {
                                 </tr>
 
                                 <tr>
-                                    <td> (이지팜 외부지갑 송금 토큰 - 현금대납 완료) </td>
-                                    <td> ({ComUtil.toCurrency(summaryData.tempProducerSentBlct)}) </td>
+                                    <td> <div className="ml-3"> 미정산물량 </div></td>
+                                    <td> <div className="ml-3">{ComUtil.toCurrency(summaryData.producerOrderBlct - summaryData.tempProducerSentBlct)}</div> </td>
                                 </tr>
+
+                                <tr>
+                                    <td> <div className="ml-3">정산물량 </div></td>
+                                    <td> <div className="ml-3">{ComUtil.toCurrency(summaryData.tempProducerSentBlct)} </div></td>
+                                </tr>
+
+                                <tr>
+                                    <td> <div className="ml-5"> 현금화 물량 </div></td>
+                                    <td> <div className="ml-5">{ComUtil.toCurrency(tempProducerBlctToBly)}</div> </td>
+                                </tr>
+
+                                <tr>
+                                    <td> <div className="ml-5"> 미현금화 물량 </div></td>
+                                    <td> <div className="ml-5">{ComUtil.toCurrency(summaryData.tempProducerSentBlct - tempProducerBlctToBly)} </div></td>
+                                </tr>
+
 
                                 <tr>
                                     <td> 생산자 지갑 : 팜토리 외 판매보상 </td>
@@ -248,15 +282,15 @@ const BlctStats = (props) => {
                                     <td> {ComUtil.toCurrency(summaryData.bloceryOnlyFee)} </td>
                                 </tr>
 
-                                <tr>
-                                    <td> 유실(소비자 취소환불 327.5, 코박 0.7, 테스트2회, 소수점 오차) </td>
-                                    <td> {loss} </td>
-                                </tr>
+                                {/*<tr>*/}
+                                    {/*<td> 유실(소비자 취소환불 327.5, 코박 0.7, 테스트2회, 소수점 오차) </td>*/}
+                                    {/*<td> {loss} </td>*/}
+                                {/*</tr>*/}
 
-                                <tr>
-                                    <td> 합계 </td>
-                                    <td> {ComUtil.toCurrency(summaryData.totalSum)} </td>
-                                </tr>
+                                {/*<tr>*/}
+                                    {/*<td> 합계 </td>*/}
+                                    {/*<td> {ComUtil.toCurrency(summaryData.totalSum)} </td>*/}
+                                {/*</tr>*/}
                             </tbody>
                         </Table>
                         {/*<hr/>*/}
@@ -268,6 +302,11 @@ const BlctStats = (props) => {
                             <tr>
                                 <td> 초기 BLCT ECO system </td>
                                 <td> {ComUtil.toCurrency(initialBlctEco)} </td>
+                            </tr>
+
+                            <tr>
+                                <td> 추가된 BLCT ECO system </td>
+                                <td> {ComUtil.toCurrency(addBlctEco)} </td>
                             </tr>
 
                             <tr>
@@ -298,6 +337,12 @@ const BlctStats = (props) => {
                             <tr>
                                 <td> 이벤트 적립금 지급</td>
                                 <td> {ComUtil.toCurrency(eventRewardBlct)} </td>
+                                {/*<td> {eventRewardBlct} </td>*/}
+                            </tr>
+
+                            <tr>
+                                <td> 쿠폰 지급</td>
+                                <td> {ComUtil.toCurrency(couponBlct)} </td>
                             </tr>
 
                             <tr>

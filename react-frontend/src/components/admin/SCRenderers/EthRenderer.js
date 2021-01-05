@@ -1,6 +1,4 @@
 import React, {Component} from "react";
-import { scOntGetEthBalance } from "~/lib/smartcontractApi"
-
 
 export default class EthRenderer extends Component {
     constructor(props) {

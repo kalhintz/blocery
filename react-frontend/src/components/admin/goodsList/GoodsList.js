@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Button, Input } from 'reactstrap'
 import "react-table/react-table.css"
 import { getAllGoodsSaleList, getSoldOutGoods, getPausedGoods, getSaleEndGoods } from '~/lib/adminApi'
@@ -44,7 +44,13 @@ export default class GoodsList extends Component {
                     return (params.data.inTimeSalePeriod? '진행중' : '')
                 }},
                 {headerName: "판매지원금", field: "timeSaleSupportPrice", width: 110, valueGetter: function(params) {
-                    return (params.data.inTimeSalePeriod ? params.data.timeSaleSupportPrice : 0)
+                    if(!params.data.directGoods) {
+                        console.log(params.data)
+                        return params.data.reservationGoodsSupportPrice
+                    } else {
+                        return (params.data.inTimeSalePeriod ? params.data.timeSaleSupportPrice : 0)
+                    }
+
                 }},
                 {headerName: "부가세", field: "vatFlag", width: 80, valueGetter: function(params) {
                     return (params.data.vatFlag ? "과세" : "면세")

@@ -1,7 +1,6 @@
 import React from 'react'
-import {Link} from 'react-router-dom'
+import {withRouter} from 'react-router-dom'
 import {CartLink} from '~/components/common'
-import { IconHome } from '~/components/common/icons'
 import {XButton} from '~/components/common/buttons'
 import Css from './B2cBackHeader.module.scss'
 
@@ -42,7 +41,7 @@ const B2cBackHeader = (props) => {
     // )
 }
 
-export default B2cBackHeader
+export default withRouter(B2cBackHeader)
 
 // const B2cHeader = () => (
 //     <div

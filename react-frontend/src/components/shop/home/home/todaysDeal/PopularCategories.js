@@ -1,14 +1,5 @@
-import React, { Fragment, useState, useEffect } from 'react'
-import { SlideItemTemplate, SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
-import Swiper from 'react-id-swiper'
-import { getConsumerGoodsDefined } from '~/lib/goodsApi'
-import { SpinnerBox } from '~/components/common'
-import { Doc } from '~/components/Properties'
+import React  from 'react'
 import { Server } from '~/components/Properties'
-import { AiOutlineSwapRight } from 'react-icons/ai';
-
-import {LightGray} from '~/components/common/fonts'
-
 import Css from './PopularCategories.module.scss'
 
 import {

@@ -11,7 +11,7 @@ const BasicInput = styled.input`
     box-sizing: border-box;
     color: ${color.black};
     font-size: 14px;
-    border-radius: 5px;
+    border-radius: ${props => props.rounded ? getValue(props.rounded) : getValue(5)};
     
     border: solid 1px #e1e1e1;
     padding: ${props => props.padding || '0 13px'};        

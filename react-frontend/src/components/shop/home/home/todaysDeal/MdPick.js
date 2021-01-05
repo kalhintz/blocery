@@ -4,7 +4,6 @@ import classNames from 'classnames'
 import { SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
 import { IconNext } from '~/components/common/icons'
 import { Server } from '~/components/Properties'
-import { getExGoodsNoList } from '~/lib/adminApi'         //기획전
 import { getMdPickListFront } from '~/lib/shopApi'         //기획전
 import {Link} from 'react-router-dom'
 

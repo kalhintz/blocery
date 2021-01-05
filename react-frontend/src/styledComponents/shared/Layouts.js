@@ -1,8 +1,8 @@
 import React from 'react';
 import styled, {css} from 'styled-components';
 import {color, responsive} from '../Properties'
-import {getValue} from '../Util'
-import {position, margin, padding, sticky, fixed, noti, notiNew} from '../CoreStyles'
+import {getValue, hasValue} from '../Util'
+import {position, margin, padding, sticky, fixed, noti, notiNew, spin} from '../CoreStyles'
 
 
 const defaultStyle = css`
@@ -20,7 +20,10 @@ const defaultStyle = css`
     ${props => props.bg && `
         background-color: ${color[props.bg]}
     `};    
-    border: ${props => props.bc ? `1px solid ${color[props.bc]}` : '0'};
+    
+    ${props => (props.bgFrom || props.bgTo) && `background: linear-gradient(${props.deg || 145}deg, ${hasValue(props.bgFrom) ? (color[props.bgFrom] || props.bgFrom) : color.white}, ${hasValue(props.bgTo) ? (color[props.bgTo] || props.bgTo) : color.white});`};
+    
+    border: ${props => props.bc ? `1px solid ${color[props.bc] || props.bc}` : '0'};
     border-top: ${props => props.bt && `${getValue(props.bt)} solid ${color[props.bc]}`};
     border-right: ${props => props.br && `${getValue(props.br)} solid ${color[props.bc]}`};
     border-bottom: ${props => props.bb && `${getValue(props.bb)} solid ${color[props.bc]}`};
@@ -30,9 +33,14 @@ const defaultStyle = css`
     ${margin}; 
     ${padding};
     
+    ${props => props.relative && 'position: relative;'};
+    ${props => props.absolute && 'position: absolute;'};
+    ${props => props.fixed && 'position: fixed;'};
+    ${props => props.sticky && 'position: sticky;'};
+    
     ${props => props.xCenter && `transform: translateX(-50%);`};
     ${props => props.yCenter && `transform: translateY(-50%);`};
-    ${props => props.center && `transform: translate(-50%, -50%);`};
+    ${props => props.center && `top: 50%; left: 50%; transform: translate(-50%, -50%);`};
     
     position: ${props => props.position};    
     display: ${props => props.display};    
@@ -43,6 +51,8 @@ const defaultStyle = css`
     z-index: ${props => props.zIndex};
     max-width: ${props => getValue(props.maxWidth)};
     min-width: ${props => getValue(props.minWidth)};
+    max-height: ${props => getValue(props.maxHeight)};
+    min-height: ${props => getValue(props.minHeight)};
     border-radius: ${props => getValue(props.rounded)};
     top: ${props => getValue(props.top)};
     bottom: ${props => getValue(props.bottom)};
@@ -116,4 +126,42 @@ export const Mask = styled.div`
     bottom: 0;
     background-color: rgba(0,0,0, 0.7);   
     z-index: 50;     
+`;
+
+export const ShadowBox = styled(Div)`
+    background: ${color.white};
+    border-radius: ${getValue(6)};
+    // margin-bottom: ${getValue(16)};
+    margin-bottom: ${props => hasValue(props.mb) ? getValue(props.mb) : getValue(16)};
+    ${props => (props.p !== 0 && props.p !== '') && `padding: ${getValue(25)} ${getValue(16)};`}
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+`;
+
+export const Coupon = styled(Div)`
+    display: flex;
+    color: ${color.white};
+    position: relative;
+    width: ${getValue(237)};
+    height: ${getValue(130)};
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: ${getValue(10)} ${getValue(20)};
+
+    &::after {
+        position: absolute;
+        top: 50%;
+        right: -26px;
+        width: 42px;
+        height: 42px;
+        margin-top: -21px;
+        border-radius: 50%;
+        background-color: #ffffff;
+        content: '';
+    }
+`
+
+export const Spin = styled(Div)`
+  ${spin};
+  display: inline-block;
 `;

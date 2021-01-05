@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react'
 import Style from './HrGoodsPriceCard.module.scss'
 import classNames from 'classnames'
-import ComUtil from '../../../util/ComUtil'
+import ComUtil from '~/util/ComUtil'
 import PropTypes from 'prop-types'
 const HrGoodsPriceCard = ({priceSteps, currentPrice}) => {
     return(

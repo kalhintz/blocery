@@ -8,9 +8,9 @@ import { getConsumerBlctToBlyList, getConsumerBlyToBlctList } from '~/lib/swapAp
 import ComUtil from '~/util/ComUtil'
 
 import { Button as Btn } from '~/styledComponents/shared/Buttons'
-import { Div, Span, Img, Flex, Right, Hr, Sticky, Fixed } from '~/styledComponents/shared/Layouts'
+import { Div, Span, Flex, Right } from '~/styledComponents/shared/Layouts'
 import { HrThin, HrHeavyX2 } from '~/styledComponents/mixedIn'
-import { Checkbox } from '@material-ui/core'
+import Checkbox from '~/components/common/checkboxes/Checkbox'
 import { color } from "~/styledComponents/Properties";
 import { ShopXButtonNav } from '../../common'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
@@ -21,16 +21,10 @@ import {BsBoxArrowInDownLeft, BsBoxArrowUpRight} from 'react-icons/bs'
 
 import styled from 'styled-components'
 
-import BlySise from '~/components/common/blySise/BlySise'
+import BlySise from '~/components/common/blySise'
 import { AiOutlineInfoCircle } from 'react-icons/ai'
 
 import Skeleton from '~/components/common/cards/Skeleton'
-
-const CheckboxLayout = styled(Flex)`
-    & label {
-        margin: 0;
-    }
-`;
 
 export default class TokenHistory extends Component {
     constructor(props){
@@ -63,12 +57,14 @@ export default class TokenHistory extends Component {
         // {blct:+얼마  , gubun:취소환불(=구매금액-취소수수료), 미배송보상금(deposit), 미배송환불, 지연배송보상금, 구매보상(Reward) }
         // {blct:-얼마  , gubun:구매}
         const { data : orders } = await getOrderDetailListByConsumerNo(data.consumerNo);
+        // console.log(orders);
         const list = []
 
         // 주문번호로 SC 조회
         const blctHistory = orders.map(async order => {
             const {data : result} = await scOntGetConsumerBlctHistory(order.orderSeq);
 
+            console.log(result);
             // 상품구매후 지불하는 blct
             if(result.payOrderBlct > 0){
                 const date = order.orderDate
@@ -386,10 +382,12 @@ export default class TokenHistory extends Component {
 
                 </Div>
 
-                <CheckboxLayout alignItems={'center'} fontSize={12} fg={'dark'}>
-                    <Checkbox id={'filter_only_io'} checked={this.state.onlyIpChul} onChange={this.checkOnlyIpCulList} />
-                    <label for={'filter_only_io'}><Span ml={'-5px'}>입출금 내역만 보기</Span></label>
-                </CheckboxLayout>
+                <Div ml={16} mb={16}>
+                    <Checkbox bg={'green'} checked={this.state.onlyIpChul} onChange={this.checkOnlyIpCulList}  size={'sm'}>
+                        <Span fg={'dark'} fontSize={12} lineHeight={20}>입출금 내역만 보기</Span>
+                    </Checkbox>
+                </Div>
+
                 <HrHeavyX2 m={0} bc={'background'} />
                 {
                     !data ? <Skeleton.List count={4}/>:
@@ -410,8 +408,8 @@ export default class TokenHistory extends Component {
                                                             <Right bold fontSize={16} fg={'green'} flexShrink={0}>
                                                                 {
                                                                     gubun == 'minus' ?
-                                                                        (<Span fg={'danger'}>- {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</Span>)
-                                                                        : (<Span fg='green'>+ {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</Span>)
+                                                                        (<Span fg={'danger'}>- {ComUtil.addCommas(ComUtil.toNum(blct).toFixed(2))}</Span>)
+                                                                        : (<Span fg='green'>+ {ComUtil.addCommas(ComUtil.toNum(blct).toFixed(2))}</Span>)
                                                                 }
                                                             </Right>
                                                         }
@@ -430,8 +428,8 @@ export default class TokenHistory extends Component {
                                                         <Right bold fontSize={16} fg={'green'} flexShrink={0}>
                                                             {
                                                                 gubun == 'minus' ?
-                                                                    (<Span fg={'danger'}>- {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</Span>)
-                                                                    : (<Span fg='green'>+ {ComUtil.addCommas(ComUtil.roundDown(blct, 2))}</Span>)
+                                                                    (<Span fg={'danger'}>- {ComUtil.addCommas(ComUtil.toNum(blct).toFixed(2))}</Span>)
+                                                                    : (<Span fg='green'>+ {ComUtil.addCommas(ComUtil.toNum(blct).toFixed(2))}</Span>)
                                                             }
                                                         </Right>
                                                     }

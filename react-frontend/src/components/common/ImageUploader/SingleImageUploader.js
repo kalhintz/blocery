@@ -1,11 +1,8 @@
 import React, { Fragment } from 'react'
 import PropTypes from 'prop-types'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faImages, faImage } from '@fortawesome/free-solid-svg-icons'
 import ComUtil from "../../../util/ComUtil"
 import { Server } from '../../Properties'
 import axios from 'axios'
-import { Delete } from '@material-ui/icons'
 import Style from './SingleImageUploader.module.scss'
 import Compressor from 'compressorjs'
 import {Webview} from '~/lib/webviewApi'
@@ -160,7 +157,7 @@ class SingleImageUploader extends React.Component{
             method = '/file'
         }
 
-        return await axios(Server.getRestAPIFileServer() + method,
+        return await axios(Server.getRestAPIFileServerHost() + method,
             {
                 method: 'post',
                 data:formData,

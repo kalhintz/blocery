@@ -41,18 +41,18 @@ export const delFarmDiary = (diaryNo) => axios(Server.getRestAPIHost() + '/produ
 export const getOrderByProducerNo = () => axios(Server.getRestAPIHost() + '/producer/orderByProducerNo', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 // 생산자번호로 주문목록 조회
-export const getOrderWithoutCancelByProducerNo = (itemName, payMethod, orderStatus) =>
+export const getOrderWithoutCancelByProducerNo = (year, itemName, payMethod, orderStatus) =>
     axios(Server.getRestAPIHost() + '/producer/orderWithoutCancelByProducerNo', {
         method: "get",
-        params: {itemName: itemName, payMethod: payMethod, orderStatus: orderStatus},
+        params: {year: year, itemName: itemName, payMethod: payMethod, orderStatus: orderStatus},
         withCredentials: true,
         credentials: 'same-origin'
     })
 
 // 생산자번호로 취소된 주문목록 조회
-export const getCancelOrderByProducerNo = (itemName, payMethod) => axios(Server.getRestAPIHost() + '/producer/cancelOrderByProducerNo', {
+export const getCancelOrderByProducerNo = (year, itemName, payMethod) => axios(Server.getRestAPIHost() + '/producer/cancelOrderByProducerNo', {
     method: "get",
-    params: {itemName: itemName, payMethod: payMethod},
+    params: {year: year, itemName: itemName, payMethod: payMethod},
     withCredentials: true, credentials: 'same-origin'
 })
 
@@ -157,3 +157,6 @@ export const partialRefundOrder = (data) => axios(Server.getRestAPIHost() + '/pr
 
 // 생산자별 정산 주문내역 조회
 export const getPaymentProducer = (producerNo, year, month) => axios(Server.getRestAPIHost() + '/producer/paymentProducer', { method: "get", params: {producerNo: producerNo, year: year, month: month}, withCredentials: true, credentials: 'same-origin' })
+
+// 은행정보 조회
+export const getBankInfoList = () => axios(Server.getRestAPIHost() + '/producer/bankInfoList', { method: "get", withCredentials: true, credentials: 'same-origin' })

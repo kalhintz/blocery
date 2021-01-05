@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from 'react'
-import { getProducer, getGoodsReviewListByProducerNo } from '~/lib/producerApi'
+import { getGoodsReviewListByProducerNo } from '~/lib/producerApi'
 import { Modal, ModalHeader, ModalBody } from 'reactstrap'
 import ComUtil from '~/util/ComUtil'
 import { Link } from 'react-router-dom'

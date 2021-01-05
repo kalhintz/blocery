@@ -1,13 +1,13 @@
-import React, {Fragment, Component} from 'react';
-import {Col, Button, Label, Input, Container, Row, Modal, ModalBody, ModalFooter, ModalHeader, InputGroup, InputGroupAddon } from 'reactstrap'
-
+import React, {Fragment, Component } from 'react';
+import {Col, Label, Input, Container, Row, Modal, InputGroup, InputGroupAddon } from 'reactstrap'
+import {Button} from '~/styledComponents/shared/Buttons'
 import { getConsumerByConsumerNo, putAddress } from "~/lib/shopApi";
 import { JusoSearch, ShopXButtonNav } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
 import { setMissionClear } from "~/lib/eventApi"
-
 import TextCss from "~/styles/Text.module.scss"
 
+import DaumPostcode from 'react-daum-postcode';
 export default class AddressModify extends Component {
     constructor(props){
         super(props);
@@ -100,10 +100,32 @@ export default class AddressModify extends Component {
         }));
     }
 
-    jusoModalOnChange = (obj) => {
+    jusoModalOnChange = (data) => {
+
+        let zipNo = data.zonecode;
+        let fullAddress = data.address;
+        let extraAddress = '';
+
+        if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+            fullAddress = data.roadAddress;
+        } else { // 사용자가 지번 주소를 선택했을 경우(J)
+            fullAddress = data.jibunAddress;
+        }
+
+        if (data.addressType === 'R') {
+            if (data.bname !== '') {
+                extraAddress += data.bname;
+            }
+            if (data.buildingName !== '') {
+                extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+            }
+            fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+        }
+        let v_address = fullAddress;
+
         this.setState({
-            addr: obj.address,
-            zipNo: obj.zipNo
+            addr: fullAddress,
+            zipNo: zipNo
         });
 
         this.modalToggle();
@@ -240,7 +262,7 @@ export default class AddressModify extends Component {
         return (
             <Fragment>
                 {
-                    this.state.flag === 'mypage' && <ShopXButtonNav history={this.props.history} historyBack>배송지 추가/수정</ShopXButtonNav>
+                    this.state.flag === 'mypage' && <ShopXButtonNav historyBack>배송지 추가/수정</ShopXButtonNav>
                 }
                 <div className={TextCss.textUnderlineWrap}>
                 <Container fluid>
@@ -265,7 +287,7 @@ export default class AddressModify extends Component {
                                     <InputGroup>
                                         <Input disabled name="addr" value={this.state.addr} placeholder=" [주소검색]을 클릭해 주세요" />
                                         <InputGroupAddon addonType="prepend">
-                                            <Button outline size={'sm'} className={'ml-1'} onClick={this.addressModalPopup}>주소검색</Button>
+                                            <Button bc={'black'} ml={8} onClick={this.addressModalPopup}>주소검색</Button>
                                         </InputGroupAddon>
 
                                     </InputGroup>
@@ -280,8 +302,7 @@ export default class AddressModify extends Component {
                                     <div> 기본배송지로 저장</div>
                                 </div>
                             </div>
-
-                            <Button block color={'info'} size={'md'} onClick={this.onClickOk}>저 장</Button>
+                            <Button block bg={'green'} fg={'white'} py={16} onClick={this.onClickOk}>저 장</Button>
                             {
                                 this.state.addressIndex !== null && this.state.flag === 'mypage' && <Button block color={'secondary'} size={'md'} onClick={this.onDelete}>삭 제</Button>
                             }
@@ -291,14 +312,13 @@ export default class AddressModify extends Component {
                 </div>
                 <div>
                     {/*주소검색 모달 */}
-                    <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
-                        <ModalHeader toggle={this.modalToggle}> 주소 검색 </ModalHeader>
-                        <ModalBody>
-                            <JusoSearch onChange={this.jusoModalOnChange} />
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="secondary" onClick={this.modalToggle}>취소</Button>
-                        </ModalFooter>
+                    <Modal isOpen={this.state.modal} toggle={this.modalToggle}>
+                        <div style={{padding:0, height:'450px'}}>
+                            <DaumPostcode
+                                style={{height:'450px'}}
+                                onComplete={this.jusoModalOnChange}
+                            />
+                        </div>
                     </Modal>
                 </div>
 

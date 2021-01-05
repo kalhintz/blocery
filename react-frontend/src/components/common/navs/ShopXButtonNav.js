@@ -1,10 +1,8 @@
 import React from 'react'
 import {withRouter} from 'react-router-dom'
-import Style from './ShopXButtonNav.module.scss'
 import PropTypes from 'prop-types'
 import { Webview } from '~/lib/webviewApi'
 import { XButton, CartLink } from '~/components/common'
-import classNames from 'classnames'
 import styled, {css} from 'styled-components'
 import {Div, Flex} from '~/styledComponents/shared'
 
@@ -40,6 +38,7 @@ const BackArrowLayer = styled(Div)`
     top: 50%;
     left: 16px;
     transform: translateY(-50%);
+    cursor: pointer;
 `;
 
 
@@ -90,12 +89,13 @@ const ShopXButtonNav = (props) => {
     }
 
     const onBackClick = () => {
-        // 뒤로가기(<-) 이지만 강제로 페이지로 이동 해야 할 경우
-        if(forceBackUrl){
-            //window.location = forceBackUrl
-            history.push(forceBackUrl)
-        }
-        else if(history.action === 'PUSH') history.goBack(); //팝업 안에서 이동.
+        // // 뒤로가기(<-) 이지만 강제로 페이지로 이동 해야 할 경우
+        // if(forceBackUrl){
+        //     //window.location = forceBackUrl
+        //     history.push(forceBackUrl)
+        // }
+        // else
+        if(history.action === 'PUSH') history.goBack(); //팝업 안에서 이동.
         else window.location = '/home/1'    //페이지가 window.location 을 통해 들어왔을 경우 history의 goBack() 할 수가 없어 메인 페이지로 이동하게 함
     }
 

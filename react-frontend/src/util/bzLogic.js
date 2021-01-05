@@ -1,8 +1,6 @@
 import { TERMS_OF_DELIVERYFEE } from '../lib/bloceryConst'
 import ComUtil from '~/util/ComUtil'
-import { getFoodsByFoodsNo } from '~/lib/b2bFoodsApi'
 import React from 'react'
-import {getProducerByProducerNo} from "../lib/producerApi";
 
 function getDeliveryFeeTag(goods){
     const {deliveryFee, deliveryQty, termsOfDeliveryFee} = goods
@@ -75,25 +73,6 @@ function getDeliveryFee({qty = 1, deliveryFee = 0, deliveryQty = 0, termsOfDeliv
     }
 }
 
-//장바구니 수량 db의 remainedCnt(재고수량)과 비교하여 재고수량이 부족한 경우 remainedCnt를 업데이트한다
-async function checkFoodsRemainedCntBySellerList(sellerList, foodsListKey = 'foodsList'){
-    let errorFoodsList = []
-    const result = sellerList.map(async seller => {
-        const sellerResult = seller[foodsListKey].map( async foods => {
-            const { data: dbFoods } = await getFoodsByFoodsNo(foods.foodsNo)
-
-            //장바구니 수량이 재고보다 많으면 에러
-            if(foods.qty > ComUtil.toNum(dbFoods.remainedCnt)){
-                foods.remainedCnt = ComUtil.toNum(dbFoods.remainedCnt)  //db에 있는 값을 기준으로 업데이트함
-                errorFoodsList.push(foods)
-            }
-        })
-        await Promise.all(sellerResult)
-    })
-    await Promise.all(result)
-    return errorFoodsList
-}
-
 function getStandardUnitPrice({packAmount, packUnit, foodsQty, currentPrice}){
     let value = 0
     let unit = ''
@@ -126,6 +105,5 @@ function getStandardUnitPrice({packAmount, packUnit, foodsQty, currentPrice}){
 export {
     getDeliveryFee,
     getDeliveryFeeTag,
-    checkFoodsRemainedCntBySellerList,
     getStandardUnitPrice
 }

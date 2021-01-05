@@ -1,5 +1,5 @@
-import React, { Component, Fragment } from 'react'
-import { Container, Row, Col, Jumbotron, Button } from 'reactstrap'
+import React from 'react'
+import { Container, Row, Col } from 'reactstrap'
 import Css from './ProducerJoinWebFinish.module.scss'
 import classNames from 'classnames'
 import mockupImage1 from '~/images/temp/mockup/marketbly1.png'

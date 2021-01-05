@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React from 'react'
 import Swiper from 'react-id-swiper'
 import { Link } from 'react-router-dom'
 const BannerSwiper = (props) => {

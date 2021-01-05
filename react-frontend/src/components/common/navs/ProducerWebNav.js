@@ -1,14 +1,8 @@
 import React, {Fragment, useState, useEffect} from 'react'
 import {Collapse} from 'reactstrap'
-import {Link} from 'react-router-dom'
-import {faSmile} from "@fortawesome/free-regular-svg-icons";
-import {faDotCircle, faAngleRight, faAngleDown} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-
+import {FaAngleRight, FaAngleDown} from 'react-icons/fa'
 import {ProducerWebMenuList, ProducerWebSubMenuList} from '~/components/Properties'
-
 import Css from './ProducerWebNav.module.scss'
-
 import classNames from 'classnames'
 
 const ProducerWebNav = ({id, subId, history}) => {
@@ -91,13 +85,14 @@ const ProducerWebNav = ({id, subId, history}) => {
 
                                         <div className={Css.mainLeftBox}>
                                         <span style={{marginLeft: -10, textAlign: 'center', width: 40}}>
-                                            <FontAwesomeIcon size={'sm'} icon={menu.icon} />
+                                            <menu.icon />
+                                            {/*<FontAwesomeIcon size={'sm'} icon={menu.icon} />*/}
                                         </span>
                                             {menu.name}
                                         </div>
-                                        <FontAwesomeIcon size={'1x'} icon={menu.isOpen ? faAngleDown : faAngleRight} className={'text-light ml-auto'}/>
-
-
+                                        {
+                                            menu.isOpen ? <FaAngleDown className={'text-light ml-auto'} /> : <FaAngleRight className={'text-light ml-auto'}/>
+                                        }
                                     </div>
                                 </a>
                                 <Collapse isOpen={menu.isOpen}>

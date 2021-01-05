@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import ComUtil from '~/util/ComUtil'
 import { HeaderTitle, NoSearchResultBox, GoodsQueModalButton } from '~/components/common'
 import GoodsQnAItem from './GoodsQnAItem'

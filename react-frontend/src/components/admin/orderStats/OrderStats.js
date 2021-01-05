@@ -1,4 +1,4 @@
-import React, { Component, PropTypes, Fragment } from 'react';
+import React, { Component } from 'react';
 import { Button, ButtonGroup, Table } from 'reactstrap'
 import "react-table/react-table.css"
 import { getAllOrderStats } from '~/lib/adminApi'

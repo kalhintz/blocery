@@ -1,7 +1,5 @@
-import React, {useState, useEffect} from 'react'
-import { Container, Row, Col } from 'reactstrap'
+import React from 'react'
 import {SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
-import { getConsumerGoodsByItemNo, getConsumerGoodsByItemKindCode } from '~/lib/goodsApi'
 import { Server } from '~/components/Properties'
 import { Icon } from '~/components/common/icons'
 

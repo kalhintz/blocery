@@ -2,14 +2,9 @@
 
 
 import React, { Component, Fragment } from 'react'
-import { Home, List, Menu, PhotoLibrary, Face } from '@material-ui/icons'
-import Css from './ShopTabBar.module.scss'
-
 import PropTypes from 'prop-types'
 import { tabBarData } from '../../Properties'
 import {Link} from '~/styledComponents/shared'
-
-import classNames from 'classnames'
 
 //previous version
 // import IconMenu from '~/images/icons/tabBar/ic_menu.svg'    //카테고리
@@ -29,7 +24,6 @@ import IconHomeP from '~/images/icons/tabBar/ic_home_p.svg'  //홈
 import {Icon} from '~/components/common/icons'
 import {Div, Flex, Fixed} from '~/styledComponents/shared/Layouts'
 import styled from 'styled-components'
-import {getLastMdPickNotSeen} from '~/lib/shopApi'
 
 const iconStyle = {
     width: 24,
@@ -154,7 +148,7 @@ class ShopTabBar extends Component{
                         </Link>
                     </Item>
                     <Item>
-                        <Div textAlign={'center'} cursor onClick={this.onSidebarClick}>
+                        <Div textAlign={'center'} cursor={1} onClick={this.onSidebarClick}>
                             {
                                 isNewWin ? <Icon style={iconStyle} name='newWinP' /> : <Icon style={iconStyle} name='newWin' />
                             }

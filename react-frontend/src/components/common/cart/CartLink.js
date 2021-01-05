@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import {NavLink, Badge} from 'reactstrap'
-import { getCart } from '../../../lib/cartApi'
+import { getCart } from '~/lib/cartApi'
 import { IconShoppingCart,IconShoppingCartWhite } from '~/components/common/icons'
-
 import {Link} from '~/styledComponents/shared'
-
-function getIconStyle({showShadow}){
-
-    const style = {}
-
-    if(showShadow){
-        style.filter = 'drop-shadow(2px 2px 2px #343a40)'
-        style.fontSize = '1.5rem'
-    }
-    return style
-}
 
 function CartLink(props) {
 

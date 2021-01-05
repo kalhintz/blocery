@@ -1,11 +1,11 @@
 import React, {useState, useEffect} from 'react'
-import Css from './B2bLastSeenGoodsList.module.scss'
+import Css from './B2cLastSeenGoodsList.module.scss'
 import ComUtil from '~/util/ComUtil'
 import {getGoodsByGoodsNo} from '~/lib/goodsApi'
 import classNames from 'classnames'
 import {Server} from '~/components/Properties'
 
-import { SlideItemTemplate, SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
+import { SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
 
 
 export default function B2cLastSeenGoodsList(props){
@@ -48,7 +48,7 @@ export default function B2cLastSeenGoodsList(props){
 
             {
                 data.map((goods, index) =>
-                    <div className={Css.item} onClick={props.onClick.bind(this, goods)}>
+                    <div key={`item_${index}`} className={Css.item} onClick={props.onClick.bind(this, goods)}>
                         <SlideItemHeaderImage
                             imageWidth={70}
                             imageHeight={70}

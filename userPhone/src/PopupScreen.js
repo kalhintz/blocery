@@ -4,7 +4,7 @@ import { Server } from './Properties';
 import WebView from 'react-native-webview';
 import ComUtil from "./ComUtil";
 import queryString from 'query-string';
-
+import KakaoLogins, {KAKAO_AUTH_TYPES} from '@react-native-seoul/kakao-login';
 
 export default class PopupScreen extends React.Component {
 
@@ -169,7 +169,26 @@ export default class PopupScreen extends React.Component {
             return;
         }
 
-        if(type === 'NEW_POPUP') {
+        if(type === 'KAKAO_LOGIN') {
+            let self = this;
+            KakaoLogins.login([KAKAO_AUTH_TYPES.Talk])
+                .then(result => {
+                    // console.log("KAKAO_SUCCESS : ", result);
+                    let url = '/login?accessToken=' + result.accessToken;
+                    // console.log(url);
+
+                    const serverUrl = Server.getServerURL() + url;
+                    self.setState({
+                        key: self.state.key + 1,  //새로고침을 위해
+                        url: serverUrl
+                    })
+
+                })
+                .catch(err => {
+                    console.log("KAKAO_ERROR : ", err);
+                });
+
+        } else if(type === 'NEW_POPUP') {
 
             //this.popupDepth += 1;
             //alert('NEW_POPUP on POPUP'+ PopupScreen.popupDepth);
@@ -273,7 +292,7 @@ export default class PopupScreen extends React.Component {
                             <WebView style={{flex: 1}}
                                 // iOS WebView 는 AppDelegate.m 에서 설정 https://stackoverflow.com/questions/36590207/set-user-agent-with-webview-with-react-native
                                 // iOS WKWebView 는 여기서 설정된 것 사용
-                                     userAgent = {'BloceryApp-iOS'}
+                                     userAgent = {'BloceryAppQR-iOS'}
 
                                      useWebKit={true}
                                      sharedCookiesEnabled={true}

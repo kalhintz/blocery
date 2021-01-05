@@ -1,5 +1,5 @@
-import React, { Fragment, useState, useEffect } from 'react'
-import { SlideItemTemplate, SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
+import React, { useState, useEffect } from 'react'
+import { SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
 import Swiper from 'react-id-swiper'
 import { getConsumerGoodsDefined } from '~/lib/goodsApi'
 import { SpinnerBox } from '~/components/common'

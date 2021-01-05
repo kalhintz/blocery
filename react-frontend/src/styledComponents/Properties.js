@@ -10,9 +10,10 @@ export const color = {
     green: '#24855b',       //키 컬러, 중요 버튼 및 엘리먼트에 적절히 사용, 버튼 pressed 상태
     adjust: '#929eb5',      //키컬러의 보조컬러 역할
     danger: '#e44a4a',
+    bly: '#51B0AA'
 }
 export const hoverColor = {
-    white: '#eeeeeec7',
+    white: '#f7f7f7',
     background: '#f8f8f8f6',
     backgroundDark: '#EEEEEE',
     light: '#e1e1e1f6',
@@ -23,6 +24,7 @@ export const hoverColor = {
     green: '#1f704df6',
     adjust: '#929eb5f3',
     danger: '#e44a4af1',
+    bly: '#51B0AA'
 }
 
 export const activeColor = {
@@ -37,6 +39,7 @@ export const activeColor = {
     green: '#0c4a2f',
     adjust: '#717D8F',
     danger: '#a93535',
+    bly: '#51B0AA'
 }
 
 //pc 일 경우 제어 속성

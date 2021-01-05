@@ -1,5 +1,6 @@
-import React, { Component, PropTypes } from 'react';
-import { getAllConsumers, getSemiConsumerCount } from '~/lib/adminApi'
+import React, { Component, PropTypes, lazy, Suspense } from 'react';
+import { getAllConsumers, getSemiConsumerCount, addSpecialCouponConsumer } from '~/lib/adminApi'
+import { getConsumerByConsumerNo } from '~/lib/shopApi'
 import { scOntGetBalanceOfBlct } from '~/lib/smartcontractApi'
 import { Server } from '~/components/Properties';
 import axios from 'axios';
@@ -7,7 +8,7 @@ import { getLoginAdminUser } from '~/lib/loginApi'
 import ComUtil from '~/util/ComUtil'
 
 import BlctRenderer from '../SCRenderers/BlctRenderer';
-import { ModalWithNav, ExcelDownload } from '~/components/common'
+import { ModalWithNav, ExcelDownload, ModalConfirm } from '~/components/common'
 import StoppedConsumer from './StoppedConsumer'
 import { Button } from 'reactstrap'
 import { AgGridReact } from 'ag-grid-react';
@@ -26,13 +27,22 @@ export default class ConsumerList extends Component{
                 data: []
             },
             columnDefs: [
-                {headerName: "소비자번호", field: "consumerNo", sort:"asc"},
+                {headerName: "소비자번호", field: "consumerNo"},
                 {headerName: "이름", field: "name", cellRenderer: "nameRenderer"},
-                {headerName: "email", field: "email", width: 200, cellRenderer: "emailRenderer"},
+                {headerName: "email", field: "email", width: 200},
+                {headerName: "구분", field: "authType", width: 100, cellRenderer: "authTypeRenderer"},
+                {headerName: "카카오ID", field: "authId", width: 200},
                 {headerName: "phone", field: "phone", width: 200},
                 {headerName: "account", field: "account", width: 300},
                 {headerName: "BLCT", field: "blct", cellRenderer: "blctRenderer", width: 200},
                 {headerName: "가입일", field: "timestampUtc", width: 200},
+                {headerName: "탈퇴일", field: "stoppedDateUTC", width: 200},
+            ],
+            searchColumnDefs: [
+                {headerName: "소비자번호", field: "consumerNo"},
+                {headerName: "이름", field: "name", cellRenderer: "nameRenderer"},
+                {headerName: "email", field: "email", width: 200},
+                {headerName: "phone", field: "phone", width: 200},
             ],
             defaultColDef: {
                 width: 130,
@@ -43,11 +53,14 @@ export default class ConsumerList extends Component{
             frameworkComponents: {
                 blctRenderer: BlctRenderer,
                 emailRenderer: this.emailRenderer,
-                nameRenderer: this.nameRenderer
+                nameRenderer: this.nameRenderer,
+                authTypeRenderer: this.authTypeRenderer
             },
             modal: false,
-            selectedConsumer: {},
-            showBlctBalance: false  //default로 false로 해서 속도 향상.20200819
+            showBlctBalance: false,  //default로 false로 해서 속도 향상.20200819
+            isSearch: this.props.isSearch,       // 수동쿠폰 발급시 소비자 조회인지
+            masterCouponNo: this.props.masterCouponNo,
+            selectedConsumer: []
         }
     }
 
@@ -101,7 +114,10 @@ export default class ConsumerList extends Component{
             }
 
             let timestampUtc = item.timestamp ? ComUtil.utcToString(item.timestamp,'YYYY-MM-DD HH:mm'):null;
+            let stoppedDateUTC = item.stoppedDate ? ComUtil.intToDateString(item.stoppedDate):null;
             item.timestampUtc = timestampUtc;
+            item.stoppedDateUTC = stoppedDateUTC;
+
             return item;
         })
 
@@ -120,11 +136,15 @@ export default class ConsumerList extends Component{
 
     //// cellRenderer
     nameRenderer = ({value, data:rowData}) => {
-        return (rowData.stoppedUser ? <span className='text-danger'>{rowData.name}</span> : <span>{rowData.name}</span>)
+        return (rowData.stoppedUser ? <span className='text-danger'>{rowData.name}</span> : <span onClick={this.onEmailClick.bind(this, rowData)}><u>{rowData.name}</u></span>)
     }
 
     emailRenderer = ({value, data:rowData}) => {
         return (<span href="#" onClick={this.onEmailClick.bind(this, rowData)}><u>{rowData.email}</u></span>);
+    }
+
+    authTypeRenderer = ({value, data:rowData}) => {
+        return (rowData.authType === 0 ? <span>일반</span> : <span>카카오</span>)
     }
 
     onEmailClick = (data) => {
@@ -162,6 +182,17 @@ export default class ConsumerList extends Component{
         this.search();    // refresh
     }
 
+    onSelectionChanged = (event) => {
+        //const selected = Object.assign([], this.state.selectedConsumer)
+        const rowNodes = event.api.getSelectedNodes()
+        const rows = rowNodes.map((rowNode => rowNode.data))
+        const selectedConsumerNo = rows.map((consumer => consumer.consumerNo))
+
+        this.setState({
+            selectedConsumer: selectedConsumerNo
+        })
+    }
+
     setExcelData = () => {
         let excelData = this.getExcelData();
         //console.log("excelData",excelData)
@@ -172,7 +203,7 @@ export default class ConsumerList extends Component{
 
     getExcelData = () => {
         const columns = [
-            '소비자번호', '이름', '이메일', '전화번호', 'account', '가입일'
+            '소비자번호', '이름', '이메일', '전화번호', 'account', '가입일', '탈퇴일'
         ]
 
         //필터링 된 데이터에서 sortedData._original 로 접근하여 그리드에 바인딩 원본 값을 가져옴
@@ -186,6 +217,28 @@ export default class ConsumerList extends Component{
             columns: columns,
             data: data
         }]
+    }
+
+    // 쿠폰 발급대상 선택 완료
+    onClickSelection = async (isConfirmed) => {
+        if(isConfirmed) {
+            const masterNo = this.state.masterCouponNo;
+            this.state.selectedConsumer.map(async (consumerNo) => {
+                const {data: res} = await addSpecialCouponConsumer(masterNo,consumerNo);
+
+                const {data: consumer} = await getConsumerByConsumerNo(consumerNo);
+
+                if(res === -2) {
+                    alert(`'${consumer.name}'님은 이미 지급한 소비자입니다. 다시 확인해주세요`);
+                    return false;
+                } else if(res === 200) {
+                    alert(`'${consumer.name}'님에게 지급이 완료되었습니다.`)
+                }
+            })
+            this.props.onClose();
+        }
+
+        await this.search();    // refresh
     }
 
 
@@ -205,9 +258,19 @@ export default class ConsumerList extends Component{
                         <div className="ml-3">
                             <Button color="secondary" onClick={this.showBlctBalanceButtonClick.bind(this)}> Blct잔고 출력 </Button>
                         </div>
-
                     </div>
-                    <div className="flex-grow-1 text-right">총 {this.state.data.length}명  +  준회원(선물수령자) {this.state.semiConsumerCount}명</div>
+                    {
+                        this.state.isSearch ?
+                            <div className={'flex-grow-1 text-right'}>
+                                <ModalConfirm title={'알림'} color={'primary'} content={`선택한 소비자(${this.state.selectedConsumer.length}명)에게 쿠폰을 지급하시겠습니까?`} onClick={this.onClickSelection}>
+                                    <Button className='mr-1' size={'sm'}>확인</Button>
+                                </ModalConfirm>
+                                {/*<Button color="info" onClick={this.onClickSelection}>선택완료</Button>*/}
+                            </div>
+                            :
+                            <div className="flex-grow-1 text-right">총 {this.state.data.length}명  +  준회원(선물수령자) {this.state.semiConsumerCount}명</div>
+                    }
+
                 </div>
 
 
@@ -220,7 +283,8 @@ export default class ConsumerList extends Component{
                     <AgGridReact
                         enableSorting={true}                //정렬 여부
                         enableFilter={true}                 //필터링 여부
-                        columnDefs={this.state.columnDefs}  //컬럼 세팅
+                        columnDefs={this.state.isSearch ? this.state.searchColumnDefs : this.state.columnDefs}  //컬럼 세팅
+                        rowSelection={'multiple'}
                         defaultColDef={this.state.defaultColDef}
                         // components={this.state.components}  //custom renderer 지정, 물론 정해져있는 api도 있음
                         enableColResize={true}              //컬럼 크기 조정
@@ -229,6 +293,7 @@ export default class ConsumerList extends Component{
                         // onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
                         rowData={this.state.data}
                         frameworkComponents={this.state.frameworkComponents}
+                        onRowClicked={this.onSelectionChanged.bind(this)}       // 클릭된 row
 
                     >
                     </AgGridReact>
@@ -239,6 +304,7 @@ export default class ConsumerList extends Component{
                         <StoppedConsumer data={this.state.selectedConsumer} onClose={this.toggle} />
                     </div>
                 </ModalWithNav>
+
             </div>
         )
     }

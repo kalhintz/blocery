@@ -1,7 +1,7 @@
 import React from 'react'
 import Swiper from 'react-id-swiper'
 import {Server} from '~/components/Properties'
-import {Div, Right, Flex, Span, Img, Sticky, Fixed, Link} from '~/styledComponents/shared'
+import {Div, Img, Link} from '~/styledComponents/shared'
 import {Button} from '~/styledComponents/shared'
 
 const MdPicks = (props) => {

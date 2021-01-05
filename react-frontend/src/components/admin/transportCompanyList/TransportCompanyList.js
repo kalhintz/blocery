@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
-import { Button, Input } from 'reactstrap'
-import { ProducerFullModalPopupWithNav, Cell, BlocerySpinner, ModalConfirm } from '../../../components/common'
+import { Button } from 'reactstrap'
+import { ProducerFullModalPopupWithNav, Cell, BlocerySpinner, ModalConfirm } from '~/components/common'
 import TransportCompanyReg from '../transportCompanyReg'
-import { getTransportCompany, delTransportCompany } from '../../../lib/adminApi'
+import { getTransportCompany, delTransportCompany } from '~/lib/adminApi'
 import ReactTable from "react-table"
 import "react-table/react-table.css"
 import matchSorter from 'match-sorter'
-import { Checkbox } from '@material-ui/core'
-
+import Checkbox from '~/components/common/checkboxes/Checkbox'
 class TransportCompanyList extends Component {
     constructor(props) {
         super(props);
@@ -113,7 +112,13 @@ class TransportCompanyList extends Component {
                         {
                             Header: '선택',
                             accessor: 'transportCompanyNo',
-                            Cell: props => <Checkbox checked={transportCompanyNos.indexOf(props.value) > -1 ? true : false} onChange={this.onCheckboxChange.bind(this, props.value)}/>,
+                            Cell: props =>
+                                <Checkbox bg={'green'}
+                                          onChange={this.onCheckboxChange.bind(this, props.value)}
+                                          checked={transportCompanyNos.indexOf(props.value) > -1 ? true : false}
+                                          size={'sm'}
+                                >
+                                </Checkbox>,
                             // filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: [filter.id] }),
                             // filterAll: true,
                             filterable: false,

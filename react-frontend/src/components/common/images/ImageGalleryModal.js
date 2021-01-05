@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import {Server} from '~/components/Properties'
 import ModalFull from '~/components/common/modals/ModalFull'
 import ImageSwiper from '~/components/common/swipers/ImageSwiper'

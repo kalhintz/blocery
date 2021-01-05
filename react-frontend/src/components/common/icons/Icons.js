@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 
 import ShoppingCart from '~/images/icons/shopping-cart.svg'
 import Notification from '~/images/icons/notification.svg'

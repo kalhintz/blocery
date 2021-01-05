@@ -6,8 +6,7 @@ import { getItems, updateItemEnabled } from '~/lib/adminApi'
 import ReactTable from "react-table"
 import "react-table/react-table.css"
 import matchSorter from 'match-sorter'
-import { Checkbox } from '@material-ui/core'
-
+import Checkbox from '~/components/common/checkboxes/Checkbox'
 class ItemList extends Component {
     constructor(props) {
         super(props);
@@ -164,7 +163,10 @@ class ItemList extends Component {
                         {
                             Header: '선택',
                             accessor: '',
-                            Cell: props => <div>{props.original.value}<Checkbox color={'default'} checked={itemNos.indexOf(props.original.itemNo) > -1 ? true : false} onChange={this.onCheckboxChange.bind(this, props.original.itemNo)}/></div>,
+                            Cell: props =>
+                                <div>{props.original.value}
+                                    <Checkbox bg={'green'} checked={itemNos.indexOf(props.original.itemNo) > -1 ? true : false} onChange={this.onCheckboxChange.bind(this, props.original.itemNo)} size={'sm'} />
+                                </div>,
                             // filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: [filter.id] }),
                             // filterAll: true,
                             filterable: false,

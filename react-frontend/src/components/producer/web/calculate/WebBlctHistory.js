@@ -3,15 +3,13 @@ import { Button } from 'reactstrap'
 
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import ComUtil from '~/util/ComUtil'
-import { Webview } from "~/lib/webviewApi";
 import { BLCT_TO_WON } from "~/lib/exchangeApi"
 import { getAllConfirmedOrder } from "~/lib/producerApi"
 import { getConsumerGoodsByProducerNo } from "~/lib/goodsApi"
-import { getLoginUser, getLoginUserType } from '~/lib/loginApi'
+import { getLoginProducerUser } from '~/lib/loginApi'
 import { scOntGetProducerOrderBlctHistory, scOntGetProducerGoodsBlctHistory, scOntGetBalanceOfBlct } from "~/lib/smartcontractApi"
 import {getServerToday} from "~/lib/commonApi";
 
-import { ExcelDownload } from '~/components/common'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -69,12 +67,9 @@ export default class WebBlctHistory extends Component {
     }
 
     getUser = async () => {
-        const {data: userType} = await getLoginUserType();
-        let loginUser = await getLoginUser();
-
-        if(userType !== 'producer') {
-            Webview.movePage('/home/1');
-            return
+        const loginUser = await getLoginProducerUser();
+        if(!loginUser) {
+            this.props.history.push('/producer/webLogin');
         }
         this.setState({
             loginUser: loginUser

@@ -1,14 +1,14 @@
-import React, { Component, PropTypes, Fragment } from 'react';
-import { getProducer, getOrderWithoutCancelByProducerNo, setOrderConfirm, setOrdersTrackingNumber } from '~/lib/producerApi'
-import { getLoginUserType, autoLoginCheckAndTry } from '~/lib/loginApi'
+import React, { Component, Fragment } from 'react';
+import { getOrderWithoutCancelByProducerNo, setOrderConfirm, setOrdersTrackingNumber } from '~/lib/producerApi'
+import { getLoginProducerUser } from '~/lib/loginApi'
 import { getServerToday } from '~/lib/commonApi'
 import "react-table/react-table.css"
+import moment from 'moment-timezone'
 import ComUtil from '~/util/ComUtil'
 import ExcelUtil from '~/util/ExcelUtil'
-import { Button, FormGroup, Label, Modal, CustomInput, Input, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import { ProducerFullModalPopupWithNav, Cell, ModalConfirm } from '~/components/common'
-import Order from '~/components/producer/order'
-import { Webview } from '~/lib/webviewApi'
+import { Button, FormGroup, Modal, Input, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
+import { ProducerFullModalPopupWithNav, ModalConfirm } from '~/components/common'
+import Order from '~/components/producer/web/order'
 import { getItems,getTransportCompany } from '~/lib/adminApi'
 
 import Select from 'react-select'
@@ -21,6 +21,9 @@ import "ag-grid-community/src/styles/ag-grid.scss";
 import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 import Style from './WebOrderList.module.scss'
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/src/stylesheets/datepicker.scss";
 
 export default class WebOrderList extends Component {
     constructor(props) {
@@ -65,8 +68,8 @@ export default class WebOrderList extends Component {
                 payMethodItems:[],
                 orderStatusItems:[],
             },
-
             searchFilter: {
+                year:moment().format('YYYY'),
                 itemName: '',
                 payMethod: 'all',
                 orderStatus:'all'
@@ -316,6 +319,22 @@ export default class WebOrderList extends Component {
             }
         };
 
+        let hopeDeliveryDateColumn = {
+            headerName: "희망수령일", field: "hopeDeliveryDate",
+            width: 120,
+            suppressSizeToFit: true,
+            cellStyle:this.getCellStyle({cellAlign: 'center'}),
+            cellRenderer: "formatDateRenderer",
+            valueGetter: function(params) {
+                //console.log("params",params);
+                //기공된 필터링 데이터로 필터링 되게 적용 (UTCDate 변환)
+                if(params.data.hopeDeliveryFlag){
+                    return (params.data.hopeDeliveryDate ? params.data.hopeDeliveryDate : '');
+                }
+                return '';
+            }
+        };
+
         let columnDefs = [
             orderDateColumn,
             payStatusColumn,
@@ -329,7 +348,8 @@ export default class WebOrderList extends Component {
             orderPayMethodColumn,
             receiverNameColumn,
             expectShippingStartColumn,
-            expectShippingEndColumn
+            expectShippingEndColumn,
+            hopeDeliveryDateColumn
         ];
 
         return columnDefs
@@ -365,7 +385,7 @@ export default class WebOrderList extends Component {
 
     //Ag-Grid Cell 주문 결제 방법 렌더러
     orderPayMethodRenderer = ({value, data:rowData}) => {
-        let payMethodTxt = rowData.payMethod === "card" ?  "카드결제" : rowData.payMethod === "cardBlct" ? "카드+BLCT결제" : "BLCT결제";
+        let payMethodTxt = rowData.payMethod === "card" ?  "카드결제" : rowData.payMethod === "cardBlct" ? "카드+BLY결제" : "BLY결제";
         return (<span>{payMethodTxt}</span>);
     }
 
@@ -375,11 +395,11 @@ export default class WebOrderList extends Component {
         let orderAmount = rowData.cardPrice + "원";
         switch (rowData.payMethod) {
             case "blct":
-                orderAmount = rowData.blctToken + "BLCT";
+                orderAmount = rowData.blctToken + "BLY";
                 break;
 
             case "cardBlct":
-                orderAmount = rowData.cardPrice + "원 + " + rowData.blctToken + "BLCT";
+                orderAmount = rowData.cardPrice + "원 + " + rowData.blctToken + "BLY";
                 break;
         }
 
@@ -463,22 +483,9 @@ export default class WebOrderList extends Component {
     }
 
     async componentDidMount(){
-        //자동로그인 check & try
-        if (localStorage.getItem('userType')==='producer')
-            await autoLoginCheckAndTry();
-
         //로그인 체크
-        const {data: userType} = await getLoginUserType();
-        //console.log('userType',this.props.history)
-        if(userType == 'consumer') {
-            //소비자용 메인페이지로 자동이동.
-            Webview.movePage('/home/1');
-        } else if (userType == 'producer') {
-            let loginUser = await getProducer();
-            if(!loginUser){
-                this.props.history.push('/producer/webLogin')
-            }
-        } else {
+        const loginUser = await getLoginProducerUser();
+        if(!loginUser){
             this.props.history.push('/producer/webLogin')
         }
         this.setFilter();
@@ -497,7 +504,7 @@ export default class WebOrderList extends Component {
 
         const filter = Object.assign({},this.state.searchFilter)
 
-        const { status, data } = await getOrderWithoutCancelByProducerNo(filter.itemName, filter.payMethod, filter.orderStatus);
+        const { status, data } = await getOrderWithoutCancelByProducerNo(filter.year, filter.itemName, filter.payMethod, filter.orderStatus);
         if(status !== 200){
             alert('응답이 실패 하였습니다');
             return
@@ -546,11 +553,11 @@ export default class WebOrderList extends Component {
             },
             {
                 value:'blct',
-                label:'BLCT결제'
+                label:'BLY결제'
             },
             {
                 value:'cardBlct',
-                label:'카드+BLCT결제'
+                label:'카드+BLY결제'
             }
         ];
 
@@ -620,7 +627,8 @@ export default class WebOrderList extends Component {
             '결제금액', '부가세', '결제수단',
             '수령자명','수령자연락처','수령자주소',
             '배송메세지',
-            '예상배송시작일', '예상배송종료일'
+            '예상배송시작일', '예상배송종료일',
+            '희망수령일'
         ];
 
         //필터링된 데이터
@@ -645,18 +653,20 @@ export default class WebOrderList extends Component {
             let v_orderAmount = item.cardPrice + "원";
             switch (item.payMethod) {
                 case "blct":
-                    v_orderAmount = item.blctToken + "BLCT";
+                    v_orderAmount = item.blctToken + "BLY";
                     break;
 
                 case "cardBlct":
-                    v_orderAmount = item.cardPrice + "원 + " + item.blctToken + "BLCT";
+                    v_orderAmount = item.cardPrice + "원 + " + item.blctToken + "BLY";
                     break;
             }
 
-            let payMethodNm = item.payMethod === "card" ? "카드결제" : item.payMethod === "cardBlct" ? "카드+BLCT결제":"BLCT결제";
+            let payMethodNm = item.payMethod === "card" ? "카드결제" : item.payMethod === "cardBlct" ? "카드+BLY결제":"BLY결제";
 
             let v_expectShippingStart = item.expectShippingStart ? ComUtil.utcToString(item.expectShippingStart):"";
             let v_expectShippingEnd = item.expectShippingEnd ? ComUtil.utcToString(item.expectShippingEnd):"";
+
+            let v_hopeDeliveryDate = item.hopeDeliveryFlag ? (item.hopeDeliveryDate ? ComUtil.utcToString(item.hopeDeliveryDate):""):"";
 
             return [
                 v_orderDate, payStatusNm,
@@ -667,7 +677,8 @@ export default class WebOrderList extends Component {
                 v_orderAmount, vatFlag, payMethodNm,
                 item.receiverName, item.receiverPhone, v_receiverAddrInfo,
                 item.deliveryMsg,
-                v_expectShippingStart, v_expectShippingEnd
+                v_expectShippingStart, v_expectShippingEnd,
+                v_hopeDeliveryDate
             ]
         });
 
@@ -677,7 +688,7 @@ export default class WebOrderList extends Component {
         }]
     }
 
-    //저장 하였을 경우는 창을 닫지 않고, X 버튼을 눌렀을때만 닫도록 한다
+    //저장 하였을 경우는 창을 닫지 않고, X 버튼을 눌렀을때만 닫도록 한다 (20.09.22.lydia 저장했을 때에도 창 닫히도록 수정)
     onClose = async (isSaved) => {
         if(isSaved) {
             let data = {};
@@ -688,6 +699,7 @@ export default class WebOrderList extends Component {
 
             if(modified.data === 1) {
                 this.search();
+                this.toggle()
             } else {
                 alert('출고 처리 실패. 다시 시도해주세요.');
                 return false;
@@ -790,7 +802,8 @@ export default class WebOrderList extends Component {
             '구분', '상품명',
             '주문수량','결제금액', '결제수단',
             '수령자명','수령자연락처','배송지주소','배송메세지',
-            '예상배송시작일', '예상배송종료일'
+            '예상배송시작일', '예상배송종료일',
+            '희망수령일'
         ];
 
         const v_Columns = [
@@ -803,7 +816,8 @@ export default class WebOrderList extends Component {
             "directGoodsNm", "goodsNm",
             "orderCnt", "orderAmount", "payMethodNm",
             "receiverName","receiverPhone", "receiverAddrInfo","deliveryMsg",
-            "expectShippingStart","expectShippingEnd"
+            "expectShippingStart","expectShippingEnd",
+            "hopeDeliveryDate"
         ];
 
         let v_dataList = this.state.data;
@@ -817,7 +831,7 @@ export default class WebOrderList extends Component {
         let excelDataList = [];
         v_data.map((item ,index)=> {
             let v_payStatusNm = WebOrderList.getPayStatusNm(item);
-            let v_payMethodNm = item.payMethod === "card" ?  "카드결제" : item.payMethod === "cardBlct" ? "카드+BLCT결제" : "BLCT결제";
+            let v_payMethodNm = item.payMethod === "card" ?  "카드결제" : item.payMethod === "cardBlct" ? "카드+BLY결제" : "BLY결제";
 
             let v_receiverAddrInfo = "";
             if(item.receiverZipNo){
@@ -832,16 +846,18 @@ export default class WebOrderList extends Component {
             let v_orderAmount = item.cardPrice + "원";
             switch (item.payMethod) {
                 case "blct":
-                    v_orderAmount = item.blctToken + "BLCT";
+                    v_orderAmount = item.blctToken + "BLY";
                     break;
 
                 case "cardBlct":
-                    v_orderAmount = item.cardPrice + "원 + " + item.blctToken + "BLCT";
+                    v_orderAmount = item.cardPrice + "원 + " + item.blctToken + "BLY";
                     break;
             }
 
             let v_expectShippingStart = item.expectShippingStart ? ComUtil.utcToString(item.expectShippingStart):"";
             let v_expectShippingEnd = item.expectShippingEnd ? ComUtil.utcToString(item.expectShippingEnd):"";
+
+            let v_hopeDeliveryDate = item.hopeDeliveryFlag ? (item.hopeDeliveryDate ? ComUtil.utcToString(item.hopeDeliveryDate):""):"";
 
             excelDataList.push({
                 orderDate:v_orderDate,
@@ -861,7 +877,8 @@ export default class WebOrderList extends Component {
                 receiverAddrInfo:v_receiverAddrInfo,
                 deliveryMsg:item.deliveryMsg,
                 expectShippingStart:v_expectShippingStart,
-                expectShippingEnd:v_expectShippingEnd
+                expectShippingEnd:v_expectShippingEnd,
+                hopeDeliveryDate:v_hopeDeliveryDate
             });
         });
 
@@ -987,8 +1004,24 @@ export default class WebOrderList extends Component {
         }
     }
 
+    onSearchDateChange = async (date) => {
+        //console.log("",date.getFullYear())
+        const filter = Object.assign({},this.state.searchFilter)
+        filter.year = date.getFullYear();
+        await this.setState({searchFilter:filter});
+        await this.search();
+    }
+
     render() {
-        const state = this.state
+        const state = this.state;
+
+        const ExampleCustomDateInput = ({ value, onClick }) => (
+            <Button
+                color="secondary"
+                active={true}
+                onClick={onClick}>{value} 년</Button>
+        );
+
         return(
             <Fragment>
                 <FormGroup>
@@ -996,6 +1029,15 @@ export default class WebOrderList extends Component {
                         <div className='pb-3 d-flex'>
                             <div className='d-flex'>
                                 <div className='d-flex'>
+                                    <DatePicker
+                                        selected={new Date(moment().set('year',state.searchFilter.year))}
+                                        onChange={this.onSearchDateChange}
+                                        showYearPicker
+                                        dateFormat="yyyy"
+                                        customInput={<ExampleCustomDateInput />}
+                                    />
+                                </div>
+                                <div className='ml-3 d-flex'>
                                     <div className='d-flex justify-content-center align-items-center textBoldLarge' fontSize={'small'}>상품분류</div>
                                     <div className='pl-3' style={{width:200}}>
                                         <Select
@@ -1005,7 +1047,7 @@ export default class WebOrderList extends Component {
                                         />
                                     </div>
                                 </div>
-                                <div className='ml-5 d-flex'>
+                                <div className='ml-3 d-flex'>
                                     <div className='d-flex justify-content-center align-items-center textBoldLarge' fontSize={'small'}>결제수단 &nbsp; &nbsp; | </div>
                                     <div className='pl-3 pt-2 '>
                                         {

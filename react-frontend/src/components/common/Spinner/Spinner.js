@@ -1,8 +1,10 @@
 import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import {Spin} from "~/styledComponents/shared";
+import {FaSpinner} from "react-icons/fa";
 
 export default () =>
     <div className='fadein'>
-        <FontAwesomeIcon icon={faSpinner} spin />
+        <Spin>
+            <FaSpinner />
+        </Spin>
     </div>

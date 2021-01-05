@@ -29,7 +29,7 @@ const NoticeList = (props) => {
             {headerName: "제목", field: "title", cellRenderer: "titleRenderer", width: 300},
             {headerName: "내용", field: "content", width: 700},
             {headername: "삭제", cellRenderer: "delButtonRenderer", width: 100},
-            {headername: "푸시여부", field: "sendPush", width: 100},
+            // {headername: "푸시여부", field: "sendPush", width: 100},
         ],
         defaultColDef: {
             width: 100,

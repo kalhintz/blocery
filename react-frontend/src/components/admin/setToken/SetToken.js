@@ -1,9 +1,10 @@
 import React, { Component, PropTypes } from 'react';
 import { scOntTransferManagerBlct, scOntGetTotalBlsGuarantyBlct, scOntGetBalanceOfBlct, scOntGetManagerOngBalance, scOntManagerSendBlctToManager,
-    scOntTransferManagerBlctToMany, scOntUserSendBlctToManager, scOntTransferUserBlctFromMany, scOntTransferManagerBlctToManyAccounts, scOntTransferManagerTokenToManyAccount } from '~/lib/smartcontractApi';
+    scOntTransferManagerBlctWithEvent, scOntUserSendBlctToManager, scOntTransferManagerBlctToManyAccounts, scOntTransferManagerTokenToManyAccount } from '~/lib/smartcontractApi';
 import { getConsumerAccountByEmail, getAllConsumerToken, getAllProducerToken } from '~/lib/adminApi'
 import { getBlyBalanceByAccount, sendManagerBlyToUser, sendUserBlytToManager, getEthBalance, sendEth, updateSwapBlctToBlySuccess, copyErcAccountToErcHistory} from '~/lib/swapApi'
 import { isTokenAdminUser } from '~/lib/loginApi'
+import { getConsumerEmail, getKakaoPhoneConsumer } from '~/lib/shopApi';
 import { Server } from '~/components/Properties';
 import axios from 'axios';
 
@@ -22,6 +23,7 @@ export default class SetToken extends Component{
             ethBalance: 0,
             allConsumerTokens: 0,
             allProducerTokens: 0,
+            consumerNo: 0,
         }
     }
 
@@ -63,22 +65,47 @@ export default class SetToken extends Component{
         });
     }
 
-    // email로 account 조회
-    onGetAccount = async() => {
-        // account 조회해오기
-        let {data:consumerInfo} = await getConsumerAccountByEmail(this.getAccountEmail.value);
-        console.log(consumerInfo);
-        let userAccount = document.getElementById('userAccount');
-        if(consumerInfo.account) {
-            this.setState({
-                account: consumerInfo.account
-            })
+    // email이나 phone으로 consumerNo와 account 가져오기
+    onGetConsumerInfo = async() => {
+
+        if(this.getConsumerNoEmail.value) {
+            let {data:consumerInfo} = await getConsumerEmail(this.getConsumerNoEmail.value);
+            console.log(consumerInfo);
+            if(consumerInfo.account) {
+                this.setState({
+                    consumerNo: consumerInfo.consumerNo,
+                    account: consumerInfo.account
+                })
+            } else {
+                this.setState({
+                    account: '회원가입이 되어있지 않은 email입니다 '
+                });
+            }
+        } else if(this.getConsumerNoPhone.value && this.getConsumerNoPhone.value.length > 11){
+            let {data:consumerList} = await getKakaoPhoneConsumer(this.getConsumerNoPhone.value);
+            console.log(consumerList);
+            if(consumerList.length === 0) {
+                this.setState({
+                    account: '회원가입이 되어있지 않은 phone입니다 '
+                });
+
+            } else if(consumerList.length === 1) {
+                if (consumerList[0].account) {
+                    this.setState({
+                        consumerNo: consumerList[0].consumerNo,
+                        account: consumerList[0].account
+                    })
+                }
+
+            }else {
+                this.setState({
+                    account: '2명 이상의 회원이 존재합니다. log를 확인해주세요.'
+                });
+            }
         } else {
-            this.setState({
-                account: '회원가입이 되어있지 않은 email입니다 '
-            });
+            alert('입력한 소비자 회원정보를 확인해주세요.');
         }
-    };
+    }
 
     // 토큰 잔액조회
     onGetBalanceOfBlct = async () => {
@@ -118,103 +145,13 @@ export default class SetToken extends Component{
         }
     };
 
-    onGiveManyToken = async(buttonNo) => {
-
-        let originEmailList = this.giveManyAddresses1.value.split(',');
-
-        let emailList = new Array();
-        for(let i = 0 ; i < originEmailList.length ; i++ ) {
-            if(originEmailList[i].trim().length > 0)
-                emailList[i] = originEmailList[i].trim();
-        }
-
-        console.log('emailList : ', emailList);
-
-        if(emailList.length > 15) {
-            alert(emailList.length + '명 입력. 최대 전송인원은 15명을 초과했습니다')
-            return;
-        }
-
-        let {data} = await scOntTransferManagerBlctToMany(this.eventTitle.value, this.eventSubTitle.value, emailList, this.giveManyAmount.value, this.state.sendKakao);
+    onGiveEventToken = async() => {
+        let {data} = await scOntTransferManagerBlctWithEvent(this.eventTitle.value, this.eventSubTitle.value,  this.giveConsumerNo.value, this.giveManyAmount.value, this.state.sendKakao);
         if(data) {
             alert('토큰이 성공적으로 지급되었습니다');
         } else {
             alert('토큰 지급에 실패하였습니다. 다시 시도해주세요.');
         }
-    }
-
-    onGiveManyTokenAccount = async() => {
-        let originAccountList = this.giveManyAccount.value.split(',');
-        let accountList = new Array();
-        for(let i = 0 ; i < originAccountList.length ; i++ ) {
-            if(originAccountList[i].trim().length > 0)
-                accountList[i] = originAccountList[i].trim();
-        }
-
-        console.log('accountList : ', accountList);
-
-        if(accountList.length > 15) {
-            alert(accountList.length + '명 입력. 최대 전송인원은 15명을 초과했습니다')
-            return;
-        }
-
-        let {data} = await scOntTransferManagerTokenToManyAccount(this.eventTitleAccount.value, this.eventSubTitleAccount.value, accountList, this.giveManyAmountAccount.value);
-        if(data) {
-            alert('토큰이 성공적으로 지급되었습니다');
-        } else {
-            alert('토큰 지급에 실패하였습니다. 다시 시도해주세요.');
-        }
-    }
-
-    onGiveManyCobakToken = async(buttonNo) => {
-
-        let originAccountList = this.giveCobakAccount1.value.split(',');
-
-        let accountList = new Array();
-        for(let i = 0 ; i < originAccountList.length ; i++ ) {
-            if(originAccountList[i].trim().length > 0)
-                accountList[i] = originAccountList[i].trim();
-        }
-
-        console.log(accountList,  this.giveCobakAmount.value);
-
-        // if(accountList.length > 15) {
-        //     alert(accountList.length + '명 입력. 최대 전송인원은 15명을 초과했습니다')
-        //     return;
-        // }
-
-        let {data} = await scOntTransferManagerBlctToManyAccounts(accountList, this.giveCobakAmount.value);
-        if(data) {
-            alert('토큰이 성공적으로 지급되었습니다');
-        } else {
-            alert('토큰 지급에 실패하였습니다. 다시 시도해주세요.');
-        }
-    }
-
-    onTakeManyToken = async(buttonNo) => {
-
-        let originEmailList = this.takeManyAddresses1.value.split(',');
-
-        let emailList = new Array();
-        for(let i = 0 ; i < originEmailList.length ; i++ ) {
-            if(originEmailList[i].trim().length > 0)
-                emailList[i] = originEmailList[i].trim();
-        }
-
-        let {data} = await scOntTransferUserBlctFromMany(emailList, this.takeManyAmount.value);
-        if(data) {
-            alert('토큰이 성공적으로 지급되었습니다');
-        } else {
-            alert('토큰 지급에 실패하였습니다. 다시 시도해주세요.');
-        }
-    }
-
-
-
-    onGetTotalBlsGuarantyBlct = async() => {
-        let {data : result}  = await scOntGetTotalBlsGuarantyBlct();
-        console.log('onGetTotalBlsGuarantyBlct : ', result);
-
     }
 
     onSendUserToken = async() => {
@@ -256,14 +193,6 @@ export default class SetToken extends Component{
         })
     }
 
-    // onGetNewEthAccount = async() => {
-    //     console.log("newEthAccount", this.newEthAccountEmail.value)
-    //     let {data:result} = await newEthAccount(this.newEthAccountEmail.value)
-    //     this.setState({
-    //         ethAccount : result
-    //     })
-    // }
-
     onGetBlyBalance = async() => {
         console.log(this.ownerAccount.value)
         let {data:result} = await getBlyBalanceByAccount(this.ownerAccount.value)
@@ -288,28 +217,11 @@ export default class SetToken extends Component{
         alert('swapBlctToBly update시 txHash 값을 복사해서 저장해야 합니다 ' + result);
     }
 
-    onSendEthToUser = async() => {
-        let {data:result} = await sendEth(this.ethReceiverAddress.value)
-        console.log(result);
-        alert(result);
-    }
-
     onSendUserBlytToManager = async() => {
         let {data:result} = await sendUserBlytToManager(this.blyUserAddress.value, this.blyUserPk.value, this.userBlyAmount.value)
         console.log(result);
         alert(result);
     }
-
-    // onAddEthAccount = async() => {
-    //     let {data:result} = await addTempEthAccount(this.tempEthAccount.value, this.tempEthPk.value)
-    //     console.log(result);
-    //
-    // }
-    //
-    // onGetEthAccount = async() => {
-    //     let {data:result} = await getErcAccoutInfoList()
-    //     console.log(result)
-    // }
 
     onUpdateSwapBlctToBlySuccess = async() => {
         let {data:result} = await updateSwapBlctToBlySuccess(this.swapBlctToBlyNo.value, this.swapBlctToBlyTxHash.value);
@@ -378,12 +290,16 @@ export default class SetToken extends Component{
                 <ColoredLine color="green"/>
                 <h5> 사용자 토큰 설정 </h5>
                 <div className='m-2'>
-                    1. 사용자 account 조회(b2c consumer만 가능) <br />
+                    1. 사용자 정보조회 (기존회원 email, 카카오회원 phone) <br />
                     <div className='d-flex align-items-center'>
                         <input className='m-0 w-25' type="text" placeholder="email주소"
-                               ref = {(input) => {this.getAccountEmail = input}}
+                               ref = {(input) => {this.getConsumerNoEmail = input}}
                         />
-                        <button onClick = {this.onGetAccount}> account조회   </button>
+                        <input className='m-0 w-25 ml-1' type="text" placeholder="핸드폰번호 000-0000-0000 형태 "
+                               ref = {(input) => {this.getConsumerNoPhone = input}}
+                        />
+                        <button className='ml-1' onClick = {this.onGetConsumerInfo}> consumer 정보조회   </button>
+                        <span id="consumerNo" className='ml-2'> consumerNo: {this.state.consumerNo} ,</span>
                         <span id="userAccount" className='ml-2'> {this.state.account}</span>
                     </div>
                     <br/>
@@ -435,7 +351,7 @@ export default class SetToken extends Component{
                     <br/>
 
                     <div className='d-flex'>
-                        <span> 4. 여러 email(consumer)에 BLCT 지급(토큰 지급이 완료되면 알림창을 확인해야 합니다) </span>
+                        <span> 4. consumerNo에 BLCT 지급(토큰 지급이 완료되면 알림창을 확인해야 합니다) </span>
                         <input id={'sendKakao'} type="checkbox" className={'m-2'} color={'default'} checked={this.state.sendKakao} onChange={this.onSendKakao} />
                         <label for={'sendKakao'} className='text-secondary '>카카오톡 발송</label>
                     </div>
@@ -453,124 +369,12 @@ export default class SetToken extends Component{
                     </div>
 
                     <div className='d-flex mt-2'>
-                        <input className='w-50' type="text" placeholder="email을 적되 ,로 구분하기(최대15명) - 1"
-                               ref = {(input) => {this.giveManyAddresses1 = input}}
+                        <input className='w-50' type="text" placeholder="consumerNo" value={this.state.consumerNo}
+                               ref = {(input) => {this.giveConsumerNo = input}}
                         />
-                        <button onClick = {this.onGiveManyToken.bind(this, 1)}> 여러명 BLCT지급 - 1  </button>
+                        <button onClick = {this.onGiveEventToken.bind(this)}> BLCT지급  </button>
                     </div>
 
-                    <br/>
-                    <br/>
-
-                    <div className='d-flex'>
-                        <span> 4-1. 여러 account(consumer)에 BLCT 지급(토큰 지급이 완료되면 알림창을 확인해야 합니다) </span>
-                    </div>
-                    {/*<br />*/}
-                    <div className='d-flex'>
-                        <input className='m-0 w-25' type="text" placeholder="이벤트 제목 (토큰내역에 보여질 진한 제목)"
-                               ref = {(input) => {this.eventTitleAccount = input}}
-                        />
-                        <input className='m-0 w-25' type="text" placeholder="이벤트 상세제목 (토큰내역에 보여질 작은 설명)"
-                               ref = {(input) => {this.eventSubTitleAccount = input}}
-                        />
-                        <input className='m-0 w-auto' type="text" placeholder="100"
-                               ref = {(input) => {this.giveManyAmountAccount = input}}
-                        />
-                    </div>
-                    <div className='d-flex mt-2'>
-                        <input className='w-50' type="text" placeholder="account를 적되 ,로 구분하기(최대15명)"
-                               ref = {(input) => {this.giveManyAccount = input}}
-                        />
-                        <button onClick = {this.onGiveManyTokenAccount}> 여러명 BLCT지급  </button>
-                    </div>
-                    <br/>
-                    <br/>
-
-                    5. 여러 account에 BLCT 지급(토큰 지급이 완료되면 알림창을 확인해야 합니다) - 코박지급용 <br />
-                    <div className='d-flex'>
-                        지급할 토큰 양 :
-                        <input className='m-0 w-auto' type="text" placeholder="100"
-                               ref = {(input) => {this.giveCobakAmount = input}}
-                        />
-                    </div>
-
-                    <div className='d-flex mt-2'>
-                        <input className='w-50' type="text" placeholder="account 적되 ,로 구분하기 - 1"
-                               ref = {(input) => {this.giveCobakAccount1 = input}}
-                        />
-                        <button onClick = {this.onGiveManyCobakToken.bind(this, 1)}> 여러명 BLCT지급 - 1  </button>
-                    </div>
-
-                    <br/>
-                    <br/>
-
-
-                    6. 여러 email로부터 BLCT 돌려받기(토큰 지급이 완료되면 알림창을 확인해야 합니다) <br />
-                    <div className='d-flex'>
-                        <input className='m-0 w-auto' type="text" placeholder="250"
-                               ref = {(input) => {this.takeManyAmount = input}}
-                        />
-                    </div>
-
-                    <div className='d-flex mt-2'>
-                        <input className='w-50' type="text" placeholder="email을 적되 ,로 구분하기(최대15명) - 1"
-                               ref = {(input) => {this.takeManyAddresses1 = input}}
-                        />
-                        <button onClick = {this.onTakeManyToken.bind(this, 1)}> 여러명 BLCT받기 - 1  </button>
-                    </div>
-
-                    <br/>
-                    <br/>
-
-                    7. eth token balance <br />
-                    <div className='d-flex align-items-center'>
-                        <input className='m-0 w-25' type="text" placeholder="owner Account"
-                               ref = {(input) => {this.ownerAccount = input}}
-                        />
-                        <button onClick = {this.onGetBlyBalance}> BLY 잔액조회   </button>
-                        <span className='ml-2 mr-2'> {this.state.tokenBalance}</span>
-                        <button className="ml-3"  onClick = {this.onGetEthBalance}> Eth 잔액조회   </button>
-                        <span className='ml-2'> {this.state.ethBalance}</span>
-                    </div>
-                    <br/>
-                    <br/>
-
-                    7-1. send ETH to User <br />
-                    <div className='d-flex align-items-center'>
-                        <input className='m-0 w-25' type="text" placeholder="ethReceiverAddress"
-                               ref = {(input) => {this.ethReceiverAddress = input}}
-                        />
-                        <button onClick = {this.onSendEthToUser}> ETH 전송   </button>
-
-                    </div>
-                    <br/>
-                    <br/>
-
-                    8. send Bly to User (Failure swapBlctToBly transfer Token 실행필요) <br />
-                    <div className='d-flex align-items-center'>
-                        <input className='m-0 w-25' type="text" placeholder="receiverAddress"
-                               ref = {(input) => {this.blyReceiverAddress = input}}
-                        />
-                        <input className='m-0 w-25' type="number" placeholder="amount"
-                               ref = {(input) => {this.blyAmount = input}}
-                        />
-                        <button onClick = {this.onSendManagerBlyToUser}> BLY 전송   </button>
-
-                    </div>
-                    <br/>
-                    <br/>
-
-                    9.BlctToBly swap 완료처리 <br />
-                    <div className='d-flex align-items-center'>
-                        <input className='m-0 w-25' type="text" placeholder="swapBlctToBlyNo"
-                               ref = {(input) => {this.swapBlctToBlyNo = input}}
-                        />
-                        <input className='m-0 w-25' type="text" placeholder="txHash"
-                               ref = {(input) => {this.swapBlctToBlyTxHash = input}}
-                        />
-                        <button onClick = {this.onUpdateSwapBlctToBlySuccess}> swapBlctToBly 완료 update   </button>
-
-                    </div>
                     <br/>
                     <br/>
 
@@ -590,35 +394,7 @@ export default class SetToken extends Component{
                     <br/>
                     <br/>
 
-                    12. SwapErcAccount => SwapErcHistory copy <br/>
-                    <div className='d-flex align-items-center'>
-                        <button onClick = {this.onCopyErcAccountToErcHistory}> table copy </button>
-                    </div>
-                    <br/>
-                    <br/>
-
-                    {/*9. send User Bly to Manager <br />*/}
-                    {/*<div className='d-flex align-items-center'>*/}
-                        {/*<input className='m-0 w-25' type="text" placeholder="userAddress"*/}
-                               {/*ref = {(input) => {this.blyUserAddress = input}}*/}
-                        {/*/>*/}
-                        {/*<input className='m-0 w-25' type="text" placeholder="userPk"*/}
-                               {/*ref = {(input) => {this.blyUserPk = input}}*/}
-                        {/*/>*/}
-                        {/*<input className='m-0 w-25' type="number" placeholder="amount"*/}
-                               {/*ref = {(input) => {this.userBlyAmount = input}}*/}
-                        {/*/>*/}
-                        {/*<button onClick = {this.onSendUserBlytToManager}> BLY 전송   </button>*/}
-                    {/*</div>*/}
-
-
                 </div>
-
-                {/*<ColoredLine color="green"/>*/}
-                {/*<h5> 블록체인 데이터 세팅 및 조회 </h5><br />*/}
-
-                {/*1.*/}
-                {/*<button onClick = {this.onGetTotalBlsGuarantyBlct}> BLCT담보 BLS 발행량 조회(console) </button>*/}
 
             </div>
         )

@@ -1,10 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-// import { ProducerXButtonNav } from '../../common'
-import { Close } from '@material-ui/icons'
-import Style from './ModalFull.module.scss'
+import {MdClose} from "react-icons/md";
 import { Container, Row, Col } from 'reactstrap'
-import classNames from 'classnames'
+import {Div, Flex} from '~/styledComponents/shared'
+
 class ModalFull extends React.Component {
 
     onCancel = (e) => {
@@ -21,17 +20,33 @@ class ModalFull extends React.Component {
 
 
 
-            <div className={Style.wrap}>
+            <Flex
+                top={0}
+                bottom={0}
+                left={0}
+                right={0}
+                fixed
+                bg={'black'}
+                zIndex={9999}
+                justifyContent={'center'}
+                overflow={'hidden'}
+
+            >
                 <Container>
                     <Row>
                         <Col sm={12} className={'p-0'}>
-                            <div className={Style.body}>
-                                <div className={Style.title}>
+                            <Div relative>
+                                <Div fixed p={'1rem'} fg={'white'} zIndex={12} left={'50%'} top={0} xCenter>
                                     {this.props.title}
-                                </div>
-                                <div className={classNames(Style.close, 'cursor-pointer')} onClick={this.onCancel}>
-                                    <Close/>
-                                </div>
+                                </Div>
+                                <Flex width={52} height={52} fixed top={0} right={0} justifyContent={'center'} fg={'white'} zIndex={11}
+                                      cursor
+                                      onClick={this.onCancel}>
+                                    <MdClose size={30}/>
+                                </Flex>
+                                {/*<div className={classNames(Style.close, 'cursor-pointer')} onClick={this.onCancel}>*/}
+                                {/*    <MdClose size={15}/>*/}
+                                {/*</div>*/}
                                 <figure>
                                     {
                                         //children 객체에 props 를 전달
@@ -42,11 +57,11 @@ class ModalFull extends React.Component {
                                         })
                                     }
                                 </figure>
-                            </div>
+                            </Div>
                         </Col>
                     </Row>
                 </Container>
-            </div>
+            </Flex>
 
         );
     }

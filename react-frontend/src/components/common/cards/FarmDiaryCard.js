@@ -1,7 +1,6 @@
 import React, { Fragment } from 'react'
 import { Server } from '~/components/Properties'
 import ComUtil from '~/util/ComUtil'
-import { Webview } from '~/lib/webviewApi'
 import { Container, Row, Col } from 'reactstrap'
 
 const FarmDiaryCard = ({cultivationStepMemo, diaryContent, diaryImages, diaryRegDate, itemName, itemKindName, diaryNo, onClick = () => null}) => {

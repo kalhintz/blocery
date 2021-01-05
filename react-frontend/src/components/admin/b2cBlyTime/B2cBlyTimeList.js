@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { Button } from 'reactstrap';
 import ComUtil from '~/util/ComUtil'
-import { getLoginAdminUser } from '../../../lib/loginApi'
+import { getLoginAdminUser } from '~/lib/loginApi'
 import { delBlyTime, getBlyTimeAdminList } from '~/lib/adminApi'
 import moment from 'moment-timezone'
 import { ModalConfirm,  AdminModalWithNav } from '~/components/common'
@@ -13,10 +13,16 @@ import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { Cell } from '~/components/common'
 import { Server } from '../../Properties'
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/src/stylesheets/datepicker.scss";
+
 export default class B2cBlyTimeList extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            search: {
+                year:moment().format('YYYY')
+            },
             loading: false,
             data: [],
             columnDefs: [
@@ -87,6 +93,16 @@ export default class B2cBlyTimeList extends Component {
                     }
                 },
                 {
+                    headerName: "생산자No", field: "producerNo",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    width: 80
+                },
+                {
+                    headerName: "생산자명", field: "producerFarmNm",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    width: 100
+                },
+                {
                     headerName: "상품이미지",
                     field: "goodsImages",
                     suppressFilter: true,   //no filter
@@ -94,6 +110,11 @@ export default class B2cBlyTimeList extends Component {
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
                     cellRenderer:"goodsImageRenderer",
                     width: 120
+                },
+                {
+                    headerName: "상품No", field: "goodsNo",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    width: 80
                 },
                 {
                     headerName: "상품명",
@@ -127,6 +148,18 @@ export default class B2cBlyTimeList extends Component {
                     },
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
                     cellRenderer: "blyTimeCurrentPriceRenderer",
+                    width: 100
+                },
+                {
+                    headerName: "수수료", field: "blyTimeFeeRate",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    cellRenderer: "blyTimeFeeRateRenderer",
+                    width: 80
+                },
+                {
+                    headerName: "정산가", field: "currentPrice",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    cellRenderer: "settlementPriceRenderer",
                     width: 100
                 },
                 {
@@ -179,6 +212,8 @@ export default class B2cBlyTimeList extends Component {
                 titleRenderer:this.titleRenderer,
                 blyTimeConsumerPriceRenderer:this.blyTimeConsumerPriceRenderer,
                 blyTimeCurrentPriceRenderer:this.blyTimeCurrentPriceRenderer,
+                blyTimeFeeRateRenderer:this.blyTimeFeeRateRenderer,
+                settlementPriceRenderer: this.settlementPriceRenderer,
                 blyTimeRewardRenderer:this.blyTimeRewardRenderer,
                 blyTimeStateRenderer:this.blyTimeStateRenderer,
                 delButtonRenderer:this.delButtonRenderer
@@ -257,11 +292,23 @@ export default class B2cBlyTimeList extends Component {
     };
 
     titleRenderer = ({value, data:rowData}) => {
+        const stateNm = B2cBlyTimeList.getBlyTimeStateNm(rowData);
         return (
             <Cell textAlign="left">
-                <div onClick={this.regBlyTime.bind(this, rowData.goodsNo)} style={{color: 'blue'}}>
-                    <u>{rowData.goodsNm}</u>
-                </div>
+                {
+                    stateNm=="종료" && (
+                        <div style={{color: 'dark'}}>
+                            {rowData.goodsNm}
+                        </div>
+                    )
+                }
+                {
+                    stateNm!="종료" && (
+                        <div onClick={this.regBlyTime.bind(this, rowData.goodsNo)} style={{color: 'blue'}}>
+                            <u>{rowData.goodsNm}</u>
+                        </div>
+                    )
+                }
             </Cell>
         );
     };
@@ -281,6 +328,24 @@ export default class B2cBlyTimeList extends Component {
             </span>
         );
     };
+
+    //수수료
+    blyTimeFeeRateRenderer = ({value, data:rowData}) => {
+        return (
+            <span>
+                {rowData.blyTimeFeeRate}%
+            </span>
+        )
+    }
+
+    //정산가
+    settlementPriceRenderer = ({value, data:rowData}) => {
+        return (
+            <span>
+                {ComUtil.addCommas(rowData.currentPrice * ((100 - rowData.blyTimeFeeRate) / 100))}원
+            </span>
+        )
+    }
 
     //블리타임 보상
     blyTimeRewardRenderer = ({value, data:rowData}) => {
@@ -317,28 +382,7 @@ export default class B2cBlyTimeList extends Component {
     }
 
     blyTimeStateRenderer = ({value, data:rowData}) => {
-        // const stateName = this.getBlyTimeStateNm(rowData);
-
-        let nowDate = moment().toDate();
-        let nowDateTime = moment(nowDate).format('YYYY-MM-DDTHH:mm');
-
-        let v_blyTimeStartDate = rowData.blyTimeStart;
-        let v_blyTimeStartDateTime = moment(v_blyTimeStartDate).format('YYYY-MM-DDTHH:mm');
-        let v_blyTimeEndDate = rowData.blyTimeEnd;
-        let v_blyTimeEndDateTime = moment(v_blyTimeEndDate).format('YYYY-MM-DDTHH:mm');
-
-        let stateNm = "예정";
-        if(
-            moment(v_blyTimeStartDateTime).format('x') < moment(nowDateTime).format('x') &&
-            moment(v_blyTimeEndDateTime).format('x') > moment(nowDateTime).format('x')
-        ){
-            stateNm = "진행중";
-        }
-        if(
-            moment(v_blyTimeEndDateTime).format('x') < moment(nowDateTime).format('x')
-        ){
-            stateNm = "종료";
-        }
+        const stateNm = B2cBlyTimeList.getBlyTimeStateNm(rowData);
         return (
             <span>
                 {stateNm}
@@ -348,12 +392,17 @@ export default class B2cBlyTimeList extends Component {
 
 
     delButtonRenderer = ({value, data:rowData}) => {
+        const stateNm = B2cBlyTimeList.getBlyTimeStateNm(rowData);
         return (
             <Cell>
                 <div style={{textAlign: 'center'}}>
-                    <ModalConfirm title={'블리타임 삭제'} content={<div>선택한 블리타임을 삭제하시겠습니까?</div>} onClick={this.deleteBlyTime.bind(this, rowData.goodsNo)}>
-                        <Button block size='sm' color={'info'}>삭제</Button>
-                    </ModalConfirm>
+                    {
+                        stateNm != '종료' && (
+                            <ModalConfirm title={'블리타임 삭제'} content={<div>선택한 블리타임을 삭제하시겠습니까?</div>} onClick={this.deleteBlyTime.bind(this, rowData.goodsNo)}>
+                                <Button block size='sm' color={'info'}>삭제</Button>
+                            </ModalConfirm>
+                        )
+                    }
                 </div>
             </Cell>
         );
@@ -362,7 +411,11 @@ export default class B2cBlyTimeList extends Component {
 
     search = async () => {
         this.setState({loading: true});
-        const { status, data } = await getBlyTimeAdminList();
+        const searchInfo = this.state.search;
+        const params = {
+            year:searchInfo.year
+        };
+        const { status, data } = await getBlyTimeAdminList(params);
         // console.log("getBlyTimeListAll==",data)
         if(status !== 200){
             alert('응답이 실패 하였습니다');
@@ -382,7 +435,7 @@ export default class B2cBlyTimeList extends Component {
     };
 
     regBlyTime = (goodsNo) => {
-        let v_goodsNo="";
+        let v_goodsNo=null;
         let v_title = "블리타임 등록";
         if(goodsNo){
             v_title = "블리타임 수정";
@@ -399,8 +452,6 @@ export default class B2cBlyTimeList extends Component {
     onBlyTimePopupClose = (data) => {
 
         this.setState({
-            mdPickId:"",
-            mdPickModalTitle:"",
             isBlyTimeModalOpen: !this.state.isBlyTimeModalOpen
         });
 
@@ -409,15 +460,41 @@ export default class B2cBlyTimeList extends Component {
         }
     };
 
+    onSearchDateChange = async (date) => {
+        //console.log("",date.getFullYear())
+        const search = Object.assign({}, this.state.search);
+        search.year = date.getFullYear();
+        await this.setState({search:search});
+        await this.search();
+    }
+
     render() {
+        const ExampleCustomDateInput = ({ value, onClick }) => (
+            <Button
+                color="secondary"
+                active={true}
+                onClick={onClick}>블리타임 {value} 년</Button>
+        );
         return (
             <div>
-                <div className="d-flex p-1">
-                    <div className="d-flex align-items-center pl-1">
+                <div className="d-flex align-items-center p-1">
+                    <div className="pl-1">
                         <span className="text-success">{this.state.data.length}</span>개의 블리타임
                     </div>
+                    <div className='ml-2'>
+                        <DatePicker
+                            selected={new Date(moment().set('year',this.state.search.year))}
+                            onChange={this.onSearchDateChange}
+                            showYearPicker
+                            dateFormat="yyyy"
+                            customInput={<ExampleCustomDateInput />}
+                        />
+                    </div>
+                    <div className='ml-2'>
+                        <Button color={'info'} onClick={this.search}>검색</Button>
+                    </div>
                     <div className="flex-grow-1 text-right">
-                        <Button outline size='sm' color={'info'} onClick={this.regBlyTime.bind(this,'')} className='m-2'>블리타임 등록</Button>
+                        <Button outline size='sm' color={'info'} onClick={this.regBlyTime.bind(this,null)} className='m-2'>블리타임 등록</Button>
                     </div>
                 </div>
                 <div className="p-1">

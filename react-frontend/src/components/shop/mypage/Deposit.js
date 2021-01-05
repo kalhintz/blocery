@@ -1,18 +1,17 @@
 import React, { Component, Fragment } from 'react';
 import { ShopXButtonNav } from '../../common'
-import { Div, Span, Button, Flex, Right, Hr } from '~/styledComponents/shared'
-import { Modal, ModalHeader, ModalBody, ModalFooter, Label } from 'reactstrap';
+import { Div, Span, Button, Flex, Hr } from '~/styledComponents/shared'
+import { Label } from 'reactstrap';
 import { allocateSwapAccount, getBlyBalanceByConsumerNo, swapBlyToBlct, getAlreayDepositBly } from '~/lib/swapApi'
-import { BlockChainSpinner, TimeText } from '~/components/common'
+import { BlockChainSpinner } from '~/components/common'
 import moment from 'moment'
 import {ScrollDummy, scrollIntoView} from '~/components/common/scrollDummy/ScrollDummy'
 import { QRCode } from "react-qr-svg";
-import {FaQrcode} from 'react-icons/fa'
 import ComUtil from '~/util/ComUtil'
-import styled, {keyframes} from 'styled-components'
+import styled from 'styled-components'
 import {getValue} from '~/styledComponents/Util'
-import {color, hoverColor} from "~/styledComponents/Properties";
-import { Checkbox } from '@material-ui/core'
+import {color} from "~/styledComponents/Properties";
+import Checkbox from '~/components/common/checkboxes/Checkbox'
 
 const Card = styled(Div)`
     background: ${color.white};
@@ -125,14 +124,13 @@ export default class Deposit extends Component {
 
         this.setState({errorText: errorText})
 
-        let {data} = await getBlyBalanceByConsumerNo();
-        const balance = data
+        let {data:balance} = await getBlyBalanceByConsumerNo();
         console.log("balance : ", balance);
 
-        let {data: alreadyDepositBly} = await getAlreayDepositBly();
-        console.log("alreadyDepositBly : ", alreadyDepositBly);
+        let {data} = await getAlreayDepositBly();
+        console.log("alreadyDepositBly : ", data);
 
-        const result = parseFloat(balance) - parseFloat(alreadyDepositBly);
+        const result = parseFloat(data.needDeposit);
         console.log("result : ", result);
 
         if(result === 0 || result < 0) {
@@ -145,7 +143,7 @@ export default class Deposit extends Component {
                 chainLoading:true
             })
 
-            let {data:swapResult} = await swapBlyToBlct(result);
+            let {data:swapResult} = await swapBlyToBlct(data.needDeposit);
 
             // * 0    controller에서 로그인체크시 Null
             // * 200  성공
@@ -232,7 +230,7 @@ export default class Deposit extends Component {
                             bc={'green'} fg={'darkBlack'} fontSize={10} rounded={5} p={8} justifyContent={'space-between'}
                         >
                             <Div style={{wordBreak: 'break-all'}}>{this.state.ercAccount}</Div>
-                            <Div flexShrink={0} cursor onClick={this.onCopyErcAccount}>주소복사</Div>
+                            <Div flexShrink={0} cursor={1} onClick={this.onCopyErcAccount}>주소복사</Div>
                         </Flex>
 
                     </Card>
@@ -241,7 +239,7 @@ export default class Deposit extends Component {
                     <Card shadow={'sm'}>
                         <Div fontSize={10} fg={'secondary'}>Step. 2</Div>
                         <Div fw={500}>이체</Div>
-                        <Div fontSize={12} mt={20}>위에서 발급받은 계좌로 이체 후 아래 [입금확인 및 수령] 버튼을 눌러주세요.</Div>
+                        <Div fontSize={12} mt={20}>위에 있는 내 지갑주소로 이체 후 아래 [입금확인 및 수령] 버튼을 눌러주세요.</Div>
                     </Card>
 
 
@@ -250,8 +248,13 @@ export default class Deposit extends Component {
                         <Div mb={5} fw={500}>입금확인</Div>
                         <Div mt={20} mb={10}>
                             <CheckBoxFlex alignItems={'flex-start'}>
-                                <Checkbox id={'agree01'} onChange={this.onCheckBoxChange} />
-                                <Label for={'agree01'}><Span fontSize={13} fg={this.state.agree01 ? 'darkBlack' : 'dark'}>타거래소의 출금완료를 확인했습니다.</Span></Label>
+                                <Checkbox
+                                    id={'agree01'}
+                                    bg={'green'} onChange={this.onCheckBoxChange}
+                                          size={'sm'}
+                                >
+                                    <Span fontSize={13} fg={this.state.agree01 ? 'darkBlack' : 'dark'}>타거래소의 출금완료를 확인했습니다.</Span>
+                                </Checkbox>
                             </CheckBoxFlex>
                         </Div>
                         <Button disabled={(this.state.ercAccount === '' || !this.state.agree01)} fontSize={16} my={10} py={12} bg={'green'} fg={'white'} block rounded={2} onClick={this.onGetBlyBalance} >입금확인 및 수령</Button>

@@ -1,17 +1,18 @@
-import React, { Component, Fragment, createRef } from 'react'
-import { Container, Row, Col, Button, ListGroup, ListGroupItem } from 'reactstrap'
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck } from '@fortawesome/free-solid-svg-icons'
+import React, { Component, Fragment } from 'react'
+import { Container, Row, Col, ListGroup, ListGroupItem } from 'reactstrap'
+import {FaCheck} from 'react-icons/fa'
 import Textarea from 'react-textarea-autosize'
 import moment from 'moment-timezone'
 import { Webview } from '~/lib/webviewApi'
 import ComUtil from '~/util/ComUtil'
 import { BlockChainSpinner, ShopXButtonNav, ModalConfirm, ModalWithNav } from '~/components/common/index'
 
+import { Div, Flex, Button } from '~/styledComponents/shared'
+
 import { exchangeWon2BLCT, exchangeBLCT2Won } from "~/lib/exchangeApi"
 import { CANCEL_FEE_13TO5, CANCEL_FEE_4TO3, CANCEL_FEE_2TO1, CANCEL_FEE_MAX } from '~/lib/exchangeApi'
 
-import { addBlctOrderCancel, addPgOrderCancel, getOrderDetailByOrderSeq, getOrderWrapListByOrderSeq, addPgWrapOrderCancel, addBlctWrapOrderCancel } from '~/lib/shopApi'
+import { getOrderDetailByOrderSeq, getOrderWrapListByOrderSeq, addPgWrapOrderCancel, addBlctWrapOrderCancel } from '~/lib/shopApi'
 import { scOntCancelOrderBlct } from '~/lib/smartcontractApi';
 import { getGoodsByGoodsNo } from '~/lib/goodsApi'
 import { getServerToday } from '~/lib/commonApi'
@@ -160,7 +161,15 @@ export default class OrderCancel extends Component {
         let cancelCardPrice = 0
         wrapOrderList.map( orderDetail => {
             merchant_uid_list.push(orderDetail.orderSeq)
-            totalBlctToken = totalBlctToken + orderDetail.blctToken;
+
+            // totalBlctToken은 현재 blct 결제에서만 사용함 (cardBlct는 backend에서 별도로 처리)
+            totalBlctToken = ComUtil.doubleAdd(totalBlctToken, orderDetail.blctToken);
+
+            // 쿠폰사용시 쿠폰의 토큰양만큼은 빼고 환불해줌
+            if(orderDetail.usedCouponNo > 0) {
+                totalBlctToken = ComUtil.doubleSub(totalBlctToken, orderDetail.usedCouponBlyAmount);
+            }
+
             cancelCardPrice = cancelCardPrice + orderDetail.cardPrice;
         })
 
@@ -196,7 +205,7 @@ export default class OrderCancel extends Component {
             // 취소 BLCT 및 BLS 토큰 반환 로직 필요 (BLCT구매)
             //this.notify('주문취소가 완료되어 블록체인에 기록 중입니다.', toast.warn);
 
-            let {data : cancelresult} = await scOntCancelOrderBlct(totalBlctToken, cancelBlctTokenFee, cancelFee, false);
+            let {data : cancelresult} = await scOntCancelOrderBlct(orderDetail.orderSeq, totalBlctToken, cancelBlctTokenFee, cancelFee, false);
             console.log("scOntCancelOrderBlct", cancelresult);
 
             if(cancelresult){
@@ -556,7 +565,7 @@ export default class OrderCancel extends Component {
         let r_pay_cancel_btn = <ModalConfirm title={<span className={'text-danger'}>취소요청을 하시겠습니까?</span>}
                                               content={modalContent}
                                               onClick={this.onPayCancel}>
-            <Button block color="warning">취소요청</Button>
+            <Button block bg={'green'} fg={'white'} rounded={3}>취소요청</Button>
         </ModalConfirm>;
         let r_pay_cancel_btn_view = null;
 
@@ -575,24 +584,22 @@ export default class OrderCancel extends Component {
                 {
                     this.state.chainLoading && <BlockChainSpinner/>
                 }
-                <ShopXButtonNav close history={this.props.history} fixed> 주문 취소 요청 </ShopXButtonNav>
+                <ShopXButtonNav close fixed> 주문 취소 요청 </ShopXButtonNav>
                 <br />
+
                 {
                     /* 주문취소 사유 정보 화면 */
                     !this.state.orderCancelView &&
-                    <Container>
-                        <Row>
-                            <Col> 취소사유를 선택해 주세요 </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <div className='p-3'>
+                        <Div p={16}>
+                            <Div>
+                                <Div mb={8} fw={500}>취소사유를 선택해 주세요</Div>
+                                <Div>
                                     <ListGroup>
                                         <ListGroupItem
                                             color={this.state.cancelReasonIdx == 0 ? "success":""}
                                             onClick={this.onCancelReasonClick.bind(this, '0','단순 변심')}>
                                             <span className='pr-3'>
-                                                {this.state.cancelReasonIdx == 0 ? <FontAwesomeIcon icon={faCheck} />:""}
+                                                {this.state.cancelReasonIdx == 0 ? <FaCheck />:""}
                                             </span>
                                             <span>
                                                 단순 변심
@@ -602,7 +609,7 @@ export default class OrderCancel extends Component {
                                             color={this.state.cancelReasonIdx == 1 ? "success":""}
                                             onClick={this.onCancelReasonClick.bind(this, '1','주문 실수')}>
                                             <span className='pr-3'>
-                                                {this.state.cancelReasonIdx == 1 ? <FontAwesomeIcon icon={faCheck} />:""}
+                                                {this.state.cancelReasonIdx == 1 ? <FaCheck />:""}
                                             </span>
                                             <span>
                                                 주문 실수
@@ -612,7 +619,7 @@ export default class OrderCancel extends Component {
                                             color={this.state.cancelReasonIdx == 2 ? "success":""}
                                             onClick={this.onCancelReasonClick.bind(this, '2','서비스 불만족')}>
                                             <span className='pr-3'>
-                                                {this.state.cancelReasonIdx == 2 ? <FontAwesomeIcon icon={faCheck} />:""}
+                                                {this.state.cancelReasonIdx == 2 ? <FaCheck />:""}
                                             </span>
                                             <span>
                                                 서비스 불만족
@@ -622,7 +629,7 @@ export default class OrderCancel extends Component {
                                             color={this.state.cancelReasonIdx == 3 ? "success":""}
                                             onClick={this.onCancelReasonClick.bind(this, '3','배송 기간에 부재')}>
                                             <span className='pr-3'>
-                                                {this.state.cancelReasonIdx == 3 ? <FontAwesomeIcon icon={faCheck} />:""}
+                                                {this.state.cancelReasonIdx == 3 ? <FaCheck />:""}
                                             </span>
                                             <span>
                                                 배송 기간에 부재
@@ -632,24 +639,18 @@ export default class OrderCancel extends Component {
                                             color={this.state.cancelReasonIdx == 4 ? "success":""}
                                             onClick={this.onCancelReasonClick.bind(this, '4','기타')}>
                                             <span className='pr-3'>
-                                                {this.state.cancelReasonIdx == 4 ? <FontAwesomeIcon icon={faCheck} />:""}
+                                                {this.state.cancelReasonIdx == 4 ? <FaCheck />:""}
                                             </span>
                                             <span>
                                                 기타
                                             </span>
                                         </ListGroupItem>
                                     </ListGroup>
-                                </div>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                상세사유를 입력해 주세요
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <div className='p-3'>
+                                </Div>
+                            </Div>
+                            <Div my={30}>
+                                <Div mb={8} fw={500}>상세사유를 입력해 주세요</Div>
+                                <Div>
                                     <Textarea
                                         name="cancelReasonDetail"
                                         style={{width: '100%', minHeight: 100, borderRadius: 1, border: '1px solid rgba(0,0,0,.125)'}}
@@ -657,18 +658,15 @@ export default class OrderCancel extends Component {
                                         onChange={this.onCancelReasonDetailChange}
                                         ref={ref => this.inputCancelReasonDetail = ref}
                                         placeholder='상세사유를 입력해 주세요.'>{this.state.cancelReasonDetail}</Textarea>
-                                </div>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <div>
-                                    <Button block color={'info'} onClick={this.onCancelReasonNextStep} >다음</Button>
-                                </div>
-                            </Col>
-                        </Row>
-                    </Container>
+                                </Div>
+                            </Div>
+                            <Div textAlign={'center'}>
+                                <Button bg={'white'} bc={'secondary'} px={16} py={10} onClick={this.onCancelReasonNextStep}>다 음</Button>
+                            </Div>
+
+                        </Div>
                 }
+
                 {
                     /* 주문취소 환불 정보 화면 */
                     this.state.orderCancelView &&
@@ -690,7 +688,7 @@ export default class OrderCancel extends Component {
                         {
                             this.state.wrapOrderList.map((orderDetail, index) => {
                                 return (
-                                    <Row>
+                                    <Row key={`orderCancel_${index}`}>
                                         <Col style={{padding: 0, margin: 0}}>
                                             <OrderCancelItem key={'cancelItem'+index} orderDetail={orderDetail}/>
                                         </Col>
@@ -733,8 +731,13 @@ export default class OrderCancel extends Component {
                         <Row>
                             <Col xs="4">
                                 <small>
-                                    취소상품 주문 금액<br/>
-                                    <span className={'text-danger'}>환불금액 차감내역</span><br/>
+                                    주문금액<br/>
+                                    {
+                                        orderDetail.usedCouponNo ?
+                                        <div><span>쿠폰사용</span><br/></div> : null
+                                    }
+                                    <span className={'text-danger'}>취소수수료</span><br/>
+
                                 </small>
                             </Col>
                             <Col xs="8" className={'text-right'}>
@@ -742,8 +745,12 @@ export default class OrderCancel extends Component {
                                     {/*{ComUtil.addCommas(this.state.totalCardPrice)} 원*/}
                                     {/*({ComUtil.addCommas(this.state.totalBlct)} BLY) <br/>*/}
                                     {ComUtil.addCommas(orderDetail.orderPrice)} 원 <br/>
+                                    {
+                                        orderDetail.usedCouponNo ?
+                                            <div><span>{orderDetail.usedCouponBlyAmount} BLY</span></div> : null
+                                    }
                                     <span
-                                        className={'text-danger'}>(-){ComUtil.addCommas(cancelFeeWonOrBlct)}</span> 원
+                                        className={'text-danger'}>(-){ComUtil.addCommas(cancelFeeWonOrBlct)}</span> 원<br/>
                                     {/*{(orderPayMethod === 'blct') ? ' BLY' : ' 원'}*/}
                                 </small>
                             </Col>
@@ -767,20 +774,28 @@ export default class OrderCancel extends Component {
                             <Row>
                                 <Col xs="5"><h6>총 환불 예정금액</h6></Col>
                                 <Col xs="7" className={classnames('text-right')}>
-                                    {/*{*/}
-                                        {/*orderPayMethod === "blct" ?*/}
-                                            {/*<span>*/}
-                                               {/*{ComUtil.addCommas(this.state.totalBlct - cancelFeeWonOrBlct)} BLY <small>({ComUtil.addCommas(this.state.refundBlctWon)}*/}
-                                                {/*원)</small>*/}
-                                            {/*</span>*/}
-                                            {/*:*/}
-                                            {/*<span>*/}
-                                                {/*{ComUtil.addCommas(this.state.totalCardPrice - cancelFeeWonOrBlct)} 원*/}
-                                            {/*</span>*/}
-                                    {/*}*/}
-                                    <span>
-                                        {ComUtil.addCommas(orderDetail.orderPrice - cancelFeeWonOrBlct)} 원
-                                    </span>
+                                    {
+                                        orderDetail.usedCouponNo ?
+                                            (orderDetail.blctToken - orderDetail.usedCouponBlyAmount) === 0 ?   //coupon+card
+                                                <span>
+                                                    {/*{ComUtil.addCommas(ComUtil.roundDown((orderDetail.blctToken-orderDetail.usedCouponBlyAmount)*orderDetail.orderBlctExchangeRate, 0))}원*/}
+                                                    {/*{ComUtil.addCommas(this.state.refundBlctWon - (orderDetail.usedCouponBlyAmount*orderDetail.orderBlctExchangeRate))} 원*/}
+                                                    {ComUtil.addCommas(orderDetail.orderPrice - cancelFeeWonOrBlct - ((orderDetail.usedCouponBlyAmount * orderDetail.orderBlctExchangeRate).toFixed(0)))} 원
+                                                </span>
+                                                :
+                                                (orderDetail.cardPrice === 0) ?
+                                                    // coupon+bly
+                                                    <span>
+                                                        {ComUtil.addCommas(orderDetail.blctToken-orderDetail.usedCouponBlyAmount-cancelFeeWonOrBlct)}BLY
+                                                    </span>
+                                                    //coupon+card+bly
+                                                    :
+                                                    <span>
+                                                        {ComUtil.addCommas(orderDetail.cardPrice-cancelFeeWonOrBlct)}원 + {ComUtil.addCommas(orderDetail.blctToken-orderDetail.usedCouponBlyAmount)}BLY
+                                                    </span>
+                                            :
+                                            <span>{ComUtil.addCommas(orderDetail.orderPrice - cancelFeeWonOrBlct)} 원</span>
+                                    }
                                 </Col>
                             </Row>
                         }
@@ -797,21 +812,40 @@ export default class OrderCancel extends Component {
                                     <small>
                                         {
                                             orderPayMethod === "blct" ?
-                                                <span>
-                                                BLY결제 취소 / {ComUtil.addCommas(this.state.totalBlct - cancelFeeWonOrBlct)}
-                                                    BLY ({ComUtil.addCommas(this.state.refundBlctWon)}
-                                                    원)
-                                                </span>
+                                                    orderDetail.usedCouponNo ?
+                                                        <span>
+                                                            BLY결제 취소 / {ComUtil.addCommas(this.state.totalBlct - cancelFeeWonOrBlct - orderDetail.usedCouponBlyAmount)}
+                                                            BLY
+                                                            ({ComUtil.addCommas(ComUtil.roundDown((orderDetail.blctToken-orderDetail.usedCouponBlyAmount)*orderDetail.orderBlctExchangeRate, 0))}원)
+                                                            <div className={'text-danger small'}>* 주문 취소시 사용하신 쿠폰은 재발급되지 않습니다.</div>
+                                                        </span>
+                                                        :
+                                                        <span>
+                                                            BLY결제 취소 / {ComUtil.addCommas(this.state.totalBlct - cancelFeeWonOrBlct)} BLY
+                                                        </span>
                                                 :  orderPayMethod === "card" ?
                                                     <span>
-                                                        카드결제 취소 / {ComUtil.addCommas(this.state.totalCardPrice - cancelFeeWonOrBlct)}
-                                                        원
+                                                        카드결제 취소 / {ComUtil.addCommas(this.state.totalCardPrice - cancelFeeWonOrBlct)}원
                                                     </span>
-                                                    : //cardBlct //혹시 예약상품일 경우는 - cancelFeeWonOrBlct (취소수수료 차감)
-                                                    <span>
-                                                    카드+BLY결제 취소 / {ComUtil.addCommas(orderDetail.cardPrice-cancelFeeWonOrBlct)}원 + {ComUtil.addCommas(orderDetail.blctToken)}BLY
-                                                    </span>
-
+                                                    :
+                                                    //cardBlct //혹시 예약상품일 경우는 - cancelFeeWonOrBlct (취소수수료 차감), card+coupon 일 경우
+                                                    orderDetail.usedCouponNo ?
+                                                        (orderDetail.blctToken-orderDetail.usedCouponBlyAmount === 0) ?
+                                                            <span>
+                                                                카드결제 취소 / {ComUtil.addCommas(orderDetail.cardPrice-cancelFeeWonOrBlct)}원
+                                                                <div className={'text-danger small'}>* 주문 취소시 사용하신 쿠폰은 재발급되지 않습니다.</div>
+                                                            </span>
+                                                            :
+                                                            // coupon+card+bly
+                                                            <span>
+                                                                카드+BLY결제 취소 /
+                                                                {ComUtil.addCommas(orderDetail.cardPrice-cancelFeeWonOrBlct)}원 + {ComUtil.addCommas(orderDetail.blctToken-orderDetail.usedCouponBlyAmount)}BLY
+                                                                <div className={'text-danger small'}>* 주문 취소시 사용하신 쿠폰은 재발급되지 않습니다.</div>
+                                                            </span>
+                                                        :
+                                                        <span>
+                                                        카드+BLY결제 취소 / {ComUtil.addCommas(orderDetail.cardPrice-cancelFeeWonOrBlct)}원 + {ComUtil.addCommas(orderDetail.blctToken)}BLY
+                                                        </span>
                                         }
                                     </small>
                                 </Col>
@@ -819,22 +853,22 @@ export default class OrderCancel extends Component {
                         }
                         <br/>
                         {
-                            orderPayStatus === "cancelled" ?
-                                <div>
-                                    <div className="flex-fill">
-                                        <Button block color={'info'} onClick={this.onCancel}>취소</Button>
-                                    </div>
-                                </div>
-                                :
-                                <div className="d-flex">
-                                    <div className="flex-fill pr-2">
-                                        <Button block color={'info'} onClick={this.onCancel}>취소</Button>
-                                    </div>
-                                    <div className="flex-fill">
+                            orderPayStatus !== "cancelled" &&
+                            <Flex>
+                                <Div width={'50%'}>
+                                    <Div pr={8}>
+                                        <Button block onClick={this.onCancel} bg={'white'} bc={'secondary'} rounded={3}>이전</Button>
+                                    </Div>
+                                </Div>
+                                <Div width={'50%'} >
+                                    <Div pl={8}>
                                         {r_pay_cancel_btn_view}
-                                    </div>
-                                </div>
+                                    </Div>
+                                </Div>
+                            </Flex>
                         }
+
+
                         {
                             /* 수수료 안내 */
                             this.state.isCancelFeeInfoOpen &&(
@@ -854,14 +888,14 @@ export default class OrderCancel extends Component {
                                             */
                                         }
                                         * 예약상품 <br/>
-                                        <span className={this.cancelTitleSel[0]==='V'?'text-danger':null}>{this.cancelTitleSel[0]?<FontAwesomeIcon icon={faCheck} />:''}</span> 배송시작일 15일 전: 100% 환불<br/>
-                                        <span className={this.cancelTitleSel[1]==='V'?'text-danger':null}>{this.cancelTitleSel[1]?<FontAwesomeIcon icon={faCheck} />:''}</span> 14일~10일 전:{CANCEL_FEE_13TO5}% 수수료 부과<br/>
-                                        <span className={this.cancelTitleSel[2]==='V'?'text-danger':null}>{this.cancelTitleSel[2]?<FontAwesomeIcon icon={faCheck} />:''}</span> 9일~6일 전: {CANCEL_FEE_4TO3}% 수수료 부과<br/>
-                                        <span className={this.cancelTitleSel[3]==='V'?'text-danger':null}>{this.cancelTitleSel[3]?<FontAwesomeIcon icon={faCheck} />:''}</span> 5일~2일 전: {CANCEL_FEE_2TO1}% 수수료 부과<br/>
-                                        <span className={this.cancelTitleSel[4]==='V'?'text-danger':null}>{this.cancelTitleSel[4]?<FontAwesomeIcon icon={faCheck} />:''}</span> 1일 전~배송시작일이후: {CANCEL_FEE_MAX}% 수수료 부과<br/>
-                                        <span className={this.cancelTitleSel[5]==='V'?'text-danger':null}>{this.cancelTitleSel[5]?<FontAwesomeIcon icon={faCheck} />:''}</span> 주문당일취소: 취소수수료 없음<br/>
+                                        <span className={this.cancelTitleSel[0]==='V'?'text-danger':null}>{this.cancelTitleSel[0]?<FaCheck />:''}</span> 배송시작일 15일 전: 100% 환불<br/>
+                                        <span className={this.cancelTitleSel[1]==='V'?'text-danger':null}>{this.cancelTitleSel[1]?<FaCheck />:''}</span> 14일~10일 전:{CANCEL_FEE_13TO5}% 수수료 부과<br/>
+                                        <span className={this.cancelTitleSel[2]==='V'?'text-danger':null}>{this.cancelTitleSel[2]?<FaCheck />:''}</span> 9일~6일 전: {CANCEL_FEE_4TO3}% 수수료 부과<br/>
+                                        <span className={this.cancelTitleSel[3]==='V'?'text-danger':null}>{this.cancelTitleSel[3]?<FaCheck />:''}</span> 5일~2일 전: {CANCEL_FEE_2TO1}% 수수료 부과<br/>
+                                        <span className={this.cancelTitleSel[4]==='V'?'text-danger':null}>{this.cancelTitleSel[4]?<FaCheck />:''}</span> 1일 전~배송시작일이후: {CANCEL_FEE_MAX}% 수수료 부과<br/>
+                                        <span className={this.cancelTitleSel[5]==='V'?'text-danger':null}>{this.cancelTitleSel[5]?<FaCheck />:''}</span> 주문당일취소: 취소수수료 없음<br/>
                                         <br/> * 즉시상품 <br/>
-                                        <span className={this.cancelTitleSel[6]==='V'?'text-danger':null}>{this.cancelTitleSel[6]?<FontAwesomeIcon icon={faCheck} />:''}</span> 즉시상품취소: 취소수수료 없음<br/>
+                                        <span className={this.cancelTitleSel[6]==='V'?'text-danger':null}>{this.cancelTitleSel[6]?<FaCheck />:''}</span> 즉시상품취소: 취소수수료 없음<br/>
                                     </div>
                                 </ModalWithNav>
                             )

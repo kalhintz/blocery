@@ -50,6 +50,8 @@ export const getConsumerBlyToBlctList = () => axios(Server.getRestAPIHost() + '/
 
 // blct 통계용 swap 합계 금액
 export const getTotalSwapBlctToBly = () => axios(Server.getRestAPIHost() + '/swap/getTotalSwapBlctToBly', { method: "get", withCredentials: true, credentials: 'same-origin' })
+export const getSwapTempProducerBlctToBly = () => axios(Server.getRestAPIHost() + '/swap/getSwapTempProducerBlctToBly', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
 export const getTotalSwapBlctIn = () => axios(Server.getRestAPIHost() + '/swap/getTotalSwapBlctIn', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 export const getSwapManagerBlyBalance = () => axios(Server.getRestAPIHost() + '/swap/getSwapManagerBlyBalance', { method: "get", withCredentials: true, credentials: 'same-origin' })

@@ -1,10 +1,8 @@
 import React, { Component, Fragment } from 'react'
-import { Container, Col, Button, Form, FormGroup, Label, Input} from 'reactstrap'
+import { Container, Button, Form, FormGroup, Label, Input} from 'reactstrap'
 import axios from 'axios'
 import { Server } from '../Properties'
-import { getLoginAdminUser } from '../../lib/loginApi'
 import Style from './AdminLogin.module.scss'
-
 import { Redirect } from 'react-router-dom'
 
 export default class AdminLogin extends Component {
@@ -56,24 +54,11 @@ export default class AdminLogin extends Component {
                 else
                 {
                     let loginAdminInfo = response.data;
-                    //쿠키(localStorage)에 login된 userType저장.
-                    //localStorage.setItem('loginUserType', loginInfo.userType);
-
-                    localStorage.setItem('userType', 'admin')
-
                     localStorage.setItem('adminEmail', data.email) //20200330 - adminEmail 별도 저장.
                     sessionStorage.setItem('adminLogined', 1) //20200330 - adminLogined도 별도 저장..
-                    sessionStorage.setItem('logined', 1)
-
-
                     this.setState({
                         redirectToReferrer: true
                     })
-                    //localStorage.setItem('account', loginInfo.account);
-                    //console.log('loginAdminInfo : ===========================',loginAdminInfo);
-
-                    // this.props.history.push(this.targetLocation); //TopBar의 토큰 update가 안됨
-                    //window.location = this.targetLocation;  //LeftBar등이 초기화됨
                 }
             })
             .catch(function (error) {

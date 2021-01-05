@@ -1,10 +1,8 @@
 import React, {Fragment, Component} from 'react';
-import {Col, Button, Form, FormGroup, Label, Input, Container, InputGroup, Table, Badge, Row, Fade, Modal, ModalBody, ModalFooter, ModalHeader} from 'reactstrap'
+import {Button} from '~/styledComponents/shared/Buttons'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 import {getConsumerByConsumerNo, updateConsumerInfo} from "~/lib/shopApi";
-
-
 
 export default class AddressManagementContent extends Component {
     constructor(props) {
@@ -172,7 +170,7 @@ export default class AddressManagementContent extends Component {
                 }
                 <div className='m-3'>
                     <Link to={'/mypage/addressModify?consumerNo='+this.state.consumerNo+'&flag=mypage'}>
-                        <Button block color={'info'}>+ 배송지 추가</Button>
+                        <Button block bg={'green'} fg={'white'} py={16}>+ 배송지 추가</Button>
                     </Link>
                 </div>
 

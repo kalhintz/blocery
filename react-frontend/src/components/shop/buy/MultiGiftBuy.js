@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
-import { Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Table } from 'reactstrap'
+import { Input, Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Table } from 'reactstrap'
 import Css from './Buy.module.scss'
-import { Div, Flex, Button, Right, Span } from '~/styledComponents/shared'
+import { Div, Button, Right, Span } from '~/styledComponents/shared'
 
 import BuyGroupSimple from './BuyGroupSimple'
 import {checkPassPhrase} from '~/lib/loginApi'
@@ -9,7 +9,6 @@ import { Server, Const } from '~/components/Properties'
 
 import DetailPaymentInfoCard from './DetailPaymentInfoCard'
 
-import BlctPayableCard from './BlctPayableCard'
 import ComUtil from '~/util/ComUtil'
 import { getDeliveryFee } from '~/util/bzLogic'
 
@@ -26,7 +25,8 @@ import 'react-toastify/dist/ReactToastify.css'
 import classNames from 'classnames'
 import {BlockChainSpinner, BlocerySpinner, ShopXButtonNav, PassPhrase } from '~/components/common'
 import ExcelUtil from '~/util/ExcelUtil'
-import { Checkbox } from '@material-ui/core'
+import Checkbox from '~/components/common/checkboxes/Checkbox'
+import {FaGift} from 'react-icons/fa'
 import ButtonCss from './Button.module.scss'
 
 const ItemHeader = (props) =>
@@ -59,7 +59,7 @@ export default class MultiGiftBuy extends Component {
             consumer: null,
             goods: null,
             orders: null,
-            producer: null,
+            // producer: null,
             qty: 1,             // 주문수량 1개 이상
 
             senderName: '',
@@ -77,7 +77,7 @@ export default class MultiGiftBuy extends Component {
             },
 
             //gary Add 20200819
-            producer:'',
+            // producer:'',
 
             selectedPayMethod:'card',
             cardBlctUseToken:0 ,  //cardBlct결제시 사용할 BLCT 금액 -> initContract에서 tokenBalance로 세팅.
@@ -1066,7 +1066,7 @@ export default class MultiGiftBuy extends Component {
 
                 <ItemHeader>
                     <div>선물하기(여러명)</div>
-                    <Checkbox id={'checkGift'} disabled checked={true}>선물하기</Checkbox>
+                    <Checkbox icon={FaGift} bg={'green'} disabled checked={true} size={'md'}>선물하기</Checkbox>
                 </ItemHeader>
 
                 <Div>

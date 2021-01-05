@@ -1,11 +1,11 @@
-import React, { Component, PropTypes, lazy, Suspense} from 'react';
+import React, { Component, Suspense} from 'react';
 import { Button, Input, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import Select from 'react-select'
 import { Cell, ModalConfirm } from '~/components/common'
 import { Server } from "~/components/Properties";
 import ComUtil from "~/util/ComUtil";
 import { getConsumerKycList, setConsumerKycAuth } from '~/lib/adminApi'
-import { isTokenAdminUser, getLoginAdminUser } from '~/lib/loginApi'
+import { getLoginAdminUser } from '~/lib/loginApi'
 import { BlocerySpinner } from '~/components/common'
 
 import {Flex} from '~/styledComponents/shared'

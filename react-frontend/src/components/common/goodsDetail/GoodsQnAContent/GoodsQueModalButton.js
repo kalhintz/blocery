@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState } from 'react'
 import { ModalWithNav } from '~/components/common'
 import { Button } from 'reactstrap'
 import { Webview } from "~/lib/webviewApi";

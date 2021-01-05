@@ -38,11 +38,13 @@ export const transferTempProducerBlctToEzfarm = (year, month) => axios(Server.ge
     {method: "post", params: {year: year, month: month}, withCredentials: true, credentials: 'same-origin'})
 
 // 모든 주문번호 가져오기
-export const getAllOrderDetailList = () => axios(Server.getRestAPIHost() + '/allOrderDetailList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+export const getAllOrderDetailList = ({year}) => axios(Server.getRestAPIHost() + '/allOrderDetailList', { method: "get", params: {year:year}, withCredentials: true, credentials: 'same-origin' })
 
 export const getAllOrderStats = (startDate, endDate, gubun) => axios(Server.getRestAPIHost() + '/allOrderStats', { method: "get", params: {startDate:startDate, endDate:endDate, gubun: gubun}, withCredentials: true, credentials: 'same-origin' })
 
 export const getAllGoodsSaleList = () => axios(Server.getRestAPIHost() + '/allGoodsSaleList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+export const getAllGoodsNotEvent = () => axios(Server.getRestAPIHost() + '/allGoodsNotEvent', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 // 모든 상품정보 가져오기
 export const getAllGoods = () => axios(Server.getRestAPIHost() + '/allGoods', {method: "get", withCredentials: true, credentials: 'same-origin'})
@@ -123,6 +125,18 @@ export const getNoticeByNoticeNo = (noticeNo) => axios(Server.getRestAPIHost() +
 // 공지사항 삭제
 export const delNoticeApi = (noticeNo) => axios(Server.getRestAPIHost() + '/admin/delNotice', { method: "delete", params:{noticeNo: noticeNo}, withCredentials: true, credentials: 'same-origin' })
 
+// 푸시알림 등록
+export const regPushNoti = (pushNoti) => axios(Server.getRestAPIHost() + '/admin/regPushNoti', { method: "post", data: pushNoti, withCredentials: true, credentials: 'same-origin'})
+
+// 푸시알림 조회
+export const getPushNotiList = ({year}) => axios(Server.getRestAPIHost() + '/getPushNotiList', { method: "get", params:{year: year}, withCredentials: true, credentials: 'same-origin' })
+
+// 푸시알림 한건 조회
+export const getPushNotiByPushNotiNo = (pushNotiNo) => axios(Server.getRestAPIHost() + '/getPushNoti', { method: "get", params:{pushNotiNo: pushNotiNo}, withCredentials: true, credentials: 'same-origin' })
+
+// 푸시알림 삭제
+export const delPushNoti = (pushNotiNo) => axios(Server.getRestAPIHost() + '/admin/delPushNoti', { method: "delete", params:{pushNotiNo: pushNotiNo}, withCredentials: true, credentials: 'same-origin' })
+
 
 // 이벤트 지급 목록
 export const getB2cEventPaymentList = () => axios(Server.getRestAPIHost() + '/admin/getB2cEventPaymentList', { method: "get", withCredentials: true, credentials: 'same-origin' })
@@ -201,6 +215,8 @@ export const getAllBuyers = () => axios(Server.getRestAPIHost() + '/allBuyers', 
 export const getAllSellers = () => axios(Server.getRestAPIHost() + '/allSellers', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 //// b2c 홈 화면 구성
+export const getHomeSetting = () => axios(Server.getRestAPIHost() + '/admin/b2cHome', { method: "get", withCredentials: true, credentials: 'same-origin' })// 홈세팅 조회
+
 // 기획전 상품 번호 저장
 export const setHomeSetting = (settingNoList) => axios(Server.getRestAPIHost() + '/admin/b2cHome', { method: "post", data: settingNoList, withCredentials: true, credentials: 'same-origin' })// 기획 상품 조회
 export const getExGoodsNoList = () => axios(Server.getRestAPIHost() + '/admin/b2cHome/exGoodsNo', { method: "get", withCredentials: true, credentials: 'same-origin' })
@@ -211,6 +227,19 @@ export const getTodayProducerList = () => axios(Server.getRestAPIHost() + '/admi
 // 배너 조회
 export const getBannerList = () => axios(Server.getRestAPIHost() + '/admin/b2cHome/banner', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
+//타입에 따른 이벤트 번호조회(type : blyTime, potenTime)
+export const getEventNoByType = (type) => axios(Server.getRestAPIHost() + '/admin/b2cHome/eventNo/type', { method: "get", params: {type}, withCredentials: true, credentials: 'same-origin' })
+
+//// 이벤트 정보
+// 이벤트 정보 목록
+export const getEventInfoList = () => axios(Server.getRestAPIHost() + '/admin/eventInfoList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+// 이벤트 정보 조회
+export const getEventInfo = (eventNo) => axios(Server.getRestAPIHost() + '/admin/eventInfo', { method: "get", params:{eventNo: eventNo}, withCredentials: true, credentials: 'same-origin' })
+// 이벤트 저장
+export const setEventInfoSave = (event) => axios(Server.getRestAPIHost() + '/admin/eventInfo', { method: "post", data: event, withCredentials: true, credentials: 'same-origin' })
+// 이벤트 삭제
+export const delEventInfo = (eventNo) => axios(Server.getRestAPIHost() + '/admin/eventInfo', { method: "delete", params:{eventNo: eventNo}, withCredentials: true, credentials: 'same-origin' })
+
 //// b2c 기획전 관리
 // 기획전 조회
 export const getMdPickList = () => axios(Server.getRestAPIHost() + '/admin/b2cMdPickList', { method: "get", withCredentials: true, credentials: 'same-origin' })
@@ -218,31 +247,42 @@ export const getMdPickList = () => axios(Server.getRestAPIHost() + '/admin/b2cMd
 export const getMdPick = (mdPickId) => axios(Server.getRestAPIHost() + '/admin/b2cMdPick', { method: "get", params:{mdPickId: mdPickId}, withCredentials: true, credentials: 'same-origin' })
 // 기획전 삭제
 export const delMdPick = (mdPickId) => axios(Server.getRestAPIHost() + '/admin/b2cMdPickDel', { method: "delete", params:{mdPickId: mdPickId}, withCredentials: true, credentials: 'same-origin' })
-
 // 기획전 홈화면에숨김
 export const hideMdPick = (mdPickId, hideFromHome) => axios(Server.getRestAPIHost() + '/admin/b2cMdPickHide', { method: "post", params:{mdPickId: mdPickId, hideFromHome:hideFromHome}, withCredentials: true, credentials: 'same-origin' })
-
-
 // 기획전 저장
 export const setMdPickSave = (mdPick) => axios(Server.getRestAPIHost() + '/admin/b2cMdPickSave', { method: "post", data: mdPick, withCredentials: true, credentials: 'same-origin' })
 
-////b2c 타임세일
-// 타임세일 조회 (All)
-export const getTimeSaleAdminList = () => axios(Server.getRestAPIHost() + '/admin/b2cTimeSaleAdminList', { method: "get", withCredentials: true, credentials: 'same-origin' })
-//타임세일 상품 조회 (단건) - 블리타임과 동일하게 controller 호출함.
-export const getTimeSaleAdmin = (goodsNo) => axios(Server.getRestAPIHost() + '/admin/b2cTimeSaleAdmin', { method: "get", params:{goodsNo: goodsNo}, withCredentials: true, credentials: 'same-origin' })
-// 타임세일 삭제
-export const delTimeSale = (goodsNo) => axios(Server.getRestAPIHost() + '/admin/b2cTimeSaleDel', { method: "delete", params:{goodsNo: goodsNo}, withCredentials: true, credentials: 'same-origin' })
-// 타임세일 저장
-export const setTimeSaleSave = (timeSale) => axios(Server.getRestAPIHost() + '/admin/b2cTimeSaleSave', { method: "post", data: timeSale, withCredentials: true, credentials: 'same-origin' })
-
 ////b2c 블리타임
 // 블리타임 조회 (All)
-export const getBlyTimeAdminList = () => axios(Server.getRestAPIHost() + '/admin/b2cBlyTimeAdminList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+export const getBlyTimeAdminList = ({year}) => axios(Server.getRestAPIHost() + '/admin/b2cBlyTimeAdminList', { method: "get", params: {year:year}, withCredentials: true, credentials: 'same-origin' })
 // 블리타임 삭제
 export const delBlyTime = (goodsNo) => axios(Server.getRestAPIHost() + '/admin/b2cBlyTimeDel', { method: "delete", params:{goodsNo: goodsNo}, withCredentials: true, credentials: 'same-origin' })
-// 블리타임 저장
-export const setBlyTimeSave = (timeSale) => axios(Server.getRestAPIHost() + '/admin/b2cBlyTimeSave', { method: "post", data: timeSale, withCredentials: true, credentials: 'same-origin' })
+// 블리타임 등록
+export const setBlyTimeRegist = (timeSale) => axios(Server.getRestAPIHost() + '/admin/b2cBlyTimeRegist', { method: "post", data: timeSale, withCredentials: true, credentials: 'same-origin' })
+// 블리타임 수정
+export const setBlyTimeUpdate = (timeSale) => axios(Server.getRestAPIHost() + '/admin/b2cBlyTimeUpdate', { method: "post", data: timeSale, withCredentials: true, credentials: 'same-origin' })
+
+////b2c 포텐타임
+// 포텐타임 조회 (All)
+export const getTimeSaleAdminList = ({year}) => axios(Server.getRestAPIHost() + '/admin/b2cTimeSaleAdminList', { method: "get", params: {year:year}, withCredentials: true, credentials: 'same-origin' })
+// 포텐타임 상품 조회 (단건) - 블리타임과 동일하게 controller 호출함.
+export const getTimeSaleAdmin = (goodsNo) => axios(Server.getRestAPIHost() + '/admin/b2cTimeSaleAdmin', { method: "get", params:{goodsNo: goodsNo}, withCredentials: true, credentials: 'same-origin' })
+// 포텐타임 삭제
+export const delTimeSale = (goodsNo) => axios(Server.getRestAPIHost() + '/admin/b2cTimeSaleDel', { method: "delete", params:{goodsNo: goodsNo}, withCredentials: true, credentials: 'same-origin' })
+// 포텐타임 등록
+export const setTimeSaleRegist = (timeSale) => axios(Server.getRestAPIHost() + '/admin/b2cTimeSaleRegist', { method: "post", data: timeSale, withCredentials: true, credentials: 'same-origin' })
+// 포텐타임 수정
+export const setTimeSaleUpdate = (timeSale) => axios(Server.getRestAPIHost() + '/admin/b2cTimeSaleUpdate', { method: "post", data: timeSale, withCredentials: true, credentials: 'same-origin' })
+
+////b2c 수퍼타임
+// 수퍼리워드 조회 (All)
+export const getSuperRewardAdminList = ({year}) => axios(Server.getRestAPIHost() + '/admin/b2cSuperRewardAdminList', { method: "get", params: {year:year}, withCredentials: true, credentials: 'same-origin' })
+// 수퍼리워드 삭제
+export const delSuperReward = (goodsNo) => axios(Server.getRestAPIHost() + '/admin/b2cSuperRewardDel', { method: "delete", params:{goodsNo: goodsNo}, withCredentials: true, credentials: 'same-origin' })
+// 수퍼리워드 등록
+export const setSuperRewardRegist = (superReward) => axios(Server.getRestAPIHost() + '/admin/b2cSuperRewardRegist', { method: "post", data: superReward, withCredentials: true, credentials: 'same-origin' })
+// 수퍼리워드 수정
+export const setSuperRewardUpdate = (superReward) => axios(Server.getRestAPIHost() + '/admin/b2cSuperRewardUpdate', { method: "post", data: superReward, withCredentials: true, credentials: 'same-origin' })
 
 //// admin 계정 관리
 // admin 계정 등록
@@ -278,6 +318,9 @@ export const getAllBlyTimeRewardBlct = () => axios(Server.getRestAPIHost() + '/a
 // blct 정산시 이벤트적립금 BLCT 합계
 export const getAllEventRewardBlct = () => axios(Server.getRestAPIHost() + '/admin/getAllEventRewardBlct' , { method:"get", withCredentials: true, credentials: 'same-origin' })
 
+// blct 정산시 쿠폰지급 BLCT 합계
+export const getAllCouponBlct = () => axios(Server.getRestAPIHost() + '/admin/getAllCouponBlct' , { method:"get", withCredentials: true, credentials: 'same-origin' })
+
 // 입점관리 정보 조회
 export const getProducerRegRequests = () => axios(Server.getRestAPIHost() + '/getProducerRegRequests', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
@@ -300,6 +343,41 @@ export const setGoodsBannerSave = (goodsBannerList) => axios(Server.getRestAPIHo
 // 상품상세 공지 리스트 조회
 export const getGoodsBannerList = () => axios(Server.getRestAPIHost() + '/admin/goodsBannerList', { method: "get", withCredentials: true, credentials: 'same-origin' })
 // 상품상세 공지 정보 조회
-export const geGoodsBanner = (goodsBannerId) => axios(Server.getRestAPIHost() + '/admin/goodsBanner', { method: "get", params:{goodsBannerId: goodsBannerId}, withCredentials: true, credentials: 'same-origin' })
+export const getGoodsBanner = (goodsBannerId) => axios(Server.getRestAPIHost() + '/admin/goodsBanner', { method: "get", params:{goodsBannerId: goodsBannerId}, withCredentials: true, credentials: 'same-origin' })
 //
 export const delGoodsBanner = (goodsBannerId) => axios(Server.getRestAPIHost() + '/admin/goodsBannerDel', { method: "delete", params:{goodsBannerId: goodsBannerId}, withCredentials: true, credentials: 'same-origin' })
+
+// 쿠폰 발급 내역 목록
+export const getCouponMasterList = () => axios(Server.getRestAPIHost() + '/admin/couponMasterList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+// 쿠폰 발급 내역 정보 (단건)
+export const getCouponMaster = ({masterNo}) => axios(Server.getRestAPIHost() + '/admin/couponMaster', { method: "get", params: {masterNo: masterNo}, withCredentials: true, credentials: 'same-origin' })
+// 쿠폰 발급 내역 등록 및 수정
+export const saveCouponMaster = (data) => axios(Server.getRestAPIHost() + '/admin/couponMaster', { method: "post", data: data, withCredentials: true, credentials: 'same-origin' })
+// 쿠폰 발급 내역 삭제
+export const deleteCouponMaster = ({masterNo}) => axios(Server.getRestAPIHost() + '/admin/couponMaster', { method: "delete", params: {masterNo: masterNo}, withCredentials: true, credentials: 'same-origin' })
+// 쿠폰 발급 내역 종료(삭제플래그처리)
+export const endedCouponMaster = ({masterNo}) => axios(Server.getRestAPIHost() + '/admin/couponMasterEnded', { method: "delete", params: {masterNo: masterNo}, withCredentials: true, credentials: 'same-origin' })
+// 스페셜 쿠폰 발급
+export const addSpecialCouponConsumer = (masterNo,consumerNo) => axios(Server.getRestAPIHost() + '/admin/specialCoupon', {method: "post", params:{masterNo:masterNo,consumerNo: consumerNo}, withCredentials: true, credentials: 'same-origin' })
+
+// 소비자 쿠폰발급내역
+export const getConsumerCouponList = (startDate, endDate, gubun) => axios(Server.getRestAPIHost() + '/admin/getConsumerCouponList', { method: "get", params: {startDate:startDate, endDate:endDate, gubun: gubun}, withCredentials: true, credentials: 'same-origin' })
+
+// 홈 공지 배너 등록
+export const setHomeBannerSave = (homeBanner) => axios(Server.getRestAPIHost() + '/admin/homeBannerSave', { method: "post", data: homeBanner, withCredentials: true, credentials: 'same-origin'})
+// 홈 공지 배너 리스트 조회
+export const getHomeBannerList = () => axios(Server.getRestAPIHost() + '/admin/homeBannerList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+// 홈 공지 배너 정보 조회
+export const getHomeBanner = (homeBannerId) => axios(Server.getRestAPIHost() + '/admin/homeBanner', { method: "get", params:{homeBannerId}, withCredentials: true, credentials: 'same-origin' })
+
+export const delHomeBanner = (homeBannerId) => axios(Server.getRestAPIHost() + '/admin/homeBannerDel', { method: "delete", params:{homeBannerId: homeBannerId}, withCredentials: true, credentials: 'same-origin' })
+
+export const getAllTempProducer = () => axios(Server.getRestAPIHost() + "/admin/getAllTempProducer", { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+//고팍스 가입 이벤트 목록
+export const getGoPaxJoinEvent = () => axios(Server.getRestAPIHost() + "/admin/getGoPaxJoinEvent", { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+//고팍스 카드 이벤트 목록
+export const getGoPaxCardEvent = () => axios(Server.getRestAPIHost() + "/admin/getGoPaxCardEvent", { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+

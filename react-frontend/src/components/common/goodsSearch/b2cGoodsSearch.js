@@ -23,7 +23,22 @@ class B2cGoodsSearch extends Component{
                     sortable: false,    //sort false
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
                     cellRenderer: "goodsSearchRenderer",
-                    width:90
+                    width:70,
+                    pinned: 'left'
+                },
+                {
+                    headerName: "타입", field: "directGoods", width: 80, sort:"desc",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    suppressSizeToFit: true,
+                    filterParams: {
+                        clearButton: true //클리어버튼
+                    },
+                    valueGetter: function(params) {
+                        if (params.data.directGoods) {
+                            return '즉시'
+                        }else
+                            return '예약'
+                    }
                 },
                 {
                     headerName: "상품No", field: "goodsNo", width: 100, sort:"desc",
@@ -66,14 +81,14 @@ class B2cGoodsSearch extends Component{
                         clearButton: true //클리어버튼
                     }
                 },
-                {
-                    headerName: "즉시구매", field: "directGoods", width: 100,
-                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
-                    suppressSizeToFit: true,
-                    filterParams: {
-                        clearButton: true //클리어버튼
-                    }
-                },
+                // {
+                //     headerName: "즉시구매", field: "directGoods", width: 100,
+                //     cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                //     suppressSizeToFit: true,
+                //     filterParams: {
+                //         clearButton: true //클리어버튼
+                //     }
+                // },
                 {
                     headerName: "판매종료일", field: "saleEnd", width: 180,
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
@@ -118,7 +133,7 @@ class B2cGoodsSearch extends Component{
             frameworkComponents: {
                 goodsSearchRenderer:this.goodsSearchRenderer
             },
-            rowHeight: 50,
+            // rowHeight: 50,
             rowSelection: 'single',
             overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
             overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
@@ -187,7 +202,7 @@ class B2cGoodsSearch extends Component{
         let goodsNo = rowData.goodsNo;
         return (
             <div style={{textAlign:'center'}}>
-                <Button color="secondary" onClick={() => this.goodsSearchSelected(rowData)} style={{cursor:'pointer'}}>선택</Button>
+                <Button size={'sm'} color="secondary" onClick={() => this.goodsSearchSelected(rowData)} style={{cursor:'pointer'}}>선택</Button>
             </div>
         );
     };

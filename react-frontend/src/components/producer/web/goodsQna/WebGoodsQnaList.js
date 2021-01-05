@@ -1,12 +1,11 @@
-import React, { Component, PropTypes, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Button, FormGroup } from 'reactstrap'
 import ComUtil from '~/util/ComUtil'
-import { getProducer, getGoodsQnaListByProducerNo } from '~/lib/producerApi'
-import { getLoginUserType } from '~/lib/loginApi'
+import { getGoodsQnaListByProducerNo } from '~/lib/producerApi'
+import { getLoginProducerUser } from '~/lib/loginApi'
 import { getServerToday } from '~/lib/commonApi'
-import { Webview } from '~/lib/webviewApi'
 import { getItems } from '~/lib/adminApi'
-import { ModalWithNav, Cell, BlocerySpinner, ExcelDownload } from '~/components/common'
+import { ModalWithNav, Cell } from '~/components/common'
 import Select from 'react-select'
 
 //ag-grid
@@ -258,20 +257,11 @@ export default class WebGoodsQnaList extends Component {
 
     async componentDidMount(){
         //로그인 체크
-        const {data: userType} = await getLoginUserType();
+        const loginInfo = await getLoginProducerUser();
         //console.log('userType',this.props.history)
-        if(userType == 'consumer') {
-            //소비자용 메인페이지로 자동이동.
-            Webview.movePage('/home/1');
-        } else if (userType == 'producer') {
-            let loginUser = await getProducer();
-            if(!loginUser){
-                this.props.history.push('/producer/webLogin')
-            }
-        } else {
+        if(!loginInfo) {
             this.props.history.push('/producer/webLogin')
         }
-
         this.search()
         this.setFilter()
     }

@@ -1,9 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Style from './FarmDiaryCard.module.scss'
-import ComUtil from '../../../util/ComUtil'
-import { Card, Button, CardImg, CardTitle, CardText, CardDeck,
-    CardSubtitle, CardBody, Badge, Row, Col, CardHeader, Label, Form, FormGroup, Input } from 'reactstrap';
+import ComUtil from '~/util/ComUtil'
+import { Card, CardTitle, CardText, CardDeck,
+    CardBody, Badge, Row, Col } from 'reactstrap';
 const ProducerFarmDiaryItemCard = (props) => {
 
     function onFarmDiaryClick(){

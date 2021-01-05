@@ -1,10 +1,8 @@
-import React, { Component, Fragment } from 'react';
-import { Container, Row, Col, Button, Badge, Input, Label, FormGroup } from 'reactstrap'
+import React, { Component } from 'react';
 import Css from './WebHome.module.scss'
 import classNames from 'classnames'
 import ComUtil from '~/util/ComUtil'
 import {
-    getProducer,
     getOperStatOrderCntByProducerNo,
     getOperStatOrderCancelCntByProducerNo,
     getOperStatOrderSalesAmtByProducerNo,
@@ -17,15 +15,12 @@ import {
     getOrderStatOrderConfirmOkCntByProducerNo
 } from '~/lib/producerApi'
 
-import { getLoginUserType, autoLoginCheckAndTry, tempAdminProducerLogin } from '~/lib/loginApi'
-import { Webview } from '~/lib/webviewApi'
+import { getLoginAdminUser, getLoginProducerUser, tempAdminProducerLogin } from '~/lib/loginApi'
 
 import OrderSaleTransitionChart from './charts/OrderSaleTransition'
 import OrderList from './orderList'
 import { NoticeList } from './noticeList'
 import Menu from './menu'
-
-import { getLoginAdminUser } from '~/lib/loginApi'
 
 const WhiteInfoCard = ({title='', subTitle='', onClick= ()=>null}) => {
     return (
@@ -130,33 +125,18 @@ export default class WebHome extends Component {
     }
 
     checkLogin = async () => {
-
-
         //ProducerWebContainer.js로 이동.  (항상 로그인 check를 위해 이동.)
-           // => AdminProducer 로그인: adminLoginCheck -  tempProducer일 경우, producer자동로그인 수행.-20200330
+        // => AdminProducer 로그인: adminLoginCheck -  tempProducer일 경우, producer자동로그인 수행.-20200330
         let adminUser = await getLoginAdminUser();
         console.log('webHome - checkLogin:', adminUser);
         if (adminUser && adminUser.email === 'tempProducer@ezfarm.co.kr') {
-
             return; //admin 로그인 성공.
         }
 
-        //자동로그인 check & try
-        if (localStorage.getItem('userType')==='producer')
-            await autoLoginCheckAndTry();
-
-        //로그인 체크
-        const {data: userType} = await getLoginUserType();
-        console.log('userType',this.props.history)
-
-        if(userType == 'consumer') {
-            //소비자용 메인페이지로 자동이동.
-            Webview.movePage('/home/1');
-        } else if (userType == 'producer') {
-            let loginUser = await getProducer();
-            if(!loginUser){
-                this.props.history.push('/producer/webLogin')
-            }
+        // //로그인 체크
+        const loginUser = await getLoginProducerUser();
+        if(!loginUser){
+            this.props.history.push('/producer/webLogin')
         }
     }
 

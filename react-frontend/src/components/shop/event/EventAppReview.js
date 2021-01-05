@@ -12,9 +12,9 @@ export default class EventAppReview extends Component {
 
         return (
             <Fragment>
-                <ShopXButtonNav underline history={this.props.history} back>APP 리뷰 이벤트</ShopXButtonNav>
+                <ShopXButtonNav underline historyBack>APP 리뷰 이벤트</ShopXButtonNav>
                 <div>
-                    <img className="w-100" src="https://blocery.com/images/VUJJK4mjs96H.png"/>
+                    <img className="w-100" src="https://blocery.com/images/VUJJK4mjs96H.png" alt={''}/>
                 </div>
             </Fragment>
         )

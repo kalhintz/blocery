@@ -1,17 +1,15 @@
-import React, { Fragment, useState, useEffect, useRef } from 'react'
-import { Route } from "react-router-dom";
-import { Hr, ModalPopup, Sticky } from '~/components/common'
-import { Header } from '~/components/shop/header'
+import React, { Fragment, useState } from 'react'
+import { ModalPopup, Sticky } from '~/components/common'
+import Header from '~/components/shop/header'
 import HeaderSectionTab from './headerSectionTab'
 import TodaysDeal from './todaysDeal'
 import DeadlineGoods from './deadlineGoods'
 import BestDeal from './bestDeal'
 import FavoriteGoods from './favoriteGoods'
-import Footer from './footer'
-import { Info, NotificationsActive } from '@material-ui/icons'
+import {MdNotificationsActive} from "react-icons/md";
+
 import EventPopup from './EventPopup'
 import { autoLoginCheckAndTry } from "~/lib/loginApi";
-import Swiper from 'react-id-swiper'
 import VirtualSwiper from './VirtualSwiper'
 
 const Home = (props) => {
@@ -144,7 +142,7 @@ const Home = (props) => {
                         title={
                             <Fragment>
                                 <div style={{display:'flex', alignItems:'center'}}>
-                                    <NotificationsActive/>{' '}
+                                    <MdNotificationsActive/>{' '}
                                     <div>Blocery 이벤트 종료 알림</div>
                                 </div>
                             </Fragment>

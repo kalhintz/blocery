@@ -127,3 +127,15 @@
     border-radius: 3px;
     margin: 15px 0;
 }
+
+#editor-resizer .toolbar {
+    position: absolute;
+    top: 50% !important;
+    left: 50%;
+    padding: 0.5em;
+    border: 1px solid #fff;
+    border-radius: 3px;
+    background-color: #fff;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    transform: translateX(-50%);
+}

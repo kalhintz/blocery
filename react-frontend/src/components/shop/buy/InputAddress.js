@@ -1,11 +1,9 @@
 import React, { Fragment, Component } from 'react'
-import { Container, Label, Row, Col, Input, InputGroup, FormGroup, Button,Modal, ModalHeader, ModalBody, ModalFooter, Table, Form, Badge } from 'reactstrap'
-import { updateDeliverInfo } from '../../../lib/shopApi'
-import { Webview } from '../../../lib/webviewApi'
-import Style from './Buy.module.scss'
-import { ShopXButtonNav } from '../../common'
-import { JusoSearch } from '~/components/common'
-import ComUtil from '../../../util/ComUtil'
+import { Container, Label, Row, Col, Input, InputGroup, FormGroup, Button,Modal } from 'reactstrap'
+import { updateDeliverInfo } from '~/lib/shopApi'
+import ComUtil from '~/util/ComUtil'
+
+import DaumPostcode from 'react-daum-postcode';
 
 export default class InputAddress extends Component {
     constructor(props) {
@@ -65,11 +63,34 @@ export default class InputAddress extends Component {
         }));
     }
 
-    jusoModalOnChange = (obj) => {
+    // 주소 검색 결과 값 리턴 콜백
+    jusoModalOnChange = (data) => {
+
+        let zipNo = data.zonecode;
+        let fullAddress = data.address;
+        let extraAddress = '';
+
+        if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+            fullAddress = data.roadAddress;
+        } else { // 사용자가 지번 주소를 선택했을 경우(J)
+            fullAddress = data.jibunAddress;
+        }
+
+        if (data.addressType === 'R') {
+            if (data.bname !== '') {
+                extraAddress += data.bname;
+            }
+            if (data.buildingName !== '') {
+                extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+            }
+            fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+        }
+        let v_address = fullAddress;
+
 
         const consumer = Object.assign({}, this.state.consumer);
-        consumer.zipNo = obj.zipNo;
-        consumer.addr = obj.address;
+        consumer.zipNo = zipNo;
+        consumer.addr = v_address;
 
         this.setState({
             consumer
@@ -183,14 +204,13 @@ export default class InputAddress extends Component {
                 </Container>
                 <div>
                     {/* 주소검색 모달 */}
-                    <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
-                        <ModalHeader toggle={this.modalToggle}> 주소 검색 </ModalHeader>
-                        <ModalBody>
-                            <JusoSearch onChange={this.jusoModalOnChange} />
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button color="secondary" onClick={this.modalToggle}>취소</Button>
-                        </ModalFooter>
+                    <Modal isOpen={this.state.modal} toggle={this.modalToggle}>
+                        <div style={{padding:0, height:'450px'}}>
+                            <DaumPostcode
+                                style={{height:'450px'}}
+                                onComplete={this.jusoModalOnChange}
+                            />
+                        </div>
                     </Modal>
                 </div>
             </Fragment>

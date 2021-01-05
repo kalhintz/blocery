@@ -1,21 +1,10 @@
-import React, {useState, useEffect} from 'react'
-import {getItemByItemNo } from '~/lib/adminApi'
-import { getConsumerGoodsByItemNo, getConsumerGoodsByItemKindCode } from '~/lib/goodsApi'
-import { ShopXButtonNav, HeaderTitle, Hr } from '~/components/common'
-import ItemKind from './ItemKind'
-import GoodsList from './GoodsList'
-import { ViewButton } from '~/components/common/buttons'
-import ComUtil from '~/util/ComUtil'
-import { ViewModule, ViewStream } from '@material-ui/icons'
+import React, {useState} from 'react'
 
 import {Icon} from '~/components/common/icons'
 
-import {Div, Right, Flex, Span, Img, Sticky, Fixed} from '~/styledComponents/shared'
-import {Button} from '~/styledComponents/shared'
-import {Header, HrThin, HrHeavy, HrHeavyX2} from '~/styledComponents/mixedIn'
+import {Div, Flex, Span} from '~/styledComponents/shared'
 import {getValue} from '~/styledComponents/Util'
 import {color} from '~/styledComponents/Properties'
-
 import styled, {css} from 'styled-components'
 
 

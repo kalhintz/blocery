@@ -1,22 +1,14 @@
-import React, { Component, Fragment, useState, useEffect } from 'react';
+import React, { Fragment } from 'react';
 import Style from './ProducerProfileCard.module.scss'
-import { Container, Row, Col, Button, Badge } from 'reactstrap'
+import { Container, Row, Col } from 'reactstrap'
 import classNames from 'classnames'
-import { faQuoteLeft, faQuoteRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {FaQuoteLeft, FaQuoteRight} from 'react-icons/fa'
 import { Server } from '~/components/Properties'
 import { ImageGalleryModal } from '~/components/common'
-
-import { getRegularShop } from '~/lib/shopApi'
-import { getLoginUser } from '~/lib/loginApi'
-
 const EMPTY_TEXT = '-';
 const ProducerProfileCard = (props) => {
 
     if(!props.producerNo) return null
-
-    // const profileBackgroundImageUrl = props.profileBackgroundImage ? Server.getImageURL() + props.profileBackgroundImage.imageUrl : 'https://www.dailysecu.com/news/photo/201803/31735_24273_4357.jpg'
-    // const profileImageUrl = props.profileImage ? Server.getImageURL() + props.profileImage.imageUrl : 'https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Ft1.daumcdn.net%2Fcfile%2Ftistory%2F18777A4A4EC0CFE941'
 
     const profileBackgroundImageUrl = (props.profileBackgroundImages && props.profileBackgroundImages.length > 0) && Server.getImageURL() + props.profileBackgroundImages[0].imageUrl
     const profileImageUrl = (props.profileImages && props.profileImages.length > 0) && props.profileImages[0].imageUrl
@@ -54,9 +46,9 @@ const ProducerProfileCard = (props) => {
                 {
                     props.shopIntroduce &&
                     <div className='m-4 lead f5 text-center text-secondary'>
-                        <FontAwesomeIcon icon={faQuoteLeft} size={'sm'}/>
+                        <FaQuoteLeft />
                         <span className='ml-1 mr-1 f4'>{props.shopIntroduce}</span>
-                        <FontAwesomeIcon icon={faQuoteRight} />
+                        <FaQuoteRight />
                     </div>
                 }
             </div>
