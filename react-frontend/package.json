@@ -42,7 +42,7 @@
     "file-saver": "^2.0.2",
     "fork-ts-checker-webpack-plugin-alt": "0.4.14",
     "fs-extra": "7.0.1",
-    "highcharts": "^7.2.2",
+    "highcharts": "^9.0.0",
     "highcharts-react-official": "^2.2.2",
     "history": "^4.9.0",
     "html-webpack-plugin": "4.0.0-alpha.2",
