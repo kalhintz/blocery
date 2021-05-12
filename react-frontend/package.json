@@ -105,7 +105,7 @@
     "set-default-browser": "^1.0.1",
     "style-loader": "0.23.1",
     "styled-components": "^5.2.0",
-    "swiper": "^4.5.0",
+    "swiper": "^6.5.1",
     "terser-webpack-plugin": "2.3.8",
     "typescript": "^3.4.5",
     "url-loader": "1.1.2",
