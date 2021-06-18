@@ -3,13 +3,13 @@ import { Input } from 'reactstrap'
 import { getLoginAdminUser } from "~/lib/loginApi";
 import { addAdmin, getAdminList } from "~/lib/adminApi";
 import BlctRenderer from '../SCRenderers/BlctRenderer';
-import { scOntGetBalanceOfBlct } from '~/lib/smartcontractApi'
+import { scOntGetBalanceOfBlctAdmin } from '~/lib/smartcontractApi'
 import { Server } from '~/components/Properties';
 import axios from 'axios';
-
+import ComUtil from '~/util/ComUtil'
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+// import 'ag-grid-community/dist/styles/ag-grid.css';
+// import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 
 const AddAdmin = (props) => {
     const [email, setEamil] = useState('');
@@ -27,7 +27,13 @@ const AddAdmin = (props) => {
         ],
         defaultColDef: {
             width: 200,
-            resizable: true
+            resizable: true,
+            filter: true,
+            sortable: true,
+            floatingFilter: false,
+            filterParams: {
+                newRowsAction: 'keep'
+            }
         },
         frameworkComponents: {
             blctRenderer: BlctRenderer
@@ -61,7 +67,7 @@ const AddAdmin = (props) => {
 
 
         adminList.map((item) => {
-            item.getBalanceOfBlct = scOntGetBalanceOfBlct;
+            item.getBalanceOfBlct = scOntGetBalanceOfBlctAdmin;
             return item;
         })
 
@@ -142,6 +148,9 @@ const AddAdmin = (props) => {
         }
     }
 
+    const copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
+    }
 
     return (
         <div className='m-2'>
@@ -179,15 +188,16 @@ const AddAdmin = (props) => {
                 }}
             >
                 <AgGridReact
-                    enableSorting={true}
-                    enableFilter={true}
+                    // enableSorting={true}
+                    // enableFilter={true}
                     columnDefs={agGrid.columnDefs}
                     defaultColDef={agGrid.defaultColDef}
                     rowSelection={'single'}  //멀티체크 가능 여부
-                    enableColResize={true}
+                    // enableColResize={true}
                     rowHeight={40}
                     rowData={adminList}
                     frameworkComponents={agGrid.frameworkComponents}
+                    onCellDoubleClicked={copy}
                 />
             </div>
         </div>

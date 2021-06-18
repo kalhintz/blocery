@@ -1,43 +1,28 @@
 import React, { Fragment, Component } from 'react'
 import { ShopXButtonNav } from '~/components/common'
-
-import { Webview } from '~/lib/webviewApi'
-import { getLoginUserType } from '~/lib/loginApi'
 import { getConsumer } from '~/lib/shopApi'
-
 import { Div, Img, Flex, Button, Link } from '~/styledComponents/shared'
 import kycSampleImg4 from '~/images/kyc/licence_man_finish.svg';
-
 import styled from 'styled-components'
-
 const Body = styled(Flex)`
     height: calc(100vh - 56px - 53px);
 `;
-
 export default class KycCertification extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            loginUser: 'notRender',
-            loginUserType: null
+            loginUser: 'notRender'
         }
     }
 
     async componentDidMount() {
-        const loginUserType = await getLoginUserType();
-        let loginUser;
-
-        if(loginUserType.data === 'consumer') {
-            loginUser = await getConsumer();
-
-        } else if (loginUserType.data === 'producer') {
-            //생산자용 mypage로 자동이동.
-            Webview.movePage('/producer/mypage');
+        const {data} = await getConsumer();
+        if(!data){
+            this.props.history.replace('/mypage');
+            return;
         }
-
         this.setState({
-            loginUser: (loginUser) ? loginUser.data : '',
-            loginUserType: loginUserType.data
+            loginUser: (data) ? data : ''
         })
     }
 

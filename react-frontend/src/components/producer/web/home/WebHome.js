@@ -6,13 +6,14 @@ import {
     getOperStatOrderCntByProducerNo,
     getOperStatOrderCancelCntByProducerNo,
     getOperStatOrderSalesAmtByProducerNo,
-    getOperStatGoodsQnaCntByProducerNo,
-    getOperStatGoodsReviewCntByProducerNo,
     getOperStatRegularShopCntByProducerNo,
     getOrderStatOrderPaidCntByProducerNo,
     getOrderStatShippingCntByProducerNo,
     getOrderStatDeliveryCompCntByProducerNo,
-    getOrderStatOrderConfirmOkCntByProducerNo
+    getOrderStatOrderConfirmOkCntByProducerNo,
+    getGoodsQnaStatusCountByProducerNo,
+    getGoodsReviewNewCountByProducerNo,
+
 } from '~/lib/producerApi'
 
 import { getLoginAdminUser, getLoginProducerUser, tempAdminProducerLogin } from '~/lib/loginApi'
@@ -56,7 +57,14 @@ const WhiteBlackCard = ({title='', subTitle='', onClick= ()=>null}) => {
         </a>
     )
 }
-
+const RedWhiteCard = ({title='', subTitle='', onClick= ()=>null}) => {
+    return(
+        <a className={'w-100 m-2 p-3 bg-danger rounded-sm shadow-sm cursor-pointer text-center'} onClick={onClick}>
+            <h1 className={'text-white font-weight-light'}>{title}</h1>
+            <div className="text-center text-light f7">{subTitle}</div>
+        </a>
+    )
+}
 const GrayCard = ({title='', subTitle='', onClick= ()=>null}) => {
     return(
         <div className={'m-2 p-3 bg-light rounded-sm shadow-sm cursor-pointer text-center'} onClick={onClick}>
@@ -86,15 +94,8 @@ export default class WebHome extends Component {
             weeklySalesAmount: null,                //주간 매출
             monthlySalesAmount: null,               //월간 매출
 
-            todayQnACount: null,                    //오늘 상품문의건수
-            yesterdayQnACount: null,                //어제 상품문의건수
-            weeklyQnACount: null,                   //주간 상품문의건수
-            monthlyQnACount: null,                  //월간 상품문의건수
-
-            todayReviewCount: null,                  //오늘 후기건수
-            yesterdayReviewCount: null,              //어제 후기건수
-            weeklyReviewCount: null,                 //주간 후기건수
-            monthlyReviewCount: null,                //월간 후기건수
+            goodsQnAMiCount: null,                  //상품문의 미응답 건수
+            goodsReviewNewCount: null,              //상품후기 신규 건수
 
             todayFollowerCount: null,                //오늘 단골고객수
             yesterdayFollowerCount: null,            //어제 단골고객수
@@ -115,8 +116,8 @@ export default class WebHome extends Component {
         this.searchOrderCount()         //주문건수
         this.searchOrderCancelCount()   //취소건수
         this.searchSalesAmount()        //매출
-        this.searchQnACount()           //상품문의건수
-        this.searchReviewCount()        //상푸후기건수
+        this.searchQnACount()           //상품문의 미응답 건수
+        this.searchReviewCount()        //상품후기건수
         this.searchFollowerCount()      //단골고객건수
         this.searchCustomerPaidCount()  //고객결제건수
         this.searchShippingCount()      //월간 배송중건수
@@ -200,43 +201,21 @@ export default class WebHome extends Component {
         }
     }
 
-    //상품문의건수
+    //상품문의 미응답 건수
     async searchQnACount(){
-        //(오늘, 어제, 주간, 월간)
-        const { status, data } = await getOperStatGoodsQnaCntByProducerNo();
-        if(status === 200) {
-            const todayQnACount = data.totalToDateCnt || 0
-            const yesterdayQnACount = data.totalYesterDateCnt || 0
-            const weeklyQnACount = data.totalWeekDateCnt || 0
-            const monthlyQnACount = data.totalMonthDateCnt || 0
-
-            this.setState({
-                todayQnACount,
-                yesterdayQnACount,
-                weeklyQnACount,
-                monthlyQnACount,
-            })
-        }
+        const {data} = await getGoodsQnaStatusCountByProducerNo('ready');
+        this.setState({
+            goodsQnAMiCount:data
+        })
     }
 
     //상품후기건수
     async searchReviewCount(){
         //(오늘, 어제, 주간, 월간)
-        const { status, data } = await getOperStatGoodsReviewCntByProducerNo();
-        if(status === 200) {
-
-            const todayReviewCount = data.totalToDateCnt || 0
-            const yesterdayReviewCount = data.totalYesterDateCnt || 0
-            const weeklyReviewCount = data.totalWeekDateCnt || 0
-            const monthlyReviewCount = data.totalMonthDateCnt || 0
-
-            this.setState({
-                todayReviewCount,
-                yesterdayReviewCount,
-                weeklyReviewCount,
-                monthlyReviewCount,
-            })
-        }
+        const {data} = await getGoodsReviewNewCountByProducerNo();
+        this.setState({
+            goodsReviewNewCount:data
+        })
     }
 
     //단골회원건수
@@ -324,6 +303,12 @@ export default class WebHome extends Component {
             case "REGULAR_SHOP_LIST":
                 this.props.history.push('/producer/web/shop/regularShopList')
                 break
+            case "GOODS_QNA_LIST":
+                this.props.history.push('/producer/web/goods/goodsQnaList')
+                break
+            case "GOODS_REVIEW_LIST":
+                this.props.history.push('/producer/web/goods/goodsReview')
+                break
         }
     }
 
@@ -354,10 +339,14 @@ export default class WebHome extends Component {
                                         title={ComUtil.addCommas(state.totalFollowerCount)}
                                         subTitle={'단골고객수'}
                                         onClick={this.movePage.bind(this, {type: 'REGULAR_SHOP_LIST'})} />
-                                    <WhiteBlackCard
-                                        title={'준비중'}
-                                        subTitle={'평점'}
-                                        onClick={null} />
+                                    <InfoCard
+                                        title={ComUtil.addCommas(state.goodsReviewNewCount)}
+                                        subTitle={'신규 구매후기 '}
+                                        onClick={this.movePage.bind(this, {type: 'GOODS_REVIEW_LIST'})} />
+                                    <RedWhiteCard
+                                        title={ComUtil.addCommas(state.goodsQnAMiCount)}
+                                        subTitle={'미응답 상품문의'}
+                                        onClick={this.movePage.bind(this, {type: 'GOODS_QNA_LIST'})} />
                                 </div>
                                 <GrayCard
                                     title={state.monthlySalesAmount && '₩'+ComUtil.addCommas(state.monthlySalesAmount)}

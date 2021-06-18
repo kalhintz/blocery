@@ -6,11 +6,30 @@ import { Server } from '~/components/Properties'
 import HeaderBox from './HeaderBox'
 import WaitingItem from './WaitingItem'
 import GoodsReviewItem from './GoodsReviewItem'
-import { connect } from 'react-redux'
-import * as actions  from '~/reducers/GoodsReviewReducer'
+import {delGoodsReview, getGoodsReview, getWaitingGoodsReview} from "~/lib/shopApi";
+import ComUtil from "~/util/ComUtil";
 function GoodsReviewList(props){
 
     const [ tabId, setTabId] = useState(props.match.params.tabId)
+    const [waitingList, setWaitingList] = useState()
+    const [writtenList, setWrittenList] = useState()
+
+    useEffect(() => {
+        searchWaitingList()
+        searchWrittenList()
+    },[])
+
+    useEffect(() => {
+        switch (tabId){
+            case '1' :
+                searchWaitingList()
+                break
+            case '2' :
+                searchWrittenList()
+                break
+        }
+    },[tabId])
+
 
     const onHeaderClick = (selectedTabId) => {
         setTabId(selectedTabId)
@@ -37,7 +56,7 @@ function GoodsReviewList(props){
                 openPopup(paramObj, '2')
                 break
             case 'DELETE' :
-                props.deleteGoodsReview(payload.orderSeq)
+                deleteGoodsReview(payload.orderSeq)
                 break
         }
     }
@@ -46,34 +65,48 @@ function GoodsReviewList(props){
         Webview.openPopup(`/goodsReview?${queryString.stringify(paramObj)}`)
     }
 
-    useEffect(() => {
-        props.searchWaitingList()
-        props.searchWrittenList()
-    },[])
 
-    useEffect(() => {
-        switch (tabId){
-            case '1' :
-                props.searchWaitingList()
-                break
-            case '2' :
-                props.searchWrittenList()
-                break
-        }
-    },[tabId])
+    // 작성대기목록
+    const searchWaitingList = async () => {
+        const { data } = await getWaitingGoodsReview();
+        const sortData = ComUtil.sortDate(data, 'consumerOkDate', true);    // 최근구매확정순으로 Desc로 정렬
+        console.log(sortData)
+        setWaitingList(sortData)
+        // dispatch({type: SEARCH_WAITING_LIST, payload: sortData})
+    }
+    // 작성목록
+    const searchWrittenList = async () => {
+        const { data } = await getGoodsReview()
+        setWrittenList(data)
+        // dispatch({type: SEARCH_WRITTEN_LIST, payload: data})
+    }
+
+    // 삭제
+    const deleteGoodsReview = async (orderSeq) => {
+        await delGoodsReview(orderSeq)
+
+        //병렬처리
+        const response = await Promise.all([getWaitingGoodsReview(), getGoodsReview()])
+
+        setWaitingList(response[0].data)
+        setWrittenList(response[1].data)
+
+        // dispatch({type: SEARCH_WAITING_LIST, payload: response[0].data})
+        // dispatch({type: SEARCH_WRITTEN_LIST, payload: response[1].data})
+    }
+
 
     let Body;
     if(tabId === '1'){
-        if (props.waitingList === undefined) {
-            console.log('undefined');
+        if (waitingList === undefined) {
             return <div></div>;
         }
-        else if(props.waitingList && props.waitingList.length > 0) {
+        else if(waitingList && waitingList.length > 0) {
             Body = (
                 //#e4e4e4
                 <div className='bg-light pt-2 pr-2 pl-2'>
                     {
-                        props.waitingList.map((waitingGoodsReview, index) => (
+                        waitingList.map((waitingGoodsReview, index) => (
                             <WaitingItem
                                 key={'waitingGoodsReview'+index}
                                 {...waitingGoodsReview}
@@ -85,17 +118,17 @@ function GoodsReviewList(props){
                 </div>
             )
         }else{
-            console.log(props.waitingList);
+            console.log(waitingList);
             Body = <div className='d-flex justify-content-center align-items-center p-4 text-secondary'>후기를 작성할 상품이 없습니다</div>
         }
 
     } else if(tabId === '2'){
-        if (props.writtenList === undefined) {
+        if (writtenList === undefined) {
             console.log('undefined');
             return <div></div>;
         }
-        else if(props.writtenList && props.writtenList.length > 0){
-            Body = props.writtenList.map((goodsReview, index) => (
+        else if(writtenList && writtenList.length > 0){
+            Body = writtenList.map((goodsReview, index) => (
                     <GoodsReviewItem
                         key={'goodsReview'+index}
                         {...goodsReview}
@@ -110,15 +143,13 @@ function GoodsReviewList(props){
         }
     }
 
-
-
     return(
         <Fragment>
             <Sticky>
                 <ShopXButtonNav fixed historyBack>상품후기</ShopXButtonNav>
                 <div className='d-flex bg-white cursor-pointer' style={{boxShadow: '1px 1px 2px gray'}}>
-                    <HeaderBox text={`작성대기목록${props.waitingList && props.waitingList.length > 0 ? '('+props.waitingList.length+')' : ''}`} tabId={tabId} active={tabId === '1'} onClick={onHeaderClick.bind(this, '1')}/>
-                    <HeaderBox text={`작성목록${props.writtenList && props.writtenList.length > 0 ? '('+props.writtenList.length+')' : ''}`} tabId={tabId} active={tabId === '2'} onClick={onHeaderClick.bind(this, '2')}/>
+                    <HeaderBox text={`작성대기${waitingList && waitingList.length > 0 ? '('+waitingList.length+')' : ''}`} tabId={tabId} active={tabId === '1'} onClick={onHeaderClick.bind(this, '1')}/>
+                    <HeaderBox text={`작성완료${writtenList && writtenList.length > 0 ? '('+writtenList.length+')' : ''}`} tabId={tabId} active={tabId === '2'} onClick={onHeaderClick.bind(this, '2')}/>
                 </div>
             </Sticky>
             {
@@ -127,21 +158,5 @@ function GoodsReviewList(props){
         </Fragment>
     )
 }
-//dispatch 를 통해 반환된 값을 props에 넣음 (직접 dispatch() 를 할 경우 필요없음)
-function mapStateToProps({goodsReview: state}) {
-    return {
-        waitingList: state.waitingList, //작성대기목록
-        writtenList: state.writtenList  //작성목록
-    }
-}
-
-//dispatch 할 함수를 props에 넣음 (직접 dispatch() 를 할 경우 필요없음)
-function mapDispatchToProps(dispatch) {
-    return {
-        searchWaitingList: () => dispatch(actions.searchWaitingList()),
-        searchWrittenList: () => dispatch(actions.searchWrittenList()),
-        deleteGoodsReview: (orderSeq) => dispatch(actions.deleteGoodsReview(orderSeq))
-    }
-}
-export default connect(mapStateToProps, mapDispatchToProps)(GoodsReviewList)
+export default GoodsReviewList
 

@@ -250,7 +250,7 @@ export default class WebLogin extends Component {
                     </div>
 
                     {
-                        this.state.isOpen && this.state.type === 'id' && <ModalPopup title={'알림'} content={'가입 시 입력하신 이름을 적어 고객센터로(cs@blocery.io) 메일을 보내주시면 답신 드리도록 하겠습니다.'} onClick={this.onClose}></ModalPopup>
+                        this.state.isOpen && this.state.type === 'id' && <ModalPopup title={'알림'} content={'가입 시 입력하신 성함, 이메일, 연락처 등과 함께 문의사항을 고객센터로(cs@blocery.io) 메일을 보내주시거나, 카카오채널(마켓블리) 1:1 채팅으로 문의주시면 확인 후 회신 드리도록 하겠습니다.'} onClick={this.onClose}></ModalPopup>
                     }
                     {
                         this.state.isOpen && this.state.type === 'pw' &&

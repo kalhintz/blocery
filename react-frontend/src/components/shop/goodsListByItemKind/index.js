@@ -1,14 +1,39 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, Fragment} from 'react'
 import {getItemByItemNo } from '~/lib/adminApi'
-import { getConsumerGoodsByItemNo, getConsumerGoodsByItemKindCode } from '~/lib/goodsApi'
-import { ShopXButtonNav} from '~/components/common'
+import {
+    getConsumerGoodsByItemNo,
+    getConsumerGoodsByItemKindCode,
+    getConsumerGoodsByProducerNoSorted, getConsumerGoodsByProducerNoAndItemNoSorted
+} from '~/lib/goodsApi'
+import {
+    HeaderTitle,
+    NoSearchResultBox,
+    ShopXButtonNav,
+    SlideItemContent,
+    SlideItemHeaderImage,
+    ViewButton
+} from '~/components/common'
 import ItemKind from './ItemKind'
 import GoodsList from './GoodsList'
 import ComUtil from '~/util/ComUtil'
 
-import {Flex, TriangleUp, TriangleDown} from '~/styledComponents/shared'
+import {Flex, TriangleUp, TriangleDown, Span, Div} from '~/styledComponents/shared'
 import Sorter from './Sorter'
 import { useModal } from '~/util/useModal'
+import ModalCheckListGroup from "~/components/common/modals/ModalCheckListGroup";
+import {MdViewModule, MdViewStream} from "react-icons/md";
+import {Server} from "~/components/Properties";
+import {Icon} from "~/components/common/icons";
+
+const sorters = [
+    {value: 1, label: '최신순', sorter: {direction: 'DESC', property: 'timestamp'}},
+    //TODO: 인기는 현재 적용불가(backend 배치에서 작업해야 할 것으로 보임)
+    // {value: 2, label: '인기'},
+    {value: 3, label: '예약상품순', sorter: {direction: 'DESC', property: 'saleEnd'}},
+    {value: 4, label: '낮은가격순', sorter: {direction: 'ASC', property: 'currentPrice'}},
+    {value: 5, label: '높은가격순', sorter: {direction: 'DESC', property: 'currentPrice'}},
+    {value: 6, label: '할인율순', sorter: {direction: 'DESC', property: 'discountRate'}},
+]
 
 const GoodsListByItemKind = (props) => {
 
@@ -22,6 +47,7 @@ const GoodsListByItemKind = (props) => {
     const [viewType, setViewType] = useState('list')
 
     const [modalOpen, setModalOpen, selected, setSelected, setModalState] = useModal()
+
 
     useEffect(()=>{
         searchItemKind()
@@ -41,7 +67,6 @@ const GoodsListByItemKind = (props) => {
     async function searchItemKind() {
         const {data} = await getItemByItemNo(itemNo)
         setItem(data)
-        console.log({data})
         setName(data.itemName)
     }
 
@@ -59,7 +84,6 @@ const GoodsListByItemKind = (props) => {
 
     //품종 클릭
     function onItemKindClick(code) {     //itemKindCode
-        console.log({code})
         searchGoods(code)
         if(code === 'all'){
             setName(item.itemName + '(전체)')
@@ -69,24 +93,38 @@ const GoodsListByItemKind = (props) => {
         }
     }
 
+    function onViewChange(iconIndex) {
+        if(iconIndex === 0) {
+            setViewType('halfCard')
+        } else {
+            setViewType('list')
+        }
+    }
+
     function onSorterChange(filter){
-
         let filteredList = Object.assign([], orgGoodsList)
-
-        console.log({filter})
 
         //예약 상품만
         if(filter.reserved){
             filteredList = filteredList.filter(goods => goods.directGoods === false)
         }
 
-        //최신순 , 과거순 정렬
-        ComUtil.sortNumber(filteredList, 'goodsNo', filter.newest ? true : false)
-
-        console.log({filteredList})
+        //정렬
+        // ComUtil.sortNumber(filteredList, 'goodsNo', filter.newest ? true : false)
+        if(filter.label == "최신순") {
+            ComUtil.sortNumber(filteredList, 'goodsNo', true)
+        } else if(filter.label == "낮은가격순") {
+            ComUtil.sortNumber(filteredList, 'currentPrice', false)
+        } else if(filter.label == "높은가격순") {
+            ComUtil.sortNumber(filteredList, 'currentPrice', true)
+        } else if(filter.label == "할인율순") {
+            ComUtil.sortNumber(filteredList, 'discountRate', true)
+        } else if(filter.label == "예약상품순") {
+            ComUtil.sortNumber(filteredList, 'directGoods', false)
+        }
 
         setGoods(filteredList)
-        setViewType(filter.viewType)
+        // setViewType('list')
     }
 
     function onNavClick(){
@@ -113,7 +151,25 @@ const GoodsListByItemKind = (props) => {
                 itemKindCode={itemKindCode}
                 onClose={()=> setModalState(false)}
                 onClick={onItemKindClick}/>
-            <Sorter count={goods.length} onChange={onSorterChange}/>
+
+            {/*<Sorter count={goods.length} onChange={onSorterChange}/>*/}
+            <HeaderTitle
+                sectionLeft={<Div fontSize={18} bold><Span fg='green'>{goods.length}개</Span> 상품</Div>}
+                sectionRight={
+                    <Fragment>
+                        <ModalCheckListGroup
+                            title={'정렬 설정'}
+                            className={'f5 mr-2 text-secondary'}
+                            data={sorters}
+                            value={sorters[0].value}
+                            onChange={onSorterChange}
+                        />
+                        {/*<Div onChange={onViewChange}><Icon name={viewType === 'list' ? 'viewTypeList' : 'viewTypeHalfCard'}/></Div>*/}
+                        <ViewButton icons={[<MdViewModule />, <MdViewStream />]} onChange={onViewChange} />
+                    </Fragment>
+                }
+            />
+
             <GoodsList data={goods} viewType={viewType}/>
         </div>
     )

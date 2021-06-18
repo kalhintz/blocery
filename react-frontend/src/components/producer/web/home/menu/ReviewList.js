@@ -21,7 +21,6 @@ const ReviewList = () => {
 
     async function getList(){
         const { status, data } = await getGoodsReviewListByProducerNo()
-        console.log({goodsReviewList: data})
 
         let items = []
 

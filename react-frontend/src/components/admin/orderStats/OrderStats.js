@@ -1,24 +1,27 @@
 import React, { Component } from 'react';
-import { Button, ButtonGroup, Table } from 'reactstrap'
+import {Button, ButtonGroup, Input, Table} from 'reactstrap'
 import "react-table/react-table.css"
 import { getAllOrderStats } from '~/lib/adminApi'
 import { getLoginAdminUser } from '~/lib/loginApi'
-import { SingleDatePicker } from 'react-dates';
 import moment from 'moment'
-import { ExcelDownload } from '~/components/common'
+import { ExcelDownload, BlocerySpinner } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
-
-
+import SearchDates from '~/components/common/search/SearchDates'
+import {Div, Flex} from "~/styledComponents/shared";
 
 export default class OrderStats extends Component {
     constructor(props) {
         super(props);
         this.state = {
-
-            selectedGubun: 'week',
-            startDate: null,
-            endDate: null,
-
+            loading: false,
+            search:{
+                selectedGubun: 'day', //'week': 최초화면을 오늘(day)또는 1주일(week)로 설정.
+                startDate: moment(moment().toDate()),
+                endDate: moment(moment().toDate()),
+                isConsumerOk: 'N',
+                searchType:'3',   //실적현황 및 상품별현황 화면에 보여질 구분자 (1:실적현황,2:상품별현황,3:실적현황및상품별현황)
+                isYearMonth:'N'   //실적현황 년월별 구분자
+            },
             data: {},
         }
     }
@@ -34,86 +37,107 @@ export default class OrderStats extends Component {
     }
 
     search = async (searchButtonClicked) => {
-        console.log('OrderStats.js: search')
-
-        // let selectedGubun = this.state.selectedGubun;
-        //
-        // if (gubun) { //파라미터 입력받으면 변경..
-        //     selectedGubun  = gubun;
-        // }
-
         if (searchButtonClicked) {
-            if (!this.state.startDate || !this.state.endDate) {
-                alert('시작일과 종료일을 선택해주세요')
-                return;
+            if(this.state.search.selectedGubun !== 'all'){
+                if (
+                    !this.state.search.startDate || !this.state.search.endDate
+                ) {
+                    alert('시작일과 종료일을 선택해주세요')
+                    return false;
+                }
             }
         }
+        this.setState({loading: true});
 
-        const { status, data } = (searchButtonClicked)? await getAllOrderStats( moment(this.state.startDate).format('YYYYMMDD'), //날짜검색
-                                                                                moment(this.state.endDate).format('YYYYMMDD'),
-                                                                                null)
-                                                       : await getAllOrderStats( null, null, this.state.selectedGubun ); //구분검색
+        const params = {
+            startDate:this.state.search.startDate ? moment(this.state.search.startDate).format('YYYYMMDD'):null,
+            endDate:this.state.search.endDate ? moment(this.state.search.endDate).format('YYYYMMDD'):null,
+            isConsumerOk: this.state.search.isConsumerOk == 'Y' ? true:false,
+            searchType:this.state.search.searchType,
+            isYearMonth:this.state.search.isYearMonth == 'Y' ? true:false
+        };
+        const { status, data } = await getAllOrderStats(params);
 
         if(status !== 200){
             alert('응답이 실패 하였습니다');
             return;
         }
-
-        console.log(data);
         this.setState({
             data: data
         });
 
         this.setExcelData();
+
+        this.setState({loading: false});
     }
 
-    //검색 조건들 설정..//////////////
-    selectCondition = async (gubun) => {
-        console.log('selectCondition', gubun);
-
-        await this.setState({ //gubun이 변경될 때까지 대기필요.
-            selectedGubun: gubun
+    // 확정유무
+    onSearchIsConsumerOkChange = async (e) => {
+        const vSearch = Object.assign({}, this.state.search);
+        vSearch.isConsumerOk = e.target.value;
+        await this.setState({
+            search: vSearch
         });
-
-        await this.search();
+        //await this.search();
     }
 
-    onStartDateChange = async (date) => {
-        console.log('onStartDateChange', moment(date).format('YYYY-MM-DD'));
-
+    // 실적현황 및 상품별현황 구분
+    onSearchTypeChange = async (e) => {
+        const vSearch = Object.assign({}, this.state.search);
+        vSearch.searchType = e.target.value;
         await this.setState({
-            startDate: moment(date)
-        })
-
+            search: vSearch
+        });
     }
-    onEndDateChange = async (date) => {
-        console.log('onEndDateChange', moment(date).format('YYYY-MM-DD'));
 
+    onIsYearMonthChange = async (e) => {
+        const vSearch = Object.assign({}, this.state.search);
+        vSearch.isYearMonth = e.target.value;
         await this.setState({
-            endDate: moment(date)
-        })
+            search: vSearch
+        });
     }
 
+    onDatesChange = async (data) => {
+        const vSearch = Object.assign({}, this.state.search);
+        vSearch.startDate = data.startDate;
+        vSearch.endDate = data.endDate;
+        vSearch.selectedGubun = data.gubun;
+        await this.setState({
+            search: vSearch
+        });
+        if(data.isSearch) {
+            await this.search();
+        }
+    }
 
     setExcelData = () => {
-        let orderExcelData = this.getOrderExcelData();
-        let goodsExcelData = this.getGoodsExcelData();
-
+        let orderExcelData = null;
+        let goodsExcelData = null;
+        if(this.state.search.searchType == "1"){
+            orderExcelData = this.getOrderExcelData();
+        } else if(this.state.search.searchType == "2"){
+            goodsExcelData = this.getGoodsExcelData();
+        } else if(this.state.search.searchType == "3"){
+            orderExcelData = this.getOrderExcelData();
+            goodsExcelData = this.getGoodsExcelData();
+        }
         this.setState({
             orderExcelData: orderExcelData,
             goodsExcelData: goodsExcelData
         })
+
     }
     getOrderExcelData = () => {
         const columns = [
             '날짜', '신용수량', 'BLCT수량', '카드BLCT수량', '수량합계',
-            '신용카드', 'BLCT', '카드BLCT', '매출합계', '정산금액', '판매지원금'
+            '신용카드', 'BLCT', '카드BLCT(카드)', '카드BLCT(BLCT)', '매출합계', '정산금액', '판매지원금'
         ]
         //필터링 된 데이터에서 sortedData._original 로 접근하여 그리드에 바인딩 원본 값을 가져옴
         const data = this.state.data.orderStats.map((item ,index)=> {
             return [
                 item.date, item.countCard, item.countBlct, item.countCardBlct, item.countSum,
-                item.card,item.blct, item.cardBlct, item.sum, item.simplePayoutAmount, item.saleSupportPrice
+                item.card,item.blct, item.cardBlctByCard, item.cardBlct - item.cardBlctByCard, item.sum, item.simplePayoutAmount, item.saleSupportPrice
             ]
         })
 
@@ -126,13 +150,13 @@ export default class OrderStats extends Component {
     getGoodsExcelData = () => {
         const columns = [
             '번호', '상품명', '신용수량', 'BLCT수량', '카드BLCT수량', '수량합계',
-            '신용카드', 'BLCT', '카드BLCT', '매출합계', '정산금액', '판매지원금'
+            '신용카드', 'BLCT', '카드BLCT(카드)', '카드BLCT(BLCT)', '매출합계', '정산금액', '판매지원금'
         ]
         //필터링 된 데이터에서 sortedData._original 로 접근하여 그리드에 바인딩 원본 값을 가져옴
         const data = this.state.data.goodsStats.map((item ,index)=> {
             return [
                 item.index, item.goodsNm, item.countCard, item.countBlct, item.countCardBlct, item.countSum,
-                item.card,item.blct, item.cardBlct, item.sum, item.simplePayoutAmount, item.saleSupportPrice
+                item.card,item.blct, item.cardBlctByCard, item.cardBlct - item.cardBlctByCard, item.sum, item.simplePayoutAmount, item.saleSupportPrice
             ]
         })
 
@@ -147,207 +171,229 @@ export default class OrderStats extends Component {
     render() {
 
         return(
-            <div className="ml-3 mt-3 mr-3">
-                <br/>
-                <div className="pt-3 pb-3">
-                    조회
-                </div>
+            <div>
+                {
+                    this.state.loading && <BlocerySpinner/>
+                }
+                <div className="ml-3 mt-3 mr-3">
 
-                <Table bordered>
-                    <tr>
-                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 기 간 </td>
-                        <td width="800px">
+                    <div className="ml-2 mt-2 mr-2">
+                        <Flex bc={'secondary'} m={3} p={7}>
+                            <Div pl={10} pr={20} py={1}> 기 간 </Div>
+                            <Div ml={10} >
+                                <Flex>
+                                    <SearchDates
+                                        gubun={this.state.search.selectedGubun}
+                                        startDate={this.state.search.startDate}
+                                        endDate={this.state.search.endDate}
+                                        isHiddenAll={true}
+                                        isNotOnSearch={true}
+                                        onChange={this.onDatesChange}
+                                    />
 
-                            <ButtonGroup className="pr-3 mr-3">
-                                <Button color="secondary" onClick={() => this.selectCondition('day')} active={this.state.selectedGubun === 'day'}> 오늘 </Button>
-                                <Button color="secondary" onClick={() => this.selectCondition('week')} active={this.state.selectedGubun === 'week'}> 1주일 </Button>
-                                <Button color="secondary" onClick={() => this.selectCondition('month')} active={this.state.selectedGubun === 'month'}> 1개월 </Button>
-                                <Button color="secondary" onClick={() => this.selectCondition('3month')} active={this.state.selectedGubun === '3month'}> 3개월 </Button>
-                                <Button color="secondary" onClick={() => this.selectCondition('6month')} active={this.state.selectedGubun === '6month'}> 6개월 </Button>
-                                <Button color="secondary" onClick={() => this.selectCondition('all')} active={this.state.selectedGubun === 'all'}> 전체월별 </Button>
-                            </ButtonGroup>
+                                    <div className='ml-2'>
+                                        <Input type='select'
+                                               name='searchIsConsumerOk'
+                                               id='searchIsConsumerOk'
+                                               onChange={this.onSearchIsConsumerOkChange}
+                                               value={this.state.search.isConsumerOk}
+                                        >
+                                            <option name='isConsumerOk' value='N'>주문일기준</option>
+                                            <option name='isConsumerOk' value='Y'>구매확정일기준</option>
+                                        </Input>
+                                    </div>
 
+                                    <div className='ml-2'>
+                                        <Input type='select'
+                                               name='searchSearchType'
+                                               id='searchSearchType'
+                                               onChange={this.onSearchTypeChange}
+                                               value={this.state.search.searchType}
+                                        >
+                                            <option name='searchType' value='1'>출력구분:실적현황</option>
+                                            <option name='searchType' value='2'>출력구분:상품별현황</option>
+                                            <option name='searchType' value='3'>출력구분:실적및상품별현황</option>
+                                        </Input>
+                                    </div>
 
-                            <SingleDatePicker className="ml-3"
-                                            placeholder="검색시작일"
-                                            date={ this.state.startDate}
-                                            onDateChange={this.onStartDateChange}
-                                            focused={this.state[`focused`]} // PropTypes.bool
-                                            onFocusChange={({ focused }) => this.setState({ [`focused`]:focused })} // PropTypes.func.isRequired
-                                            id={"startDate"} // PropTypes.string.isRequired,
-                                            numberOfMonths={1}
-                                            withPortal={false}
-                                            isOutsideRange={() => false}
-                                            small
-                                            readOnly
-                            /> ~
-                            <SingleDatePicker className="mr-3"
-                                              placeholder="검색종료일"
-                                              date={ this.state.endDate}
-                                              onDateChange={this.onEndDateChange}
-                                              focused={this.state[`focused2`]} // PropTypes.bool
-                                              onFocusChange={({ focused }) => this.setState({ [`focused2`]:focused })} // PropTypes.func.isRequired
-                                              id={"endDate"} // PropTypes.string.isRequired,
-                                              numberOfMonths={1}
-                                              withPortal={false}
-                                              isOutsideRange={() => false}
-                                              small
-                                              readOnly
-                            />
-
-
-                            <Button className="ml-3" color="primary" onClick={() => this.search(true)}> 검 색 </Button>
-                        </td>
-                    </tr>
-                </Table>
-
-
-
-                <br/>
-                <br/>
-                <div className="pt-3 pb-3">
-                    ㅁ 실적현황 ({this.state.data.startDate}~{this.state.data.endDate})
-                </div>
-                <Table bordered>
-                    <tr>
-                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 날짜 </td>
-                        <td width="400px" colSpan="4" bgcolor="#F3F3F3" align="center" valign="middle" > 구매수량 </td>
-                        <td width="400px" colSpan="4" bgcolor="#F3F3F3" align="center" valign="middle" > 구매금액 </td>
-                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 정산금액 </td>
-                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 판매지원금 </td>
-                    </tr>
-                    <tr>
-                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 신용카드 </td>
-                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > BLCT </td>
-                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT </td>
-                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 합 계 </td>
-                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 신용카드 </td>
-                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > BLCT </td>
-                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT </td>
-                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 합 계 </td>
-                    </tr>
-
-                    {(this.state.data.goodsStats && this.state.data.goodsStats[0] )&&
-                        <tr>
-                            <td bgcolor="#A3A3A3" align="center"> 합계</td>
-                            <td bgcolor="#A3A3A3" align="center"> {this.state.data.goodsStats[0].countCard} </td>
-                            <td bgcolor="#A3A3A3" align="center"> {this.state.data.goodsStats[0].countBlct} </td>
-                            <td bgcolor="#A3A3A3" align="center"> {this.state.data.goodsStats[0].countCardBlct} </td>
-                            <td bgcolor="#A3A3A3" align="center"> {this.state.data.goodsStats[0].countSum} </td>
-                            <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].card)} </td>
-                            <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].blct)} </td>
-                            <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].cardBlct)} </td>
-                            <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].sum)} </td>
-                            <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].simplePayoutAmount)} </td>
-                            <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].saleSupportPrice)} </td>
-
-                        </tr>
-                    }
+                                    {
+                                        (this.state.search.searchType == 1 || this.state.search.searchType == 3) &&
+                                        <div className='ml-2'>
+                                            <Input type='select'
+                                                   name='searchIsYearMonth'
+                                                   id='searchIsYearMonth'
+                                                   onChange={this.onIsYearMonthChange}
+                                                   value={this.state.search.isYearMonth}
+                                            >
+                                                <option name='isYearMonth' value='N'>실적현황(일별)</option>
+                                                <option name='isYearMonth' value='Y'>실적현황(월별)</option>
+                                            </Input>
+                                        </div>
+                                    }
+                                    <Button className="ml-3" color="primary" onClick={this.search.bind(this,true)}> 검 색 </Button>
+                                </Flex>
+                            </Div>
+                        </Flex>
+                    </div>
 
                     {
-                        this.state.data.orderStats &&
-                        this.state.data.orderStats.map(stat => {
-                            return (
-                                <tr>
-                                    <td align="center"> {stat.date} </td>
-                                    <td align="center"> {stat.countCard} </td>
-                                    <td align="center"> {stat.countBlct} </td>
-                                    <td align="center"> {stat.countCardBlct} </td>
-                                    <td align="center"> {stat.countSum} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.card)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.blct)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.cardBlct)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.sum)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.simplePayoutAmount)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.saleSupportPrice)} </td>
-                                </tr>
-                            )
-                        })
-                    }
-
-                </Table>
-                <div align="center">
-                    <ExcelDownload data={this.state.orderExcelData}
-                                   fileName="실적현황"
-                    />
-                </div>
-
-                <br/>
-                <br/>
-                <div className="pt-3 pb-3">
-                    ㅁ 상품별 현황 ({this.state.data.startDate}~{this.state.data.endDate})
-                </div>
-                <Table bordered>
-                    <tr>
-                        <td width="50px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > No </td>
-                        <td width="350px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 상품명 </td>
-                        <td width="200px" colSpan="4" bgcolor="#F3F3F3" align="center" valign="middle" > 구매수량 </td>
-                        <td width="200px" colSpan="4" bgcolor="#F3F3F3" align="center" valign="middle" > 구매금액 </td>
-                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 정산금액 </td>
-                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 판매지원금 </td>
-                    </tr>
-                    <tr>
-                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 신용카드 </td>
-                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > BLCT </td>
-                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT </td>
-                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 합 계 </td>
-                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 신용카드 </td>
-                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > BLCT </td>
-                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT </td>
-                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 합 계 </td>
-                    </tr>
-
-
-                    {
-                        this.state.data.goodsStats &&
-                        this.state.data.goodsStats.map((stat,idx) => {
-
-                            if (idx == 0)  //합계//////////////
-                                return(
+                        (this.state.search.searchType == "1" || this.state.search.searchType == "3") &&
+                            <>
+                                <div className="pt-3 pb-3">
+                                    ㅁ 실적현황 ({this.state.data.startDate}~{this.state.data.endDate})
+                                </div>
+                                <Table bordered>
                                     <tr>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.index} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.goodsNm} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.countCard} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.countBlct} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.countCardBlct} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.countSum} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.card)} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.blct)} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.cardBlct)} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.sum)} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.simplePayoutAmount)} </td>
-                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.saleSupportPrice)} </td>
+                                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 날짜 </td>
+                                        <td width="400px" colSpan="4" bgcolor="#F3F3F3" align="center" valign="middle" > 구매수량 </td>
+                                        <td width="400px" colSpan="5" bgcolor="#F3F3F3" align="center" valign="middle" > 구매금액 </td>
+                                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 정산금액 </td>
+                                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 판매지원금 </td>
                                     </tr>
-                                );
+                                    <tr>
+                                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 신용카드 </td>
+                                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > BLCT </td>
+                                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT </td>
+                                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 합 계 </td>
+                                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 신용카드 </td>
+                                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > BLCT </td>
+                                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT (카드) </td>
+                                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT (BLCT) </td>
+                                        <td width="100px" bgcolor="#F3F3F3" align="center" valign="middle" > 합 계 </td>
+                                    </tr>
 
-                            return (
-                                <tr>
-                                    <td align="center"> {stat.index} </td>
-                                    <td align="center"> {stat.goodsNm} </td>
-                                    <td align="center"> {stat.countCard} </td>
-                                    <td align="center"> {stat.countBlct} </td>
-                                    <td align="center"> {stat.countCardBlct} </td>
-                                    <td align="center"> {stat.countSum} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.card)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.blct)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.cardBlct)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.sum)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.simplePayoutAmount)} </td>
-                                    <td align="center"> {ComUtil.addCommas(stat.saleSupportPrice)} </td>
-                                </tr>
-                            )
+                                    {(this.state.data.goodsStats && this.state.data.goodsStats[0] )&&
+                                    <tr>
+                                        <td bgcolor="#A3A3A3" align="center"> 합계</td>
+                                        <td bgcolor="#A3A3A3" align="center"> {this.state.data.goodsStats[0].countCard} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {this.state.data.goodsStats[0].countBlct} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {this.state.data.goodsStats[0].countCardBlct} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {this.state.data.goodsStats[0].countSum} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].card)} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].blct)} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].cardBlctByCard)} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].cardBlct - this.state.data.goodsStats[0].cardBlctByCard)} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].sum)} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].simplePayoutAmount)} </td>
+                                        <td bgcolor="#A3A3A3" align="center"> {ComUtil.addCommas(this.state.data.goodsStats[0].saleSupportPrice)} </td>
+                                    </tr>
+                                    }
 
-                        })
+                                    {
+                                        this.state.data.orderStats &&
+                                        this.state.data.orderStats.map(stat => {
+                                            return (
+                                                <tr>
+                                                    <td align="center"> {stat.date} </td>
+                                                    <td align="center"> {stat.countCard} </td>
+                                                    <td align="center"> {stat.countBlct} </td>
+                                                    <td align="center"> {stat.countCardBlct} </td>
+                                                    <td align="center"> {stat.countSum} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.card)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.blct)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.cardBlctByCard)}</td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.cardBlct - stat.cardBlctByCard)}</td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.sum)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.simplePayoutAmount)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.saleSupportPrice)} </td>
+                                                </tr>
+                                            )
+                                        })
+                                    }
+
+                                </Table>
+                                <div align="center">
+                                    <ExcelDownload data={this.state.orderExcelData}
+                                                   fileName="실적현황"
+                                    />
+                                </div>
+                                <br/>
+                                <br/>
+                            </>
                     }
+                    {
+                        (this.state.search.searchType == "2" || this.state.search.searchType == "3") &&
+                            <>
+                                <div className="pt-3 pb-3">
+                                    ㅁ 상품별 현황 ({this.state.data.startDate}~{this.state.data.endDate})
+                                </div>
+                                <Table bordered>
+                                    <tr>
+                                        <td width="50px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > No </td>
+                                        <td width="350px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 상품명 </td>
+                                        <td width="200px" colSpan="4" bgcolor="#F3F3F3" align="center" valign="middle" > 구매수량 </td>
+                                        <td width="200px" colSpan="5" bgcolor="#F3F3F3" align="center" valign="middle" > 구매금액 </td>
+                                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 정산금액 </td>
+                                        <td width="100px" rowSpan="2" bgcolor="#F3F3F3" align="center" valign="middle" > 판매지원금 </td>
+                                    </tr>
+                                    <tr>
+                                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 신용카드 </td>
+                                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > BLCT </td>
+                                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT </td>
+                                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 합 계 </td>
+                                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 신용카드 </td>
+                                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > BLCT </td>
+                                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT (카드) </td>
+                                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 카드+BLCT (BLCT) </td>
+                                        <td width="50px" bgcolor="#F3F3F3" align="center" valign="middle" > 합 계 </td>
+                                    </tr>
 
-                </Table>
-                <div align="center">
-                    <ExcelDownload data={this.state.goodsExcelData}
-                                   fileName="상품별 실적현황"
-                    />
+
+                                    {
+                                        this.state.data.goodsStats &&
+                                        this.state.data.goodsStats.map((stat,idx) => {
+
+                                            if (idx == 0)  //합계//////////////
+                                                return(
+                                                    <tr>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.index} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.goodsNm} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.countCard} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.countBlct} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.countCardBlct} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {stat.countSum} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.card)} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.blct)} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.cardBlctByCard)}</td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.cardBlct - stat.cardBlctByCard)}</td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.sum)} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.simplePayoutAmount)} </td>
+                                                        <td width="50px" bgcolor="#A3A3A3" align="center" valign="middle" > {ComUtil.addCommas(stat.saleSupportPrice)} </td>
+                                                    </tr>
+                                                );
+
+                                            return (
+                                                <tr>
+                                                    <td align="center"> {stat.index} </td>
+                                                    <td align="center"> {stat.goodsNm} </td>
+                                                    <td align="center"> {stat.countCard} </td>
+                                                    <td align="center"> {stat.countBlct} </td>
+                                                    <td align="center"> {stat.countCardBlct} </td>
+                                                    <td align="center"> {stat.countSum} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.card)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.blct)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.cardBlctByCard)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.cardBlct - stat.cardBlctByCard)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.sum)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.simplePayoutAmount)} </td>
+                                                    <td align="center"> {ComUtil.addCommas(stat.saleSupportPrice)} </td>
+                                                </tr>
+                                            )
+
+                                        })
+                                    }
+
+                                </Table>
+                                <div align="center">
+                                    <ExcelDownload data={this.state.goodsExcelData}
+                                                   fileName="상품별 실적현황"
+                                    />
+                                </div>
+                                <br/>
+                                <br/>
+                            </>
+                    }
                 </div>
-                <br/>
-                <br/>
             </div>
         );
     }

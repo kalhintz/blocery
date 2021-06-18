@@ -15,7 +15,7 @@ const HeaderBox = ({text, active, onClick}) => {
     return(
 
         <div className='flex-grow-1' >
-            <div style={active ? Style.active : null} className={classNames('text-center p-2', !active && 'text-secondary')} onClick={onClick}>{text}</div>
+            <div style={active ? Style.active : null} className={classNames('text-center p-2 pt-3 pb-3', !active && 'text-secondary')} onClick={onClick}>{text}</div>
         </div>
 
     )

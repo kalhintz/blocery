@@ -1,6 +1,8 @@
 import OrderList from './OrderList'
-
-export default
-    OrderList
+import OrderCardTempList from './OrderCardTempList'
+export {
+    OrderList,
+    OrderCardTempList
+}
 
 

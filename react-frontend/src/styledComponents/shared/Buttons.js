@@ -1,7 +1,7 @@
 import React from 'react';
 import styled, {css} from 'styled-components';
 import {color, activeColor} from '../Properties'
-import {getValue} from '../Util'
+import {getValue, hasValue} from '../Util'
 import {margin, padding, sticky, fixed, noti, notiNew, pseudo} from '../CoreStyles'
 
 
@@ -16,7 +16,7 @@ const BasicButton = styled.button`
     font-size: ${props => props.fontSize ? `${getValue(props.fontSize)}` : `inherit`};
     text-decoration: ${props => props.textDecoration || 'none'};
     cursor: ${props => props.cursor || 'pointer'};   
-
+    text-align: ${props => hasValue(props.textAlign) ? props.textAlign : 'unset'}
     ${margin};
     ${padding};
     width: ${props => getValue(props.width)};
@@ -39,7 +39,7 @@ export const Button = styled(BasicButton)`
     ${props => props.disabled && css`
         pointer-events: none;
         background-color: ${color.secondary}!important;
-        color: ${color.white}!important;        
+        color: ${hasValue(props.fg) ? props.fg : color.white}!important;        
         border: 0;
     `};
     &:focus{

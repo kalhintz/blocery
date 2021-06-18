@@ -1,5 +1,6 @@
 import React, { Fragment, useState } from 'react'
 import { IconStarGroup, ImageGalleryModal } from '~/components/common'
+import { Div, Span, Flex } from '~/styledComponents/shared'
 import ComUtil from '~/util/ComUtil'
 import { likedGoodsReview } from '~/lib/shopApi'
 import { ToastContainer, toast } from 'react-toastify'     //토스트
@@ -8,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css'
 let isLiked = []; //현화면에서 좋아요 누른 array.
 
 
-const GoodsReviewItem = ({orderSeq, email, goodsReviewContent, goodsReviewImages, score, goodsReviewDate, likeCount}) => {
+const GoodsReviewItem = ({orderSeq, phone, email, goodsReviewContent, goodsReviewImages, score, goodsReviewDate, likeCount}) => {
 
     const [stateLikeCount, setStateLikeCount] = useState(likeCount)
 
@@ -37,17 +38,27 @@ const GoodsReviewItem = ({orderSeq, email, goodsReviewContent, goodsReviewImages
             //className: ''     //클래스를 넣어도 됩니다
         })
     }
-    const secureEmail = email.split('@');
+    const secureEmail = email.split('@');   // @를 기준으로 string 분할
 
     return (
 
         <Fragment>
-            <div className='m-3'>
+            <Div m={15}>
             <span className='d-flex align-items-center text-secondary f6 mb-3'>
-                <span className={'mr-2'}>{secureEmail[0].substring(0,3)}***@{secureEmail[1]}</span>
-                <span className='mr-2'>|</span>
-                <span className='d-flex ml-2 mr-2'><IconStarGroup score={score}/></span>|
-                <span className='ml-2'>{ComUtil.timeFromNow(goodsReviewDate)}</span>
+                {
+                    email ?
+                        <Span mr={8}>{secureEmail[0].substring(0,3)}***@{secureEmail[1]}</Span>
+                        :
+                        (
+                            phone ?
+                                <Span mr={8}>{phone.substring(0,3)}-{phone.substring(4,6)}**-**{phone.substring(11,13)}</Span>
+                                :
+                                <Span mr={8}>***</Span>
+                        )
+                }
+                <Span mr={8}>|</Span>
+                <Span mx={8}><IconStarGroup score={score}/></Span>|
+                <Span ml={8}>{ComUtil.timeFromNow(goodsReviewDate)}</Span>
             </span>
                 {
                     (goodsReviewImages && goodsReviewImages.length > 0) && (
@@ -70,7 +81,7 @@ const GoodsReviewItem = ({orderSeq, email, goodsReviewContent, goodsReviewImages
                     <span className='text-info mr-2'>좋아요</span>
                     <span>{stateLikeCount  + parseInt( (isLiked.find( (elm) => { return elm == orderSeq}))? 1:0 ) }개</span>
                 </div>*/}
-            </div>
+            </Div>
             <ToastContainer/>
         </Fragment>
     )

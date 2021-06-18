@@ -6,12 +6,13 @@ import MobileDetect from 'mobile-detect'
 import cloneDeep from "lodash/cloneDeep"; //lodash 전체 라이브러리를 가져오던 초기 호출 방식을 변경 필요한 메서드만 가져옴
 import { Server } from '~/components/Properties'
 import axios from 'axios'
+import {getAbusers, getAbuser} from "~/lib/shopApi";
 
 export default class ComUtil {
 
     /*******************************************************
      이유: Object.assign()에게도 한가지 문제점이 있는데요.
-          복사하려는 객체의 내부에 존재하는 객체는 완전한 복사가 이루어지지않는다는 점
+     복사하려는 객체의 내부에 존재하는 객체는 완전한 복사가 이루어지지않는다는 점
      # Object 객체 복사 (lodash.cloneDeep 이용) :: Deep Clone
      ex) let 복사할 변수 =  ComUtil.objectAssign(복사할 오브젝트);
      *******************************************************/
@@ -51,15 +52,16 @@ export default class ComUtil {
     }
 
     static yyyymmdd2DateStr(yyyymmdd) {
-        let pYear 	= yyyymmdd.substr(0,4);
-        let pMonth 	= yyyymmdd.substr(4,2);
-        let pDay 	= yyyymmdd.substr(6,2);
+        const strYYYYMMDD = yyyymmdd.toString();
+        let pYear 	= strYYYYMMDD.substr(0,4);
+        let pMonth 	= strYYYYMMDD.substr(4,2);
+        let pDay 	= strYYYYMMDD.substr(6,2);
         return pYear + '-'  + pMonth + '-' + pDay;
     }
     /*******************************************************
      날짜 연산 함수 - 날짜 더하기 빼기
      예) addDate('2019-01-05', 5) =>  returns 2019-01-10
-        addDate('2019-01-06', -5) =>  returns 2019-01-01
+     addDate('2019-01-06', -5) =>  returns 2019-01-01
      */
     static addDate(strDate, date) {
         let inputDate = this.getDate(strDate);
@@ -71,6 +73,30 @@ export default class ComUtil {
         //console.log(returnDate);
         return returnDate;
 
+    }
+
+    /*******************************************************
+     INT 날짜타입 => String 변환
+     @Param : intDate, formatter
+     @Return : yyyy-MM-dd (formatter 형식에 맞게 반환)
+     *******************************************************/
+    static longToDateTime(intDate, formatter) {
+        let strDate = intDate.toString();
+        let dateTo = strDate.replace(/\-/g,'').replace(/\./g,'').replace(/\//g,'');
+
+        let pYear 	= dateTo.substr(0,4);
+        let pMonth 	= dateTo.substr(4,2) - 1;
+        let pDay 	= dateTo.substr(6,2);
+        let pHour   = dateTo.substr(8,2);
+        let pMin    = dateTo.substr(10, 2);
+        let pSec    = dateTo.substr(12, 2);
+
+        const vDate = new Date(pYear, pMonth, pDay, pHour, pMin, pSec);
+
+        const format = formatter ? formatter : "YYYY-MM-DD HH:mm:ss";
+
+        const utcDate = moment(vDate);
+        return utcDate.tz(moment.tz.guess()).format(format);
     }
 
     /*******************************************************
@@ -156,7 +182,10 @@ export default class ComUtil {
     /**
      * 현재시간을 UTCTime으로 가져오기
      */
-    static getNow() {
+    static getNow(serverDate) {
+        if(serverDate){
+            return new Date(serverDate).getTime();
+        }
         return new Date().getTime();
     }
 
@@ -190,11 +219,11 @@ export default class ComUtil {
      string, number 판별 후 숫자가 아닌 잘못 된 값이면 0, 올바른 값이면 숫자변환
      [계산시 에러가 나지 않도록 항상 숫자로만 리턴하는 함수]
      @ex :
-        가나abc304100마바사 => 304100
-        '6,700' => 6700
-        undefined => 0
-        'undefined' => 0
-        null => 0
+     가나abc304100마바사 => 304100
+     '6,700' => 6700
+     undefined => 0
+     'undefined' => 0
+     null => 0
      @Param : number or string(숫자)
      @Return : number
      *******************************************************/
@@ -230,6 +259,42 @@ export default class ComUtil {
             return ''
         }
     }
+
+    /*******************************************************
+     Eth 금액 형식으로 리턴
+     [값이 0 보다 작으면 '' 반환]
+     @Param : 304100.121111
+     @Return :304,100.12
+     *******************************************************/
+    static toEthCurrency(value) {
+        const number = ComUtil.toNum(value)
+        // 소수점 2 째 자리까지 표현
+        const ethNumber = ComUtil.roundDown(number,2);
+        if(ethNumber >= 0)
+            return ComUtil.addCommas(ethNumber)
+        else {
+            return ''
+        }
+    }
+
+    /*******************************************************
+     Integer 금액 형식으로 리턴 (소수점자리 버림)
+     [값이 0 보다 작으면 '' 반환]
+     @Param : 304100.111
+     @Return :304,100
+     *******************************************************/
+    static toIntegerCurrency(value) {
+        const number = ComUtil.toNum(value)
+        // 소수점 2 째 자리까지 표현
+        const intNumber = ComUtil.roundDown(number,0);
+        if(intNumber >= 0)
+            return ComUtil.addCommas(intNumber)
+        else {
+            return ''
+        }
+    }
+
+
     /*******************************************************
      시간에 분 추가
      @Param : dt, minutes
@@ -295,14 +360,14 @@ export default class ComUtil {
      @Return : {result: true or false, inavlidKey: '밸리데이션 체크에 걸린 키'}
      @Usage :
 
-        const data = {name:'jaden', age: null, cell: '010-6679-0080'};
+     const data = {name:'jaden', age: null, cell: '010-6679-0080'};
 
-        const validArr = [
-                 {key: 'name', msg: '성명'},
-                 {key: 'age', msg: '나이'}
-             ]
+     const validArr = [
+     {key: 'name', msg: '성명'},
+     {key: 'age', msg: '나이'}
+     ]
 
-        validate(data, validArr)
+     validate(data, validArr)
      *******************************************************/
     static validate(data, validationArr) {
 
@@ -528,6 +593,21 @@ export default class ComUtil {
         return false;
     }
 
+    //android만 체크..
+    static isMobileAppAndroid() {
+        if (navigator.userAgent.startsWith('BloceryAppQR-Android')) {
+            return true;
+        }
+        return false;
+    }
+
+    static isMobileAppIos() {
+        if (navigator.userAgent.startsWith('BloceryAppQR-iOS')) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * 현재 환경이 모바일 App-iOS 이면서 apple사의 검수중일때 kakaoLogin방지용.(애플에서 카카오로그인 하려면 apple로그인도 해야한다고 202004월부터 정책)
      */
@@ -569,6 +649,13 @@ export default class ComUtil {
         return navigator.userAgent.match(/iPhone|iPad|iPod/i) == null ? false : true;
     }
 
+    static delay(ms) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve()
+            }, ms)
+        })
+    }
 
     /**
      * 현재 환경이 PC용 웹브라우저일 때, true 반환 -> 생산자쪽에서 화면을 크게 그리는데 사용
@@ -874,6 +961,9 @@ export default class ComUtil {
     static doubleSub(a, b) {
         return (ComUtil.toNum(a) - ComUtil.toNum(b)).toFixed(2);
     }
+    static doubleMultiple(a, b) {
+        return  ComUtil.roundDown(ComUtil.toNum(a) * ComUtil.toNum(b),2);
+    }
     static getFirstImageSrc(images, isThumbnail = true) {
 
         if (images && images.length > 0) {
@@ -884,6 +974,204 @@ export default class ComUtil {
             return src
         }
         return 'https://askleo.askleomedia.com/wp-content/uploads/2004/06/no_image-300x245.jpg'
+    }
+
+    static encodeInviteCode(consumerNo) {
+        //cobak하드코딩
+        if (consumerNo == 21530) {
+            return 'AAAAA'; //코박유저 하드코딩
+        }
+
+        let hex = consumerNo.toString(16);
+
+        while (hex.length < 5) { //총 5자리코드
+            hex = '0' + hex;
+        }
+        return 'CM' + hex.toUpperCase();
+    }
+
+    static decodeInviteCode(inviteCode) {
+        if (!inviteCode) return 0; //에러방지. 0은 없는 회원으로 취급.
+
+        if (inviteCode.toUpperCase() === 'AAAAA' ) {
+            return 21530; //코박유저 하드코딩
+        }
+
+        let consumerNo = parseInt(inviteCode.substring(2), 16);
+        return consumerNo;
+    }
+
+    static execCopy(text, successMsg, failedMsg) {
+        return new Promise((resolve) => {
+
+            const fallbackCopyTextToClipboard = (text) => {
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+
+                // document.body.appendChild(textArea);
+                document.body.prepend(textArea);
+
+                textArea.readOnly = true;
+                textArea.focus();
+                textArea.select();
+
+                try{
+
+                    let successful = document.execCommand('copy');
+
+                    document.body.removeChild(textArea);
+
+                    return successful
+
+                }catch (err) {
+                    return false
+                }
+            }
+
+            if (!navigator.clipboard) {
+                resolve(fallbackCopyTextToClipboard(text));
+            }
+
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    // alert("코드가 복사되었습니다");
+                    resolve(true)
+                })
+                .catch(err => {
+                    // This can happen if the user denies clipboard permissions:
+                    resolve(fallbackCopyTextToClipboard(text));
+                });
+        })
+    }
+
+    static async copyTextToClipboard(text, successMsg, failedMsg) {
+        const isCopied = await ComUtil.execCopy(text)
+        if (isCopied && successMsg) {
+            alert(successMsg)
+        }else{
+            if (failedMsg)
+                alert(failedMsg)
+        }
+
+        return isCopied
+    }
+
+    static async isBlockedAbuser() {
+
+        const {data: abuser} = await getAbuser()
+
+        if (!abuser)
+            return false
+
+        if (abuser && abuser.blocked) {
+            const userMessage = abuser.userMessage ? abuser.userMessage : '여뷰징 유사 사례로 판단되어 자동 차단 되었습니다. 고객센터 메일 cs@blocery.io 로 문의 부탁 드립니다.'
+            alert(userMessage)
+            return true;
+        }
+        return false;
+    }
+
+    static millisecondsToMinutesSeconds(ms) {
+        let duration = moment.duration(ms, 'milliseconds');
+        let fromMinutes = Math.floor(duration.asMinutes());
+        let fromSeconds = Math.floor(duration.asSeconds() - fromMinutes * 60);
+
+        return Math.floor(duration.asSeconds()) >= 60 ? (fromMinutes<= 9 ? '0'+fromMinutes : fromMinutes) +':'+ (fromSeconds<= 9 ? '0'+fromSeconds : fromSeconds)
+            : '00:'+(fromSeconds<= 9 ? '0'+fromSeconds : fromSeconds);
+
+    };
+
+    //배열의 해당 인덱스에 새로운 값 추가
+    static replaceItemAtIndex(arr, index, newValue) {
+        return [...arr.slice(0, index), newValue, ...arr.slice(index + 1)];
+    }
+
+    //배열의 해당 인덱스의 값 제거
+    static removeItemAtIndex(arr, index) {
+        return [...arr.slice(0, index), ...arr.slice(index + 1)];
+    }
+
+    static csvToArray(strData, strDelimiter){
+        // Check to see if the delimiter is defined. If not,
+        // then default to comma.
+        strDelimiter = (strDelimiter || ",");
+
+        // Create a regular expression to parse the CSV values.
+        const objPattern = new RegExp(
+            (
+                // Delimiters.
+                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+                // Quoted fields.
+                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+                // Standard fields.
+                "([^\"\\" + strDelimiter + "\\r\\n]*))"
+            ),
+            "gi"
+        );
+
+
+        // Create an array to hold our data. Give the array
+        // a default empty first row.
+        const arrData = [[]];
+
+        // Create an array to hold our individual pattern
+        // matching groups.
+        let arrMatches = null;
+
+
+        // Keep looping over the regular expression matches
+        // until we can no longer find a match.
+        while (arrMatches = objPattern.exec( strData )){
+
+            // Get the delimiter that was found.
+            let strMatchedDelimiter = arrMatches[ 1 ];
+
+            // Check to see if the given delimiter has a length
+            // (is not the start of string) and if it matches
+            // field delimiter. If id does not, then we know
+            // that this delimiter is a row delimiter.
+            if (
+                strMatchedDelimiter.length &&
+                strMatchedDelimiter !== strDelimiter
+            ){
+
+                // Since we have reached a new row of data,
+                // add an empty row to our data array.
+                arrData.push( [] );
+
+            }
+
+            let strMatchedValue;
+
+            // Now that we have our delimiter out of the way,
+            // let's check to see which kind of value we
+            // captured (quoted or unquoted).
+            if (arrMatches[ 2 ]){
+
+                // We found a quoted value. When we capture
+                // this value, unescape any double quotes.
+                strMatchedValue = arrMatches[ 2 ].replace(
+                    new RegExp( "\"\"", "g" ),
+                    "\""
+                );
+
+            } else {
+
+                // We found a non-quoted value.
+                strMatchedValue = arrMatches[ 3 ];
+
+            }
+
+
+            // Now that we have our value string, let's add
+            // it to the data array.
+            arrData[ arrData.length - 1 ].push( strMatchedValue );
+        }
+
+        // Return the parsed data.
+        return( arrData );
     }
 
 }

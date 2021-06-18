@@ -173,8 +173,8 @@ export default class PopupScreen extends React.Component {
             let self = this;
             KakaoLogins.login([KAKAO_AUTH_TYPES.Talk])
                 .then(result => {
-                    // console.log("KAKAO_SUCCESS : ", result);
-                    let url = '/login?accessToken=' + result.accessToken;
+                    console.log("KAKAO_SUCCESS : ", result);
+                    let url = '/login?accessToken=' + result.accessToken + '&refreshToken=' + result.refreshToken;
                     // console.log(url);
 
                     const serverUrl = Server.getServerURL() + url;

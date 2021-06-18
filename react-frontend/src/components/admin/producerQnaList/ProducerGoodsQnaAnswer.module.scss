@@ -1,0 +1,21 @@
+@import 'Color.module.scss';
+.wrap {
+  //상품문의번호 박스
+  & .goodsQnaBox {
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 0.5em;
+    font-weight: 500;
+    margin-bottom: 1em;
+  }
+  //상품문의 답변 박스
+  & .answerBox {
+    border: 1px gray solid;
+    border-radius: 0.3rem;
+    padding: 0.75rem;
+
+  }
+  & b {
+    font-weight: 400;
+  }
+}

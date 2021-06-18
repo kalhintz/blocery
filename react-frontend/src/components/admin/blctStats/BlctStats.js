@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Table } from 'reactstrap';
 
-import { getBlctStats, getMonthlyBlctStats, getAllSupportersBlct, getAllBlyTimeRewardBlct, getAllEventRewardBlct, getAllCouponBlct } from "~/lib/adminApi";
+import { getBlctStats, getMonthlyBlctStats, getAllSupportersBlct, getAllBlyTimeRewardBlct, getAllEventRewardBlct, getAllCouponBlct, getAllProducerWithdrawBlct } from "~/lib/adminApi";
 import { getTotalSwapBlctToBly, getTotalSwapBlctIn, getSwapTempProducerBlctToBly } from "~/lib/swapApi"
-
+import { getProducerByProducerNo } from '~/lib/producerApi';
 import { getManagerBlctBalance } from "~/lib/smartcontractApi"
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+// import 'ag-grid-community/dist/styles/ag-grid.css';
+// import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 import { ExcelDownload } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
 
@@ -31,7 +31,13 @@ const BlctStats = (props) => {
         ],
         defaultColDef: {
             width: 170,
-            resizable: true
+            resizable: true,
+            filter: true,
+            sortable: true,
+            floatingFilter: false,
+            filterParams: {
+                newRowsAction: 'keep'
+            }
         },
         frameworkComponents: {
             startEndRenderer: startEndRenderer,
@@ -41,6 +47,7 @@ const BlctStats = (props) => {
     })
 
     const [dataList, setDataList] = useState([]);
+    const [producerWithdrawList, setProducerWithdrawList] = useState([]);
     const [excelData, setDataExcel] = useState([]);
     const [summaryData, setSummaryData] = useState({});
     const [supportersBlct, setSupportersBlct] = useState(0);
@@ -50,6 +57,8 @@ const BlctStats = (props) => {
     const [swapBlctToBly, setSwapBlctToBly] = useState(0);
     const [swapBlctIn, setSwapBlctIn] = useState(0);
     const [tempProducerBlctToBly, setTempProducerBlctToBly] = useState(0);
+    const [producerPayoutBlct, setProducerPayoutBlct] = useState(0);
+    const [farmtoryPayoutBlct, setFarmtoryPayoutBlct] = useState(0);
 
     const initialBlctEco = 1137800;
     const addBlctEco = (1000000 + 695262.465).toFixed(3);  // 2020.9월 선물하기용 1,000,000 추가입금 + 2020.9월 토큰현금화과정에서 추가입금
@@ -148,9 +157,30 @@ const BlctStats = (props) => {
         const {data:swapBlctToBly} = await getTotalSwapBlctToBly();
         setSwapBlctToBly(swapBlctToBly.blctSum)
 
+
+        // blct구매내역 중 현금 정산한 생산자들의 blct를 현금화한 물량
         const {data} = await getSwapTempProducerBlctToBly();
         const tempProducerBlctToBly = data.blctSum;
         setTempProducerBlctToBly(tempProducerBlctToBly);
+
+        // 팜토리처럼 blct 정산하는 생산자들의 출금내역
+        const {data:producerWithdrawList} = await getAllProducerWithdrawBlct();
+        setProducerWithdrawList(producerWithdrawList);
+        // console.log(producerWithdrawList);
+
+        let totalProducerPayout = 0;
+        let totalFarmtoryPayout = 0;
+        producerWithdrawList.map(item => {
+           totalProducerPayout += item.amount;
+
+           if(item.eventName.includes("팜토리")) {
+               totalFarmtoryPayout += item.amount;
+           }
+        });
+
+        console.log(totalProducerPayout, tempProducerBlctToBly);
+        setProducerPayoutBlct(totalProducerPayout + parseFloat(tempProducerBlctToBly));  // blct정산, 현금정산 생산자들의 모든 blct 구매건 정산내역이기에 합이 필요함.
+        setFarmtoryPayoutBlct(totalFarmtoryPayout);
 
         const {data:swapBlctIn} = await getTotalSwapBlctIn();
         setSwapBlctIn(swapBlctIn);
@@ -183,7 +213,8 @@ const BlctStats = (props) => {
             //20201103 beforeMerge summaryData.consumerBlct = totalEventBlct - response.totalBlctOrder + response.totalConsumerRewardBlct - swapBlctToBly.blctSum + swapBlctIn;
             summaryData.consumerBlct = totalEventBlct - response.totalBlctOrder + response.totalConsumerRewardBlct - consumerSwapBlctToBly + swapBlctIn;
 
-            summaryData.farmtoryBlct = response.totalFarmtoryOrderBlct + response.totalFarmtoryRewardBlct;
+            summaryData.farmtoryBlct = response.totalFarmtoryOrderBlct + response.totalFarmtoryRewardBlct - totalFarmtoryPayout;
+            console.log(response.totalFarmtoryOrderBlct, response.totalFarmtoryRewardBlct, totalFarmtoryPayout)
             summaryData.producerRewardBlct = response.totalProducerRewardBlct;
             summaryData.escrow = response.totalBlctOrder - response.totalConsumerOkBlctOrder;
             summaryData.bloceryOnlyFee = response.totalBloceryOnlyFeeBlct;
@@ -237,7 +268,7 @@ const BlctStats = (props) => {
                                 </tr>
 
                                 <tr>
-                                    <td> 팜토리 생산자 지갑 : 상품판매금액 + 판매보상 </td>
+                                    <td> 팜토리 생산자 지갑 : 상품판매금액 + 판매보상 - 출금토큰</td>
                                     <td> {ComUtil.toCurrency(summaryData.farmtoryBlct)} </td>
                                 </tr>
 
@@ -346,6 +377,11 @@ const BlctStats = (props) => {
                             </tr>
 
                             <tr>
+                                <td> 생산자 토큰정산 출금(팜토리포함 모든 생산자) </td>
+                                <td> {ComUtil.toCurrency(producerPayoutBlct)} </td>
+                            </tr>
+
+                            <tr>
                                 <td> 내부 BLY 출금 합계(oep4 -> erc20 swap)</td>
                                 <td> {ComUtil.toCurrency(swapBlctToBly)} </td>
                             </tr>
@@ -390,12 +426,12 @@ const BlctStats = (props) => {
                 }}
             >
                 <AgGridReact
-                    enableSorting={true}
-                    enableFilter={true}
+                    // enableSorting={true}
+                    // enableFilter={true}
                     columnDefs={agGrid.columnDefs}
                     defaultColDef={agGrid.defaultColDef}
                     rowSelection={'single'}  //멀티체크 가능 여부
-                    enableColResize={true}
+                    // enableColResize={true}
                     overlayLoadingTemplate={agGrid.overlayLoadingTemplate}
                     overlayNoRowsTempalte={agGrid.overlayNoRowsTemplate}
                     frameworkComponents={agGrid.frameworkComponents}

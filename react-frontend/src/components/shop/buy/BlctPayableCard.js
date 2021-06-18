@@ -15,6 +15,7 @@ import {color} from "../../../styledComponents/Properties";
 const StyledSlider = styled(ReactSlider)`
     width: 100%;
     height: 10px;
+    z-index: 0;
 `;
 
 const StyledThumb = styled.div`
@@ -80,7 +81,9 @@ const BlctPayableCard = (props) => {
         if(useBlct !==  null && useBlct !== undefined) {
 
             //사용한 Bly가 지불가능한 Bly보다 클 경우 useBlct를 payableBlct(최대치로 다시 조정)
-            if (useBlct > payableBlct){
+            console.log("useBlct",useBlct)
+            console.log("payableBlct",payableBlct)
+            if (parseFloat(useBlct) > parseFloat(payableBlct)){
                 setUseBlct(payableBlct)
                 setRate(100)
 
@@ -166,8 +169,13 @@ const BlctPayableCard = (props) => {
             </Div>
 
             <Div mt={20}>
-                <Flex mb={8} justifyContent={'flex-end'}>
-                    <Div fg={'adjust'} fontSize={12}>{`${ComUtil.addCommas(ComUtil.roundDown(ComUtil.toNum(useBlct) * ComUtil.toNum(props.blctToWon), 0))  } 원`}</Div>
+                <Flex mb={8}>
+                    <Div fg={'danger'} fontSize={12}>
+                        {
+                            (useBlct && useBlct > 0 && useBlct < 1) ? '최소 1BLY 이상 사용 가능합니다.' : null
+                        }
+                    </Div>
+                    <Right fg={'adjust'} fontSize={12}>{`${ComUtil.addCommas(ComUtil.roundDown(ComUtil.toNum(useBlct) * ComUtil.toNum(props.blctToWon), 0))  } 원`}</Right>
                     {/*<Right><small>(1BLY = {ComUtil.addCommas(props.blctToWon)}원)</small></Right>*/}
                 </Flex>
                 <Flex fontSize={13} mb={23}>

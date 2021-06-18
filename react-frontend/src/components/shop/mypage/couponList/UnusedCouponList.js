@@ -14,7 +14,7 @@ const UnusedCouponList = ({data: usableCoupons}) => {
                 usableCoupons.length > 0 ? (
                     <Div>
                         {
-                            usableCoupons.map((item, index) => <CouponCard key={'coupon'+index} coupon={item} isUnused={true} />)
+                            usableCoupons.map((item, index) => <CouponCard key={'coupon'+index} coupon={item} isExpired={false} />)
                         }
                     </Div>
                 ) : (
@@ -38,8 +38,9 @@ const UnusedCouponList = ({data: usableCoupons}) => {
                     - 쿠폰에 따라 적용되는 상품(즉시상품, 예약상품 등)이 다를 수 있습니다.<br/>
                     - 이벤트, 기획전, 타임세일 등 일부 상품에 쿠폰 사용 제한이 있을 수 있습니다.<br/>
                     - 사용기간이 지난 쿠폰은 자동 소멸됩니다.<br/>
+                    - 적립형 쿠폰은 BLY쿠폰으로, 상품정보 화면에 표기된 원화의 근사치로 지급됩니다.<br/>
                     - 결제 취소 시 사용하신 쿠폰은 복원되지 않습니다.<br/>
-                    (단, 생산자(판매자), 고객센터를 통한 취소 시 동일한 쿠폰이 재발급 됩니다.)<br/>
+                    (단, 생산자 주문 취소에 한해서만 동일한 BLY쿠폰이 재발급됩니다.)<br/>
                 </Div>
             </Div>
         </Div>

@@ -9,8 +9,8 @@ import classNames from 'classnames';
 import Style from './GiganSalesSttList.module.scss'
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 export default class GiganSalesSttList extends Component {
     constructor(props) {
@@ -28,7 +28,13 @@ export default class GiganSalesSttList extends Component {
             columnDefs: this.getColumnDefs(),
             defaultColDef: {
                 width: 100,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             components: {
                 formatCurrencyRenderer: this.formatCurrencyRenderer,
@@ -362,7 +368,7 @@ export default class GiganSalesSttList extends Component {
                         rowHeight={this.state.rowHeight}
                         //gridAutoHeight={true}
                         //domLayout={'autoHeight'}
-                        enableColResize={true}              //컬럼 크기 조정
+                        // enableColResize={true}              //컬럼 크기 조정
                         overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                         overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                         onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)

@@ -3,7 +3,7 @@ import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap'
 import { ShopXButtonNav } from '~/components/common/index'
 import Switch from "react-switch";
 
-import { getConsumer, updateConsumerInfo } from '~/lib/shopApi'
+import { getConsumer, updateAlrimInfo } from '~/lib/shopApi'
 import { getServerVersion } from "~/lib/commonApi";
 
 import {FaAngleRight} from 'react-icons/fa'
@@ -64,13 +64,9 @@ export default class Setting extends Component {
     // 알림설정이 false->true 변경한 경우
     changeTrue = async () => {
         let data = {};
-
         data.consumerNo = this.state.loginUser.consumerNo;
-        data.phone = this.state.loginUser.phone;
-        data.name = this.state.loginUser.name;
         data.receivePush = true;
-
-        const modified = await updateConsumerInfo(data)
+        const modified = await updateAlrimInfo(data)
 
         if(modified.data === 1) {
             this.setState({ modal: false })
@@ -92,14 +88,9 @@ export default class Setting extends Component {
     // 알림 해제 클릭시 receivePush=false 로 변경
     cancelNoti = async () => {
         let data = {};
-
         data.consumerNo = this.state.loginUser.consumerNo;
-        data.phone = this.state.loginUser.phone;
-        data.name = this.state.loginUser.name;
         data.receivePush = false;
-
-        const modified = await updateConsumerInfo(data)
-
+        const modified = await updateAlrimInfo(data)
         if(modified.data === 1) {
             this.setState({ modal: false })
             alert('알림 설정 수신 동의가 해제되었습니다. 마이페이지에서 재설정하실 수 있습니다.')

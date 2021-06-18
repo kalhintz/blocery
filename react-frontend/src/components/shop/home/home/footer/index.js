@@ -22,8 +22,8 @@ const Footer = () => {
             <ul>
                 <li>위탁사업자</li><li>Farm & Consume, Ltd.</li>
                 <li>Director</li><li>HWANG DONG JU</li>
-                <li>Address</li><li>10 Anson Road #23-14F International Plaza
-                Singapore Registration No. 201830855C</li>
+                <li>Address</li><li>111 SOMERSET ROAD #06-07 111 SOMERSET SINGAPORE 238164
+                Registration No. 201830855C</li>
                 <li>운영사업자</li><li>(주)이지팜</li>
                 <li>대표이사</li><li>진교문</li>
                 <li>사업자등록번호</li><li>124-81-73259</li>

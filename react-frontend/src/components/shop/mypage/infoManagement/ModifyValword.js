@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { Col, Button, Form, FormGroup, Label, Input, Container, InputGroup, Table, Badge, Row, Fade } from 'reactstrap'
 import ComUtil from "~/util/ComUtil"
-import { getConsumerByConsumerNo, updateValword } from "~/lib/shopApi";
+import {getConsumer, updateValword} from "~/lib/shopApi";
 import { updValword } from "~/lib/producerApi"
 import { doLogout } from "~/lib/loginApi"
 import { ShopXButtonNav } from '~/components/common'
@@ -21,26 +21,14 @@ export default class ModifyValword extends Component {
         }
     }
 
-    componentDidMount() {
-        const params = new URLSearchParams(this.props.location.search)
-        const consumerNo = params.get('consumerNo')
-        const producerNo = params.get('producerNo')
-
-        // this.consumerSearch(consumerNo);
-        // this.producerSearch(producerNo);
-
-
+    async componentDidMount() {
+        const {data:loginUser} = await getConsumer();
+        if(!loginUser){
+            this.props.history.replace('/mypage');
+            return;
+        }
         this.setState({
-            consumerNo: consumerNo,
-            producerNo: producerNo
-        })
-    }
-
-    consumerSearch = async (consumerNo) => {
-        const consumerInfo = await getConsumerByConsumerNo(consumerNo)
-
-        this.setState({
-            consumerNo: consumerNo
+            consumerNo: loginUser.consumerNo
         })
     }
 
@@ -93,7 +81,6 @@ export default class ModifyValword extends Component {
         if (this.state.producerNo === 0 || this.state.producerNo == null) {
             data.consumerNo = this.state.consumerNo;
             let modified = await updateValword(data);
-            console.log(modified)
             if(modified.data === 1) {
                 alert('비밀번호 변경이 완료되었습니다. 다시 로그인해주세요.')
                 //this.props.history.push('/myPage');

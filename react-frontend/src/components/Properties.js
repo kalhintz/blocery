@@ -4,11 +4,26 @@ import * as Admin from '../components/admin'
 // import { faChartArea, faBoxOpen, faStore, faShoppingCart, faDollarSign, faSignal, faGlobe } from "@fortawesome/free-solid-svg-icons";
 import {FaChartArea, FaBoxOpen, FaStore, FaShoppingCart, FaDollarSign, FaSignal, FaGlobe} from 'react-icons/fa'
 
+// 환경 개발 또는 운영 모드 변수
+// config.mode: process.env.NODE_ENV,
+const config = {
+    mode: process.env.NODE_ENV,
+    appMode: process.env.REACT_APP_ENV,
+};
+
 export const Server = {
 
     /* 중요: AWS포시에는 꼭 production */
     _serverMode: function() {
-        return 'stage';      //stage Server: 서버테스트용 - 회사 서버.-마스터에는 이버전으로 관리
+        if(config.mode==="production"){
+            if(config.appMode === "staging"){
+                return 'stage'; // 개발 모드
+            }
+            return 'production'; // 운영 모드
+        } else {
+            return 'stage'; // 개발 모드
+        }
+        // return 'stage';      //stage Server: 서버테스트용 - 회사 서버.-마스터에는 이버전으로 관리
         // return 'production'; //production Server:  - AWS 서버 배포시 꼭 이버전. + 백엔드 gradle 버전넘버 중간꺼 올리기, 예) 0.2.xx
     },
     getRestAPIHost: function() {
@@ -181,35 +196,50 @@ export const AdminSubMenuList = [
     {type: 'shop', parentId: 'home', id: 'homeSetting', name: '홈화면 구성', page: Admin.B2cHomeSetting, isMainPage: false},
     {type: 'shop', parentId: 'home', id: 'eventInfoList', name: '이벤트정보', page: Admin.EventInfoList, isMainPage: false},
     {type: 'shop', parentId: 'home', id: 'mdPickList', name: '기획전', page: Admin.B2cMdPickList, isMainPage: false},
-    {type: 'shop', parentId: 'home', id: 'blyTimeList', name: '블리타임', page: Admin.B2cBlyTimeList, isMainPage: false},
+    // {type: 'shop', parentId: 'home', id: 'blyTimeList', name: '블리타임', page: Admin.B2cBlyTimeList, isMainPage: false},
+
     {type: 'shop', parentId: 'home', id: 'timeSaleList', name: '포텐타임', page: Admin.B2cTimeSaleList, isMainPage: false},
     {type: 'shop', parentId: 'home', id: 'superRewardList', name: '슈퍼리워드', page: Admin.B2cSuperRewardList, isMainPage: false},
-    {type: 'shop', parentId: 'order', id: 'orderList', name: '주문확인', page: Admin.OrderList, isMainPage: true},  //isMainPage: true 일 경우 getAdminShopMainUrl() 에서 찾아서 반환
-    {type: 'shop', parentId: 'order', id: 'orderStats', name: '실적현황', page: Admin.OrderStats, isMainPage: false},
+    {type: 'shop', parentId: 'order', id: 'orderStats', name: '실적현황', page: Admin.OrderStats, isMainPage: true}, //isMainPage: true 일 경우 getAdminShopMainUrl() 에서 찾아서 반환
+    {type: 'shop', parentId: 'order', id: 'orderList', name: '주문확인', page: Admin.OrderList, isMainPage: false},
+    {type: 'shop', parentId: 'order', id: 'producerCancelReq', name: '생산자 주문취소요청', page: Admin.ProducerCancelReqList, isMainPage: false},
+    {type: 'shop', parentId: 'order', id: 'orderCardTempList', name: '주문카드오류확인', page: Admin.OrderCardTempList, isMainPage: false},
     {type: 'shop', parentId: 'order', id: 'goodsList', name: '상품목록', page: Admin.GoodsList, isMainPage: false},
     {type: 'shop', parentId: 'order', id: 'blctStats', name: 'BLY통계', page: Admin.BlctStats},
     {type: 'shop', parentId: 'order', id: 'blctToWon', name: 'BLY일별가격', page: Admin.BlctToWon},
     {type: 'shop', parentId: 'order', id: 'swapTokenInList', name: '토큰입금', page: Admin.TokenSwapInList},
+    {type: 'shop', parentId: 'order', id: 'newTokenSwapDepositList', name: 'new토큰입금', page: Admin.NewTokenSwapDepositList},
     {type: 'shop', parentId: 'order', id: 'swapTokenOutList', name: '토큰출금', page: Admin.TokenSwapOutList},
     {type: 'shop', parentId: 'order', id: 'siseCorrectionList', name: '예약상품토큰보정', page: Admin.TokenSiseCorrectionList},
+    {type: 'shop', parentId: 'order', id: 'donAirDrop', name: 'DonAirDrop', page: Admin.DonAirDropList},
 
     {type: 'shop', parentId: 'consumer', id: 'consumerList', name: '소비자조회', page: Admin.ConsumerList},
+    {type: 'shop', parentId: 'consumer', id: 'consumerStoppedList', name: '탈퇴회원조회', page: Admin.ConsumerStoppedList},
+    {type: 'shop', parentId: 'consumer', id: 'recommendFriendList', name: '추천친구조회', page: Admin.RecommendFriendList},
+    {type: 'shop', parentId: 'consumer', id: 'abuserList', name: '어뷰저조회', page: Admin.AbuserList},
+
+    {type: 'shop', parentId: 'producer', id: 'producerGoodsQnaList', name: '소비자상품문의조회', page: Admin.ProducerGoodsQnaList},
     {type: 'shop', parentId: 'producer', id: 'producerList', name: '생산자조회', page: Admin.ProducerList},
     {type: 'shop', parentId: 'producer', id: 'producerRegRequest', name: '입점문의조회', page: Admin.ProducerRegRequest},
     {type: 'shop', parentId: 'producer', id: 'producerPayout', name: '월 매출 정산', page: Admin.ProducerPayout},
+
     {type: 'shop', parentId: 'code', id: 'classItemList', name: '품목관리', page: Admin.ItemList},
     {type: 'shop', parentId: 'code', id: 'transportCompanyList', name: '택배사관리', page: Admin.TransportCompanyList},
     {type: 'shop', parentId: 'code', id: 'producerFeeRateList', name: '생산자수수료관리', page: Admin.ProducerFeeRateList},
-    // {type: 'shop', parentId: 'notice', id: 'noticeReg', name: '공지사항등록', page: Admin.NoticeReg},
+
     {type: 'shop', parentId: 'notice', id: 'noticeList', name: '공지사항목록', page: Admin.NoticeList},
-    // {type: 'shop', parentId: 'notice', id: 'homeBannerList', name: '홈공지(배너)', page: Admin.HomeBannerList},
     {type: 'shop', parentId: 'notice', id: 'goodsDetailBannerList', name: '상품공지(배너)', page: Admin.GoodsDetailBannerList},
     {type: 'shop', parentId: 'notice', id: 'pushNotiList', name: '푸쉬알림목록', page: Admin.PushNotiList},
+
     // {type: 'shop', parentId: 'event', id: 'eventList', name: '이벤트지급목록', page: Admin.EventPaymentList},
-    {type: 'shop', parentId: 'event', id: 'goPaxJoinEvent', name: '고팍스가입이벤트', page: Admin.GoPaxJoinEventList},
-    {type: 'shop', parentId: 'event', id: 'goPaxCardEvent', name: '고팍스카드이벤트', page: Admin.GoPaxCardEventList},
+    {type: 'shop', parentId: 'event', id: 'goPaxJoinEvent', name: 'GP1', page: Admin.GoPaxJoinEventList},
+    {type: 'shop', parentId: 'event', id: 'goPaxCardEvent', name: 'GP2', page: Admin.GoPaxCardEventList},
     {type: 'shop', parentId: 'event', id: 'consumerCoupon', name: '쿠폰지급내역', page: Admin.ConsumerCouponList},
-    {type: 'shop', parentId: 'event', id: 'couponMaster', name: '쿠폰발급내역', page: Admin.CouponMasterList},
+    {type: 'shop', parentId: 'event', id: 'couponMaster', name: '쿠폰발급설정', page: Admin.CouponMasterList},
+
+    {type: 'shop', parentId: 'event', id: 'inviteFriendCountList', name: '친추가입 지연요약', page: Admin.InviteFriendCountList},
+    {type: 'shop', parentId: 'event', id: 'inviteFriendList', name: '친추가입 적립내역', page: Admin.InviteFriendList},
+    {type: 'shop', parentId: 'event', id: 'inviteFriendGoodsList', name: '친추구매 내역', page: Admin.InviteFriendGoodsList},
     {type: 'shop', parentId: 'event', id: 'bountyEventHistory', name: 'BLCT지급 이벤트목록', page: Admin.BountyEventHistory},
 
     {type: 'shop', parentId: 'token', id: 'simpleAdmin', name: '기본설정', page: Admin.SimpleAdmin},

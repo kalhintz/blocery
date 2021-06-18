@@ -100,7 +100,7 @@ export default class MissionEvent extends Component {
 
         const loginUser = await getLoginUser();
 
-        console.log('B2C Event-componentDidMount - ', loginUser);
+        //console.log('B2C Event-componentDidMount - ', loginUser);
 
         if(!loginUser || loginUser.userType !== 'consumer') {
             console.log('B2C Event-componentDidMount - consumer notLogined');
@@ -114,9 +114,9 @@ export default class MissionEvent extends Component {
             completeCount = this.getCompleteCount(missionList)
         }
 
-        console.log('missionList', missionList, typeof missionList);
-        console.log({missionList});
-        console.log('completeCount', completeCount);
+        //console.log('missionList', missionList, typeof missionList);
+        //console.log({missionList});
+        //console.log('completeCount', completeCount);
 
         // if (missionList && missionList.length != 0) {
         //     completeCount = missionList.reduce((partial_sum, a) => partial_sum + (a.status == 2)?1:0, 0);  //status가 2일때만 합산
@@ -154,8 +154,6 @@ export default class MissionEvent extends Component {
         //           400 이벤트 종료
         if (result === 400 )  alert('이벤트가 종료되었습니다');
         if (result === 200 )  {
-
-
             const  completeCount = this.getCompleteCount(missionList)
 
             this.setProgress(completeCount)
@@ -178,7 +176,7 @@ export default class MissionEvent extends Component {
 
         this.intervalId = setInterval(() => {
             if(progressCount <= completeCount){
-                console.log('interval=====')
+                //console.log('interval=====')
                 progressCount += 1
                 this.setState({completeCount: completeCount, progressCount: progressCount})
                 if(progressCount === completeCount)

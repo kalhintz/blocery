@@ -2,6 +2,7 @@ import React, {Fragment, useState} from 'react'
 import {FaComments} from 'react-icons/fa'
 import ComUtil from '~/util/ComUtil'
 import { Hr } from '~/components/common'
+import {Span} from "~/styledComponents/shared";
 const whiteSpace = {whiteSpace: 'pre-line'}
 
 const GoodsQnAItem = (props) => {
@@ -10,6 +11,7 @@ const GoodsQnAItem = (props) => {
         setIsVisible(!isVisible)
     }
     const email = props.consumerEmail
+    const phone = props.consumerPhone
     const secureEmail = email.split('@');
     return(
         <Fragment>
@@ -19,7 +21,17 @@ const GoodsQnAItem = (props) => {
             <div className={'f6 m-3'}>
                 <div onClick={toggle}>
                     <div className={'mb-2'}>
-                        <span className={'mr-2'}>{secureEmail[0].substring(0,3)}***@{secureEmail[1]}</span>
+                        {
+                            email ?
+                                <span className={'mr-2'}>{secureEmail[0].substring(0,3)}***@{secureEmail[1]}</span>
+                                :
+                                (
+                                    phone ?
+                                        <Span mr={8}>{phone.substring(0,3)}-{phone.substring(4,6)}**-**{phone.substring(11,13)}</Span>
+                                        :
+                                        <Span mr={8}>***</Span>
+                                )
+                        }
                         <span className={'mr-2'}>|</span>
                         <span className={'mr-2'}>{ComUtil.timeFromNow(props.goodsQueDate)}</span>
                         <span className={'mr-2'}>|</span>

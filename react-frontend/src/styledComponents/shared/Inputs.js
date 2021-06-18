@@ -3,6 +3,7 @@ import React from 'react';
 import styled, {css} from 'styled-components';
 import {color} from '../Properties'
 import {getValue} from '../Util'
+import * as core from '../CoreStyles'
 
 const BasicInput = styled.input`
 
@@ -10,7 +11,6 @@ const BasicInput = styled.input`
     height: ${props => props.height ? getValue(props.height) : '40px;'};
     box-sizing: border-box;
     color: ${color.black};
-    font-size: 14px;
     border-radius: ${props => props.rounded ? getValue(props.rounded) : getValue(5)};
     
     border: solid 1px #e1e1e1;
@@ -18,6 +18,12 @@ const BasicInput = styled.input`
     ${props => props.bold && `
         font-weight: bold;
     `}
+    
+    font-size: ${props => getValue(props.fontSize) || '14px'};
+
+
+    ${core.margin};
+    ${core.padding};
 
     &::placeholder {
         color: #b9b9b9;        

@@ -28,6 +28,7 @@ const GoodsList = (props) => {
                                 discountRate={Math.round(goods.discountRate)}
                                 remainedCnt={goods.remainedCnt}
                                 blyReview={goods.blyReviewConfirm}
+                                buyingRewardFlag={goods.buyingRewardFlag}
                             />
                             <Div flexGrow={1} pl={15} >
                                 <Flex fg={"green"} fontSize={12}>
@@ -55,6 +56,7 @@ const GoodsList = (props) => {
                                 discountRate={Math.round(goods.discountRate)}
                                 remainedCnt={goods.remainedCnt}
                                 blyReview={goods.blyReviewConfirm}
+                                buyingRewardFlag={goods.buyingRewardFlag}
                             />
                             <SlideItemContent
                                 style={{paddingTop: 5}}

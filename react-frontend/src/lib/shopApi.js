@@ -1,4 +1,5 @@
 import axios from 'axios'
+import axiosSecure from "~/lib/axiosSecure";
 import { Server } from "../components/Properties";
 
 // 소비자 회원가입
@@ -8,18 +9,17 @@ export const getConsumerEmail = (email) => axios(Server.getRestAPIHost() + '/con
 // 소비자 정보 찾기
 export const getConsumer = () => axios(Server.getRestAPIHost() + '/consumer', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
-// 카카오 폰번호 소비자찾기
-// export const getKakaoPhoneConsumer = (phone) => axios(Server.getRestAPIHost() + '/consumer/kakaoPhone', { method: "get", params: {phone: phone}, withCredentials: true, credentials: 'same-origin' })
-export const getKakaoPhoneConsumer = (phone) => axios(Server.getRestAPIHost() + '/consumer/kakaoPhone', { method: "get", withCredentials: true, credentials: 'same-origin', params: { phone: phone} })
+// 소비자 알림 설정
+export const updateAlrimInfo = (data) => axios(Server.getRestAPIHost() + '/consumerAlrim', { method: "put", data:data, withCredentials: true, credentials: 'same-origin' })
 
-// 소비자 정보 조회(consumerNo로)
-export const getConsumerByConsumerNo = (consumerNo) => axios(Server.getRestAPIHost() + '/consumer/consumerNo', { method: "get", params: {consumerNo: consumerNo}, withCredentials: true, credentials: 'same-origin' })
+// 소비자 이름 수정
+export const updateName = (consumerName) => axiosSecure(Server.getRestAPIHost() + '/consumerName', { method: "put", params:{consumerName:consumerName}, withCredentials: true, credentials: 'same-origin' })
 
-// 소비자 정보 수정
-export const updateConsumerInfo = (data) => axios(Server.getRestAPIHost() + '/consumer', { method: "put", data:data, withCredentials: true, credentials: 'same-origin' })
+// 소비자 추천인 번호 적용
+export const updateConsumerRecommenderNo = (data) => axios(Server.getRestAPIHost() + '/consumerRecommenderNo', { method: "put", data:data, withCredentials: true, credentials: 'same-origin' })
 
 // 비밀번호 변경
-export const updateValword = (data) => axios(Server.getRestAPIHost() + '/consumer/valword', { method: "put", data:data, withCredentials: true, credentials: 'same-origin' })
+export const updateValword = (data) => axiosSecure(Server.getRestAPIHost() + '/consumer/valword', { method: "put", data:data, withCredentials: true, credentials: 'same-origin' })
 
 //택배사 조회(전체) : 소비자 배송 조회 용
 export const getTransportCompany = () => axios(Server.getRestAPIHost() + '/transportCompany', { method: "get", params: {}, withCredentials: true, credentials: 'same-origin' })
@@ -42,7 +42,7 @@ export const addOrders = (orders) => axios(Server.getRestAPIHost() + '/orders', 
 // 주문정보 조회 (주문그룹정보,주문리스트정보)
 export const getOrdersByOrderGroupNo = (orderGroupNo) => axios(Server.getRestAPIHost() + '/orders', { method: "get", params: { orderGroupNo: orderGroupNo} , withCredentials: true, credentials: 'same-origin' })
 
-// BLCT 주문 정보 취소
+// BLCT 주문 정보 취소 (2021.2.17 현재 사용안함)
 export const addBlctOrderCancel = (data) => axios(Server.getRestAPIHost() + '/blctPayCancel', { method: "post", headers: { "Content-Type": "application/json" }, data: data, withCredentials: true, credentials: 'same-origin' })
 
 // BLCT 묶음배송 주문 정보 취소
@@ -57,7 +57,7 @@ export const addPgWrapOrderCancel = (data) => axios(Server.getRestAPIHost() + "/
 // 장바구니 선택한 주문리스트 조회
 export const getCartListByConsumerNo = (consumerNo) => axios(Server.getRestAPIHost() + '/orderCartList', { method: "get", params: { consumerNo: consumerNo} , withCredentials: true, credentials: 'same-origin' })
 
-// 주문정보 조회
+// 주문정보 조회 (소비자번호 로그인세션)
 export const getOrderDetailByOrderSeq = (orderSeq) => axios(Server.getRestAPIHost() + '/order', { method: "get", params: { orderSeq: orderSeq} , withCredentials: true, credentials: 'same-origin' })
 
 // 주문번호가 속한 주문그룹의 모든 묶음배송 주문들 조회
@@ -76,11 +76,10 @@ export const updateReceiverInfo = (data) => axios(Server.getRestAPIHost() + '/up
 export const updateConsumerOkDate = (data) => axios(Server.getRestAPIHost() + '/shop/order/consumerOkDate', { method: "patch", data:data, withCredentials: true, credentials: 'same-origin' })
 
 // 소비자별 주문정보 조회
-export const getOrderDetailListByConsumerNo = (consumerNo) => axios(Server.getRestAPIHost() + '/orderDetailListByConsumerNo', { method: "get", params: { consumerNo: consumerNo} , withCredentials: true, credentials: 'same-origin' })
+export const getOrderDetailListByConsumerNo = () => axios(Server.getRestAPIHost() + '/orderDetailListByConsumerNo', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 // 주문개수 조회 for New Mypage
 export const getOrderDetailCountForMypage = (consumerNo) => axios(Server.getRestAPIHost() + '/orderDetailCountForMypage', { method: "get" , withCredentials: true, credentials: 'same-origin' })
-
 
 // 리뷰 작성 대기목록 조회
 export const getWaitingGoodsReview = () => axios(Server.getRestAPIHost() + '/waitingGoodsReview', { method: "get", withCredentials: true, credentials: 'same-origin' })
@@ -135,10 +134,10 @@ export const getRegularShop = (consumerNo, producerNo) => axios(Server.getRestAP
 export const getRegularShopList = () => axios(Server.getRestAPIHost() + '/regularShop/consumerNo', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 // 소비자에게 단골농장으로 저장된 개수
-export const countRegularShop = (consumerNo) => axios(Server.getRestAPIHost() + '/countRegularShop', { method: "get", params:{consumerNo: consumerNo}, withCredentials: true, credentials: 'same-origin' })
+export const countRegularShop = () => axios(Server.getRestAPIHost() + '/countRegularShop', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 // 소비자의 GoodsReview개수
-export const countGoodsReview = (consumerNo) => axios(Server.getRestAPIHost() + '/countGoodsReview', { method: "get", params:{consumerNo: consumerNo}, withCredentials: true, credentials: 'same-origin' })
+export const countGoodsReview = () => axios(Server.getRestAPIHost() + '/countGoodsReview', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 // 소비자 상품문의 조회(마이페이지에서 사용)
 export const getGoodsQna = () => axios(Server.getRestAPIHost() + '/goodsQnA', { method: "get", withCredentials: true, credentials: 'same-origin' })
@@ -160,6 +159,9 @@ export const deleteZzim = (consumerNo, goodsNo) => axios(Server.getRestAPIHost()
 
 // 상품찜 여부 확인
 export const getZzim = (consumerNo, goodsNo) => axios(Server.getRestAPIHost() + '/zzim', { method: "get", params:{consumerNo, goodsNo}, withCredentials: true, credentials: 'same-origin' })
+
+// 진행중인 포텐타임 조회
+export const getPotentTimeList = () => axios(Server.getRestAPIHost() + '/potentTimeList', { method:"get", withCredentials: true, credentials: 'same-origin' })
 
 // 타임세일 조회
 export const getTimeSaleList = () => axios(Server.getRestAPIHost() + '/b2cTimeSaleList', { method: "get", withCredentials: true, credentials: 'same-origin' })
@@ -201,10 +203,13 @@ export const getMdPickListFront = () => axios(Server.getRestAPIHost() + '/shop/b
 // 소비자 새로운 알림여부 조회
 export const isNewNotifiation = () => axios(Server.getRestAPIHost() + '/isNewNotifiation', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
-// 소비자 KYC 정보 (세션정보 소비자번호로 KYC정보 가져옴)
-export const getConsumerKyc = () => axios(Server.getRestAPIHost() + '/consumer/kyc', { method: "get", withCredentials: true, credentials: 'same-origin' })
+// 소비자 KYC 신청 상태 정보 (세션정보 소비자번호로 KYCAuth 상태 정보 가져옴)
+export const getConsumerKycAuth = () => axios(Server.getRestAPIHost() + '/consumer/kycAuth', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
-//소비자 KYC 신청 등록 (ConsumerKyc 데이터) consumerNo값필수
+//19세 이상 인증정보
+export const getKakaoAgeCheck = () => axios(Server.getRestAPIHost() + '/kakaocert/kakaoAgeCheck', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+// 소비자 KYC 신청 등록 (ConsumerKyc 데이터) consumerNo값필수
 export const regConsumerKyc = (data) => axios(Server.getRestAPIHost() + '/consumer/regKyc', { method: "post", data:data, withCredentials: true, credentials: 'same-origin' })
 
 // 상품 공지 배너 조회
@@ -230,3 +235,34 @@ export const checkSuperRewardOrder = (data) => axios(Server.getRestAPIHost() + '
 
 // 상품 쿠폰 리스트 조회
 export const getGoodsCouponMasters = (goodsNo) => axios(Server.getRestAPIHost() + '/shop/goodsCouponMasters', { method: "get", params:{goodsNo}, withCredentials:true, credentials: 'same-origin'})
+// 상품구매보상 쿠폰 리스트 조회 2021.04
+export const getGoodsRewardCouponList = (goodsNo) => axios(Server.getRestAPIHost() + '/shop/goodsRewardCouponList', {method: "get", params:{goodsNo}, withCredentials:true, credentials: 'same-origin'})
+
+// (친구초대)내 등급, 총 구매금액 조회
+export const getRecommenderInfo = () => axios(Server.getRestAPIHost() + '/recommenderInfo', {method: "get", withCredentials:true, credentials: 'same-origin'})
+
+// 친구초대랭킹 조회
+export const getInviteRanking = () => axios(Server.getRestAPIHost() + '/inviteRanking', {method: "get", withCredentials:true, credentials: 'same-origin'})
+// 구매랭킹 조회
+export const getBuyingRanking = () => axios(Server.getRestAPIHost() + '/buyingRanking', {method: "get", withCredentials:true, credentials: 'same-origin'})
+
+// 어뷰저 리스트
+export const getAbusers = () => axios(Server.getRestAPIHost() + '/shop/abusers', { method: "get", params: {}, withCredentials: true, credentials: 'same-origin' })
+
+// 어뷰저
+export const getAbuser = () => axios(Server.getRestAPIHost() + '/shop/abuser', { method: "get", params: {}, withCredentials: true, credentials: 'same-origin' })
+
+//슈퍼리워드용 티켓번호 가져오기
+export const getSuperRewardTicket = (goodsNo) => axios(Server.getRestAPIHost() + '/shop/superRewardTicket', { method: "get", params: {goodsNo}, withCredentials: true, credentials: 'same-origin' })
+
+// 나의 전체 토큰 히스토리 내역
+export const getMyTokenHistory = () => axios(Server.getRestAPIHost() + '/shop/myTokenHistory', { method: "post", data: {}, withCredentials: true, credentials: 'same-origin' })
+
+//쿠폰 한건 조회
+export const getConsumerCouponByCouponNo = (couponNo) => axios(Server.getRestAPIHost() + '/shop/consumerCoupon', { method: "get", params: {couponNo}, withCredentials: true, credentials: 'same-origin' })
+
+//포템쿠폰 한건 조회
+export const getPotenCouponMaster = (goodsNo) => axios(Server.getRestAPIHost() + '/shop/potenCouponMaster', { method: "get", params: {goodsNo}, withCredentials: true, credentials: 'same-origin' })
+
+//내 마일리지 쿠폰 조회
+export const getRewardCoupon = () => axios(Server.getRestAPIHost() + '/shop/rewardCoupon', { method: "get", params: {}, withCredentials: true, credentials: 'same-origin' })

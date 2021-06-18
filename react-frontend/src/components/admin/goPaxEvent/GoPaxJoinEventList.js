@@ -4,8 +4,8 @@ import {getGoPaxJoinEvent} from '~/lib/adminApi'
 import ComUtil from '~/util/ComUtil'
 
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 const GoPaxJoinEventList = (props) => {
     const [agGrid, setAgGrid] = useState({
@@ -23,7 +23,13 @@ const GoPaxJoinEventList = (props) => {
         ],
         defaultColDef: {
             width: 170,
-            resizable: true
+            resizable: true,
+            filter: true,
+            sortable: true,
+            floatingFilter: false,
+            filterParams: {
+                newRowsAction: 'keep'
+            }
         },
         frameworkComponents: {
             formatCurrencyRenderer: formatCurrencyRenderer
@@ -57,12 +63,12 @@ const GoPaxJoinEventList = (props) => {
                 }}
             >
                 <AgGridReact
-                    enableSorting={true}
-                    enableFilter={true}
+                    // enableSorting={true}
+                    // enableFilter={true}
                     columnDefs={agGrid.columnDefs}
                     defaultColDef={agGrid.defaultColDef}
                     rowSelection={'single'}  //멀티체크 가능 여부
-                    enableColResize={true}
+                    // enableColResize={true}
                     overlayLoadingTemplate={agGrid.overlayLoadingTemplate}
                     overlayNoRowsTempalte={agGrid.overlayNoRowsTemplate}
                     frameworkComponents={agGrid.frameworkComponents}

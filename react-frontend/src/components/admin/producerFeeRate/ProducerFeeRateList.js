@@ -5,8 +5,8 @@ import { getProducerFeeRate } from "~/lib/adminApi"
 import ProducerFeeRateReg from './ProducerFeeRateReg';
 
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { Cell } from '~/components/common'
 
 const ProducerFeeRateList = (props) => {
@@ -19,7 +19,13 @@ const ProducerFeeRateList = (props) => {
         ],
         defaultColDef: {
             width: 100,
-            resizable: true
+            resizable: true,
+            filter: true,
+            sortable: true,
+            floatingFilter: false,
+            filterParams: {
+                newRowsAction: 'keep'
+            }
         },
         overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
         overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
@@ -136,12 +142,12 @@ const ProducerFeeRateList = (props) => {
             <Button outline size='sm' color={'info'} onClick={regProducerFee} className='m-2'>생산자 수수료 등록</Button>
 
             <AgGridReact
-                enableSorting={true}
-                enableFilter={true}
+                // enableSorting={true}
+                // enableFilter={true}
                 columnDefs={agGrid.columnDefs}
                 defaultColDef={agGrid.defaultColDef}
                 rowSelection={'single'}  //멀티체크 가능 여부
-                enableColResize={true}
+                // enableColResize={true}
                 rowHeight={40}
                 overlayLoadingTemplate={agGrid.overlayLoadingTemplate}
                 overlayNoRowsTempalte={agGrid.overlayNoRowsTemplate}

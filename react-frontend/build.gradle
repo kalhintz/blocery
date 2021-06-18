@@ -19,7 +19,10 @@ apply plugin: 'com.moowork.node'
 task npmBuild(type: NpmTask) {
 	args = ['run-script','build']
 }
-build.dependsOn npmBuild
+task npmStageBuild(type: NpmTask) {
+	args = ['run-script','build:staging']
+}
+//build.dependsOn npmBuild
 
 bootRepackage {
 	enabled = false

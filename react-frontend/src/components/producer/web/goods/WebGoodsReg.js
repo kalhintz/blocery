@@ -4,7 +4,7 @@ import { RadioButtons, ProducerFullModalPopupWithNav, SingleImageUploader, Foote
 import Style from './WebGoodsReg.module.scss'
 import { Server } from '~/components/Properties'
 import { addGoods, copyGoodsByGoodsNo } from '~/lib/goodsApi'
-import { scOntPayProducerDeposit, scOntGetBalanceOfBlct } from '~/lib/smartcontractApi'
+//import { scOntPayProducerDeposit, scOntGetBalanceOfBlct } from '~/lib/smartcontractApi'
 import { exchangeWon2BLCT, GOODS_TOTAL_DEPOSIT_RATE } from '~/lib/exchangeApi'
 import { getProducerByProducerNo } from '~/lib/producerApi'
 import { getGoodsByGoodsNo, deleteGoods, updateConfirmGoods, updateGoodsSalesStop, getGoodsContent, getBlyReview } from '~/lib/goodsApi'
@@ -41,6 +41,7 @@ let bindData = {
     vatFlag: null         // 과세여부
 }
 
+// 예약상품
 export default class WebGoodsReg extends Component {
 
     editorRef = React.createRef();
@@ -125,17 +126,19 @@ export default class WebGoodsReg extends Component {
                     H: []
                 },
                 blyReviewConfirm: false,     // 블리리뷰 노출 여부
-                reservationGoodsSupportPrice: 0
+                reservationGoodsSupportPrice: 0,
             },
 
             producerFeeRate: 0,
             showSupportPrice: true,     // 판매지원금 readOnly 여부(tempProducer만 false)
+            isTempProdAdmin: false,     // tempProducer 관리자 여부
             loginUser: {},
             selected: null,
             modal: false,                //모달 여부
             modalType: '',              //모달 종류
             passPhrase: '', //비밀번호 6 자리 PIN CODE
-            clearPassPhrase: true
+            clearPassPhrase: true,
+            saleStopped: false      // 판매기한만료된 상품인지
         }
 
         this.inputPackUnit = React.createRef()
@@ -245,7 +248,6 @@ export default class WebGoodsReg extends Component {
     }
 
     async componentDidMount(){
-
         await this.bind()
         const loginUser = await this.setLoginUserInfo();
 
@@ -253,8 +255,9 @@ export default class WebGoodsReg extends Component {
 
         const state = Object.assign({}, this.state)
 
-        if(adminUser.email === "tempProducer@ezfarm.co.kr") {
+        if(adminUser && adminUser.email === "tempProducer@ezfarm.co.kr") {
             state.showSupportPrice = false
+            state.isTempProdAdmin = true;
         }
         state.isDidMounted = true
         state.loginUser = loginUser
@@ -291,6 +294,21 @@ export default class WebGoodsReg extends Component {
         }
         this.setValidatedObj(state)
         this.setState(state)
+
+        // 판매기한만료 체크
+        let saleDateEnd = goods.saleEnd ? ComUtil.utcToString(goods.saleEnd) : null;
+        let toDate = ComUtil.utcToString(new Date());
+        let saleStopped = false;
+        if (saleDateEnd) {
+            let newResult = saleDateEnd.replace(/\./gi, "-")
+            let today = toDate.replace(/\./gi, "-")
+            let diffSaleResult = ComUtil.compareDate(newResult, today);
+            if (diffSaleResult === -1) {
+                saleStopped = true;
+            }
+        }
+
+        this.setState({saleStopped})
     }
 
     getIsVatWording = (vatFlag) => {
@@ -396,6 +414,8 @@ export default class WebGoodsReg extends Component {
             return
 
         const { data: goods } = await getGoodsByGoodsNo(this.state.goods.goodsNo)
+
+        console.log("goods===",goods);
 
         goods.goodsInfoData = {A:[], P:[], H:[]}
 
@@ -560,10 +580,7 @@ export default class WebGoodsReg extends Component {
         if(goods.packUnit !== '기타'){
             goods.packUnitText = ''
         }
-
-        // 최종선택된 상품정보제공 분류만 state에 남김
         goods.goodsInfo = Object.assign([], goods.goodsInfoData[goods.goodsTypeCode])
-
         this.setState({goods})
 
         //console.log(goods)
@@ -644,6 +661,17 @@ export default class WebGoodsReg extends Component {
 
     //상품수정(노출이후)
     onUpdateClick = async () => {
+
+        if(this.state.goods.inSuperRewardPeriod || this.state.goods.inTimeSalePeriod){
+            let vTitle = "수퍼리워드 및 포텐타임";
+            if(this.state.goods.inSuperRewardPeriod) vTitle = '수퍼리워드';
+            if(this.state.goods.inTimeSalePeriod) vTitle = '포텐타임';
+            if(!this.state.isTempProdAdmin){
+                alert(vTitle+" 기간중에는 수정하실 수 없습니다. 관리자에게 문의 바랍니다.")
+                return
+            }
+        }
+
         if(!this.isPassedValidation()) return
         if(!window.confirm('수정되는 상품은 즉시 반영 됩니다')) return
         this.loadingToggle('update')
@@ -864,9 +892,9 @@ export default class WebGoodsReg extends Component {
     // 상품정보제공 고시 설정
     onGoodsTypeModal = (data) => {
         let goods = Object.assign({}, this.state.goods)
+        //console.log("onGoodsTypeModal====",data)
         if(data) {
             goods.goodsInfoData[goods.goodsTypeCode] = data
-
             this.setValidatedObj({goods})
             this.setState({goods})
         }
@@ -1231,10 +1259,49 @@ export default class WebGoodsReg extends Component {
         this.setState({goods});
     }
 
+    // 판매기한만료된 예약상품 수량 수정
+    modifyPackCnt = () => {
+        const goods = Object.assign({}, this.state.goods)
+        const inputPackCnt = prompt('판매할 총 수량을 입력하세요. (현재 총 수량: ' + goods.packCnt + ', 현재 잔여수량: ' + goods.remainedCnt + ')', '숫자만 입력')
+
+        const prevRemainedCnt = goods.remainedCnt   // 바뀌기 전 남은 수량
+
+        if(inputPackCnt - goods.packCnt >= 0) {     // 현재수량보다 플러스
+            goods.remainedCnt = prevRemainedCnt + (inputPackCnt-goods.packCnt)
+            goods.packCnt = inputPackCnt
+
+            console.log(goods.packCnt, goods.remainedCnt)
+        } else {                                    // 현재수량보다 마이너스
+            if(inputPackCnt < goods.packCnt-goods.remainedCnt) {
+                alert('판매완료된 수량보다 작은 수를 입력하실 수 없습니다.')
+                return false
+            } else {
+                goods.remainedCnt = prevRemainedCnt - (goods.packCnt-inputPackCnt)
+                goods.packCnt = inputPackCnt
+            }
+        }
+
+        if(window.confirm('판매수량을 변경하시겠습니까?')) {
+            this.setState({ goods })
+
+        }
+    }
+
+    // db에 저장된 판매수량 다시 가져오기
+    resetPackCnt = async () => {
+        const originGoods = await this.search();    // db에 저장되어 있는 goods 정보
+        const goods = Object.assign({}, this.state.goods)
+
+        goods.packCnt = originGoods.packCnt
+        goods.remainedCnt = originGoods.remainedCnt
+
+        this.setState({ goods })
+    }
+
     render() {
         if(!this.state.isDidMounted) return <BlocerySpinner/>
 
-        const { goods } = this.state
+        const { isTempProdAdmin, goods } = this.state
 
         const star = <span className='text-danger'>*</span>
 
@@ -1248,10 +1315,17 @@ export default class WebGoodsReg extends Component {
         const btnUpdate = (goods.confirm && !goods.saleStopped) ? <Button className='d-flex align-items-center justify-content-center mr-2'  onClick={this.onUpdateClick} disabled={this.state.isLoading.update} color={'warning'}>수정완료{this.state.isLoading.update && <Spinner/>}</Button> : null
         const btnCopy = (goods.goodsNo && goods.confirm )? <ModalConfirm title={'상품복사를 진행 하시겠습니까?'} content={<Fragment>마지막 저장된 내용을 기준으로 복사가 진행 됩니다<br/>복사 진행전 저장을 꼭 해 주세요</Fragment>} onClick={this.onCopyClick}><Button className='mr-2' color={'secondary'}>상품복사</Button></ModalConfirm> : null
 
+
+
         const termsOfDeliveryFee = bindData.termsOfDeliveryFees.find(terms => terms.value === goods.termsOfDeliveryFee)
         let termsOfDeliveryFeeLabel
         if(termsOfDeliveryFee)
             termsOfDeliveryFeeLabel = termsOfDeliveryFee.label
+
+        const compSalesCnt = <Fragment>
+            <CurrencyInput name={this.names.packCnt} value={goods.packCnt} onChange={this.onInputChange}/>
+            <Fade in={validatedObj.packCnt? true : false} className="text-danger small mt-1" >{validatedObj.packCnt}</Fade>
+        </Fragment>;
 
         return(
             <Fragment>
@@ -1318,7 +1392,16 @@ export default class WebGoodsReg extends Component {
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>품목{star}</Label>
                                     {
-                                        goods.confirm ? <div>{goods.itemName}</div> : (
+                                        !isTempProdAdmin ?
+                                            goods.confirm ? <div>{goods.itemName}</div> : (
+                                                <Fragment>
+                                                    <Select options={bindData.items}
+                                                            value={ bindData.items.find(item => item.value === goods.itemNo)}
+                                                            onChange={this.onItemChange}
+                                                    />
+                                                    <Fade in={validatedObj.itemNo? true : false} className="text-danger small mt-1" >{validatedObj.itemNo}</Fade>
+                                                </Fragment>
+                                            ) :
                                             <Fragment>
                                                 <Select options={bindData.items}
                                                         value={ bindData.items.find(item => item.value === goods.itemNo)}
@@ -1326,7 +1409,6 @@ export default class WebGoodsReg extends Component {
                                                 />
                                                 <Fade in={validatedObj.itemNo? true : false} className="text-danger small mt-1" >{validatedObj.itemNo}</Fade>
                                             </Fragment>
-                                        )
                                     }
 
 
@@ -1334,7 +1416,16 @@ export default class WebGoodsReg extends Component {
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>품종{star}</Label>
                                     {
-                                        goods.confirm ? <div>{goods.itemKindName}</div> : (
+                                        !isTempProdAdmin ?
+                                            goods.confirm ? <div>{goods.itemKindName}</div> : (
+                                                <Fragment>
+                                                    <Select options={bindData.itemKinds}
+                                                            value={goods.itemKindCode ? bindData.itemKinds.find(itemKind => itemKind.value === goods.itemKindCode) : null}
+                                                            onChange={this.onItemKindChange}
+                                                    />
+                                                    <Fade in={validatedObj.itemKind? true : false} className="text-danger small mt-1" >{validatedObj.itemKind}</Fade>
+                                                </Fragment>
+                                            ) :
                                             <Fragment>
                                                 <Select options={bindData.itemKinds}
                                                         value={goods.itemKindCode ? bindData.itemKinds.find(itemKind => itemKind.value === goods.itemKindCode) : null}
@@ -1342,7 +1433,6 @@ export default class WebGoodsReg extends Component {
                                                 />
                                                 <Fade in={validatedObj.itemKind? true : false} className="text-danger small mt-1" >{validatedObj.itemKind}</Fade>
                                             </Fragment>
-                                        )
                                     }
                                 </FormGroup>
                                 <FormGroup>
@@ -1426,19 +1516,19 @@ export default class WebGoodsReg extends Component {
                                 <h6>판매정보</h6>
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>포장 양{star}</Label>
-                                    {
-                                        goods.confirm ? <div>{ComUtil.addCommas(goods.packAmount)}</div> : (
+                                    {/*{*/}
+                                    {/*    goods.confirm ? <div>{ComUtil.addCommas(goods.packAmount)}</div> : (*/}
                                             <Fragment>
                                                 <Input  type="number" className={'mr-1'} name={this.names.packAmount} value={goods.packAmount} onChange={this.onInputChange}/>
                                                 <Fade in={validatedObj.packAmount? true : false} className="text-danger small mt-1" >{validatedObj.packAmount}</Fade>
                                             </Fragment>
-                                        )
-                                    }
+                                    {/*    )*/}
+                                    {/*}*/}
                                 </FormGroup>
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>포장 단위{star}</Label>
-                                    {
-                                        goods.confirm ? <div>{goods.packUnit}</div> : (
+                                    {/*{*/}
+                                    {/*    goods.confirm ? <div>{goods.packUnit}</div> : (*/}
                                             <Fragment>
                                                 <div className='d-flex align-items-center'>
 
@@ -1488,18 +1578,27 @@ export default class WebGoodsReg extends Component {
 
                                                 <Fade in={validatedObj.packUnit? true : false} className="text-danger small mt-1" >{validatedObj.packUnit}</Fade>
                                             </Fragment>
-                                        )
-                                    }
+                                    {/*    )*/}
+                                    {/*}*/}
                                 </FormGroup>
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>판매수량{star}</Label>
                                     {
-                                        goods.confirm ? <div>{ComUtil.addCommas(goods.packCnt)}</div> : (
-                                            <Fragment>
-                                                <CurrencyInput name={this.names.packCnt} value={goods.packCnt} onChange={this.onInputChange}/>
-                                                <Fade in={validatedObj.packCnt? true : false} className="text-danger small mt-1" >{validatedObj.packCnt}</Fade>
-                                            </Fragment>
-                                        )
+                                        goods.confirm ?
+                                            <div className='d-flex'>{ComUtil.addCommas(goods.packCnt)}
+                                            {
+                                                this.state.saleStopped &&
+                                                <>
+                                                    <div className='ml-2 mr-2'><Button size='sm' onClick={this.modifyPackCnt}>수정</Button></div>
+                                                    <div><Button size='sm' onClick={this.resetPackCnt}>수정취소</Button></div>
+                                                </>
+                                            }
+                                            </div>
+                                            :
+                                            (goods.inSuperRewardPeriod || goods.inTimeSalePeriod) ?
+                                                (isTempProdAdmin ? (compSalesCnt):<span className='text-danger'>{goods.inSuperRewardPeriod && '수퍼리워드'}{goods.inTimeSalePeriod && '포텐타임'} 기간에는 판매수량을 수정하실 수 없습니다. 관리자에게 문의 바랍니다!</span>)
+                                                :
+                                                (compSalesCnt)
                                     }
                                 </FormGroup>
                             </Container>
@@ -1509,7 +1608,9 @@ export default class WebGoodsReg extends Component {
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>소비자가{star}</Label>
                                     {
-                                        goods.confirm ? <div>{ComUtil.addCommas(goods.consumerPrice)}</div> : (
+                                        goods.confirm && !this.state.saleStopped ?
+                                            <div>{ComUtil.addCommas(goods.consumerPrice)}</div>
+                                            : (
                                             <Fragment>
                                                 <CurrencyInput name={this.names.consumerPrice} value={goods.consumerPrice} onChange={this.onInputChange} placeholder={'할인 전 가격 입니다'}/>
                                                 <Fade in={validatedObj.consumerPrice ? true : false} className="text-danger small mt-1" >{validatedObj.consumerPrice}</Fade>
@@ -1523,7 +1624,7 @@ export default class WebGoodsReg extends Component {
                                     <Alert color={'warning'} className='small'>소비자가격에서 <b>최대 3단계</b>의 <b>할인된 가격을 적용</b> 할 수 있으며 소비자에게는 기간에 따라 <b>단계별 설정된 가격이 노출</b> 됩니다</Alert>
 
                                     {
-                                        goods.confirm ? (
+                                        goods.confirm && !this.state.saleStopped ? (
                                             <Fragment>
                                                 <FormGroup>
                                                     <Label className={'text-secondary small'}>예약판매가(단계선택){star}</Label>
@@ -1716,7 +1817,8 @@ export default class WebGoodsReg extends Component {
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>예상발송일{star}</Label>
                                     {
-                                        goods.confirm ? (<div>{`${ComUtil.utcToString(goods.expectShippingStart)} - ${ComUtil.utcToString(goods.expectShippingEnd)}`} {goods.hopeDeliveryFlag ? <span>(소비자 희망수령일 기능 적용<BsCheckBox /></span>:null}) </div>) : (
+                                        goods.confirm && !this.state.saleStopped ?
+                                            (<div>{`${ComUtil.utcToString(goods.expectShippingStart)} - ${ComUtil.utcToString(goods.expectShippingEnd)}`} {goods.hopeDeliveryFlag ? <span>(소비자 희망수령일 기능 적용<BsCheckBox /></span>:null}) </div>) : (
                                             <Fragment>
                                                 <div className='d-flex ml-2 align-items-center'>
                                                     <div>
@@ -1771,17 +1873,17 @@ export default class WebGoodsReg extends Component {
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>무료배송 조건{star}</Label>
 
-                                    {
-                                        goods.confirm ? (
+                                    {/*{*/}
+                                    {/*    goods.confirm ? (*/}
 
-                                            <div>
-                                                {
-                                                    (goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.NO_FREE || goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE) ? null : <span>{goods.deliveryQty}</span>
-                                                }
-                                                <span>{termsOfDeliveryFeeLabel}</span>
-                                            </div>
+                                    {/*        <div>*/}
+                                    {/*            {*/}
+                                    {/*                (goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.NO_FREE || goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE) ? null : <span>{goods.deliveryQty}</span>*/}
+                                    {/*            }*/}
+                                    {/*            <span>{termsOfDeliveryFeeLabel}</span>*/}
+                                    {/*        </div>*/}
 
-                                        ) : (
+                                    {/*    ) : (*/}
                                             <Fragment>
                                                 <InputGroup>
                                                     <CurrencyInput
@@ -1802,25 +1904,25 @@ export default class WebGoodsReg extends Component {
                                                 </InputGroup>
                                                 <Fade in={validatedObj.deliveryQty ? true : false} className="text-danger small mt-1" >{validatedObj.deliveryQty}</Fade>
                                             </Fragment>
-                                        )
-                                    }
+                                    {/*    )*/}
+                                    {/*}*/}
                                 </FormGroup>
                                 <FormGroup>
                                     <Label className={'text-secondary small'}>배송비{star}</Label>
-                                    {
-                                        goods.confirm ? (
-                                            <div>
-                                                {
-                                                    ComUtil.addCommas(Math.round(goods.deliveryFee,0))
-                                                }
-                                            </div>
-                                        ) : (
+                                    {/*{*/}
+                                    {/*    goods.confirm ? (*/}
+                                    {/*        <div>*/}
+                                    {/*            {*/}
+                                    {/*                ComUtil.addCommas(Math.round(goods.deliveryFee,0))*/}
+                                    {/*            }*/}
+                                    {/*        </div>*/}
+                                    {/*    ) : (*/}
                                             <Fragment>
                                                 <CurrencyInput disabled={goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE}  name={this.names.deliveryFee} value={goods.deliveryFee} onChange={this.onInputChange} placeholder={'배송비'}/>
                                                 <Fade in={validatedObj.deliveryFee ? true : false} className="text-danger small mt-1" >{validatedObj.deliveryFee}</Fade>
                                             </Fragment>
-                                        )
-                                    }
+                                    {/*    )*/}
+                                    {/*}*/}
                                 </FormGroup>
                             </Container>
 
@@ -1935,7 +2037,11 @@ export default class WebGoodsReg extends Component {
                     {/* 상품정보제공 고시 설정 입력 */}
                     <ModalWithNav show={this.state.goodsTypeModalOpen} title={'고시 항목 설정'} onClose={this.onGoodsTypeModal} noPadding={true}>
                         {
-                            <Agricultural code={this.state.goods.goodsTypeCode} infoValues={this.state.goods.goodsInfoData[this.state.goods.goodsTypeCode]}/>
+                            <Agricultural
+                                code={this.state.goods.goodsTypeCode}
+                                infoValues={this.state.goods.goodsInfoData[this.state.goods.goodsTypeCode]}
+                                onClose={this.onGoodsTypeModal}
+                            />
                         }
                     </ModalWithNav>
 

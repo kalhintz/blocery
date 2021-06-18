@@ -34,62 +34,29 @@ export default class NotificationList extends Component {
     };
 
     async componentDidMount() {
-
         const {data: loginUserType} = await getLoginUserType();
-
-        let loginUser; // = await getConsumer();
-
-        if(loginUserType === 'consumer') {
-            const {data} = await getConsumer();
-            loginUser = data
-        } else if (loginUserType === 'producer') {
-            const {data} = await getProducer();
-            loginUser = data
+        let loginUser = await getConsumer();
+        if(!loginUser || !loginUser.data){
+            this.props.history.replace('/mypage');
+            return;
         }
-
-        const notificationList = await this.getNotificationList(loginUserType, loginUser);
-
-        console.log({loginUserType, loginUser, notificationList})
-
+        const notificationList = await this.getNotificationList(loginUserType, loginUser.data);
         this.setState({
-            loginUser: (loginUser) ? loginUser : '',
+            loginUser: (loginUser) ? loginUser.data : '',
             loginUserType: loginUserType,
             notificationList: notificationList,
             loading: false
         })
-
-
     }
 
     getNotificationList = async (loginUserType, loginUser) => {
-
         let notificationList;
-
         if(loginUserType === "consumer") {
-
             let params = {
                 uniqueNo: loginUser.consumerNo,
                 userType: loginUserType
             }
-
-            console.log({params})
-
             const {data} = await getNotificationListByUniqueNo(params);
-
-            notificationList = data
-
-            // this.setState({
-            //     notificationList: notificationList
-            // })
-        } else if(loginUserType === "producer") {
-
-            let params = {
-                uniqueNo: loginUser.producerNo,
-                userType: loginUserType
-            }
-
-            const {data} = await getNotificationListByUniqueNo(params);
-
             notificationList = data
         }
 

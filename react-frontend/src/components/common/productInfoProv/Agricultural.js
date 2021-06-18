@@ -23,17 +23,13 @@ export default class Agricultural extends Component {
             }
 
         })
-
-        console.log(infoValues)
-
+        //console.log(infoValues)
         this.setState({ infoValues })
     }
 
     handleChange = (index, e) => {
         const infoValues = Object.assign([], this.state.infoValues)
-
         infoValues[index].content = e.target.value
-
         this.setState({infoValues})
     }
 
@@ -50,9 +46,8 @@ export default class Agricultural extends Component {
     }
 
     // 저장 클릭
-    onClickSave = async () => {
+    onClickSave = () => {
         const data = Object.assign([], this.state.infoValues)
-
         this.props.onClose([
             ...data
         ])
@@ -83,7 +78,7 @@ export default class Agricultural extends Component {
 
                     <hr className='p-0 m-0'/>
                     <div className='d-flex justify-content-center align-items-center m-2'>
-                        <Button color='info' size='md' onClick={this.onClickSave}>저 장</Button>
+                        <Button color='info' size='md' onClick={this.onClickSave}>설정</Button>
                     </div>
                 </div>
 

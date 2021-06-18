@@ -11,8 +11,8 @@ import { AgGridReact } from 'ag-grid-react';
 import { Server } from '../../../Properties'
 
 //ag-grid
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 export default class WebFarmDiaryList extends Component{
     constructor(props) {
@@ -34,7 +34,13 @@ export default class WebFarmDiaryList extends Component{
             ],
             defaultColDef: {
                 width: 100,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             components: {
                 diaryRegDateRenderer: this.diaryRegDateRenderer
@@ -138,13 +144,13 @@ export default class WebFarmDiaryList extends Component{
                     className="ag-theme-balham"
                 >
                     <AgGridReact
-                        enableSorting={true}                //정렬 여부
-                        enableFilter={true}                 //필터링 여부
+                        // enableSorting={true}                //정렬 여부
+                        // enableFilter={true}                 //필터링 여부
                         columnDefs={this.state.columnDefs}  //컬럼 세팅
                         defaultColDef={this.state.defaultColDef}
                         rowSelection={this.state.rowSelection}  //멀티체크 가능 여부
                         rowHeight={this.state.rowHeight}
-                        enableColResize={true}              //컬럼 크기 조정
+                        // enableColResize={true}              //컬럼 크기 조정
                         overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                         overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                         rowData={this.state.data}

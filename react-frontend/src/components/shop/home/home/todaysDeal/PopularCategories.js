@@ -8,7 +8,8 @@ import {
     IconCateRice,
     IconCateProcFood,
     IconCateMeat,
-    IconCateFish
+    IconCateFish,
+    IconCateGift
 } from "../../../../common/icons/Icons";
 
 //인기 카테고리
@@ -16,19 +17,22 @@ const PopularCategories = (props) => {
 
     const { ...rest } = props
     const data = (Server._serverMode() === 'production') ?
-       [ {icon: IconCateVeggies, to: '/category/5/all'},
+       [ {icon: IconCateGift, to: '/giftSet'},
+           {icon: IconCateVeggies, to: '/category/5/all'},
         {icon: IconCateFruit, to: '/category/6/all'},
         {icon: IconCateRice, to: '/category/7/all'},
         {icon: IconCateProcFood, to: '/category/8/all'},
         {icon: IconCateMeat, to: '/category/9/all'},
-        {icon: IconCateFish, to: '/category/10/all'}]
+           {icon: IconCateFish, to: '/category/10/all'}
+       ]
 
-      : [ {icon: IconCateVeggies, to: '/category/1/all'}, //Stage:225
+      : [ {icon: IconCateGift, to: '/giftSet'},
+          {icon: IconCateVeggies, to: '/category/1/all'}, //Stage:225
           {icon: IconCateFruit, to: '/category/2/all'},
           {icon: IconCateRice, to: '/category/3/all'},
           {icon: IconCateProcFood, to: '/category/4/all'},
           {icon: IconCateMeat, to: '/category/5/all'},
-          {icon: IconCateFish, to: '/category/6/all'}]
+            {icon: IconCateFish, to: '/category/6/all'}]
 
 
     function onClick(url){

@@ -44,31 +44,31 @@ const CategoryItems = (props) => {
 
         <>
 
-        <Flex justifyContent='center' m={margin} fontSize={16}>
-            <Div textAlign='center' mr={margin}>
-                <Button bg={'white'} width={69} height={69} shadow mb={6} onClick={onClick.bind(this, '/mdPick')}>
-                    <Icon name={'mdPick'}/>
-                </Button>
-                <Div>기획전</Div>
-            </Div>
-            <Div textAlign='center' mr={margin}>
-                <Button bg={'white'} width={69} height={69} shadow mb={6} onClick={onClick.bind(this, '/home/5')}>
-                    <Icon name={'medal'}/>
-                </Button>
-                <Div>베스트</Div>
-            </Div>
-            <Div textAlign='center'>
-                <Button bg={'white'} width={69} height={69} shadow mb={6} onClick={onClick.bind(this, '/home/6')}>
-                    <Icon name={'new'}/>
-                </Button>
-                <Div>신상품</Div>
-            </Div>
-        </Flex>
-        <HrHeavyX2 bc='background'/>
+        {/*<Flex justifyContent='center' m={margin} fontSize={16}>*/}
+        {/*    <Div textAlign='center' mr={margin}>*/}
+        {/*        <Button bg={'white'} width={69} height={69} shadow mb={6} onClick={onClick.bind(this, '/mdPick')}>*/}
+        {/*            <Icon name={'mdPick'}/>*/}
+        {/*        </Button>*/}
+        {/*        <Div>기획전</Div>*/}
+        {/*    </Div>*/}
+        {/*    <Div textAlign='center' mr={margin}>*/}
+        {/*        <Button bg={'white'} width={69} height={69} shadow mb={6} onClick={onClick.bind(this, '/home/5')}>*/}
+        {/*            <Icon name={'medal'}/>*/}
+        {/*        </Button>*/}
+        {/*        <Div>베스트</Div>*/}
+        {/*    </Div>*/}
+        {/*    <Div textAlign='center'>*/}
+        {/*        <Button bg={'white'} width={69} height={69} shadow mb={6} onClick={onClick.bind(this, '/home/6')}>*/}
+        {/*            <Icon name={'new'}/>*/}
+        {/*        </Button>*/}
+        {/*        <Div>신상품</Div>*/}
+        {/*    </Div>*/}
+        {/*</Flex>*/}
+        {/*<HrHeavyX2 bc='background'/>*/}
         <Div>
-            <Div fontSize={16} bold m={16} mt={30}>
-                카테고리
-            </Div>
+            {/*<Div fontSize={16} bold m={16} mt={30}>*/}
+            {/*    카테고리*/}
+            {/*</Div>*/}
             <Div m={16} mb={25}>
                 <Flex flexWrap='wrap'>
                     {

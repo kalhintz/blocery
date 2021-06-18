@@ -5,33 +5,43 @@ import { TimeText } from '~/components/common'
 import { AiFillClockCircle } from "react-icons/ai";
 import { Server } from "../../../Properties";
 import moment from 'moment'
+import {Div, Flex, Img} from "~/styledComponents/shared";
+import RewardCoupon from '~/images/icons/ic_rewardCoupon.png'
 
 function SlideImage(props){
-    const { size = 'sm', imageUrl, imageWidth, imageHeight, saleEnd, discountRate, blyReview, remainedCnt = 0, onClick = () => null,
+    const { size = 'sm', imageUrl, imageWidth, imageHeight, saleEnd, discountRate, blyReview, remainedCnt = 0,
+        buyingRewardFlag,
+        onClick = () => null,
 
     showTimeText = false
     } = props
 
     //sold out 크기
     let  type;
-    let blyReviewType;
+    let iconWidth;
+    let position;
     if(size === 'sm'){
         type = Css.typeSm
-        blyReviewType = Css.blyReviewSm
+        iconWidth = 35
+        position = 7
     }else if(size === 'md'){
         type = Css.typeMd
-        blyReviewType = Css.blyReviewMd
+        iconWidth = 40
+        position = 10
     }else if(size === 'lg'){
         type = Css.typeLg
-        blyReviewType = Css.blyReviewLg
+        iconWidth = 50
+        position = 15
     }
     else if(size === 'xl'){
         type = Css.typeXl
-        blyReviewType = Css.blyReviewXl
+        iconWidth = 60
+        position = 20
     }
     else if(size === 'xxl'){
         type = Css.typeXxl
-        blyReviewType = Css.blyReviewXxl
+        iconWidth = 70
+        position = 25
     }
 
     const blyReviewUrl = Server.getImageURL() + 'JleRBdtW6CR7.png'
@@ -51,10 +61,15 @@ function SlideImage(props){
                     </div>
                 </div>
             }
-
-            {
-                props.blyReview && <img className={classNames(Css.blyReview, blyReviewType)} src={`${blyReviewUrl}`} alt="블리리뷰" />
-            }
+            <Flex absolute left={position} bottom={position}>
+                {
+                    props.blyReview && <Img src={`${blyReviewUrl}`} width={iconWidth} alt="블리리뷰" />
+                }
+                {
+                    //blyReview 와 겹치도록 함
+                    buyingRewardFlag && <Img src={RewardCoupon} width={iconWidth} ml={props.blyReview ? 2 : 0 }/>
+                }
+            </Flex>
 
             <img className={Css.img} src={`${imageUrl}`} alt="상품사진" />
             { remainedCnt <= 0 && <div className={Css.mask}>SOLD OUT</div> }

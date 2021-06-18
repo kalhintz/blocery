@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getB2cEventPaymentList } from '~/lib/adminApi'
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { Button } from 'reactstrap'
 import { ExcelDownload } from '~/components/common'
 
@@ -74,7 +74,13 @@ const EventPaymentList = (props) => {
         ],
         defaultColDef: {
             width: 100,
-            resizable: true
+            resizable: true,
+            filter: true,
+            sortable: true,
+            floatingFilter: false,
+            filterParams: {
+                newRowsAction: 'keep'
+            }
         },
         overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
         overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
@@ -224,12 +230,12 @@ const EventPaymentList = (props) => {
                 }}
             >
                 <AgGridReact
-                    enableSorting={true}
-                    enableFilter={true}
+                    // enableSorting={true}
+                    // enableFilter={true}
                     columnDefs={agGrid.columnDefs}
                     defaultColDef={agGrid.defaultColDef}
                     rowSelection={'single'}  //멀티체크 가능 여부
-                    enableColResize={true}
+                    // enableColResize={true}
                     overlayLoadingTemplate={agGrid.overlayLoadingTemplate}
                     overlayNoRowsTempalte={agGrid.overlayNoRowsTemplate}
                     rowData={dataList}

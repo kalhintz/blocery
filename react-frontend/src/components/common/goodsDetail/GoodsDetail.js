@@ -4,10 +4,10 @@ import Css from './GoodsDetail.module.scss'
 import {FaSpinner} from "react-icons/fa";
 import ComUtil from '~/util/ComUtil'
 import classNames from 'classnames'
-import { Div, Span, Spin } from '~/styledComponents/shared/Layouts'
+import {Div, Fixed, Flex, Span, Spin} from '~/styledComponents/shared/Layouts'
+import {Button} from '~/styledComponents/shared/Buttons'
 import LeafMotion from '~/images/icons/leaf_motion.gif'
 import GoodsCouponList from '~/components/common/lists/GoodsCouponList'
-import {getGoodsCouponMasters} from "~/lib/shopApi";
 import useFetch from '~/hooks/useFetch'
 import { Webview } from '~/lib/webviewApi'
 
@@ -15,7 +15,7 @@ import { HrGoodsPriceCard, ModalWithNav, AddOrder, IconStarGroup, ToastUIEditorV
 import { Server } from '~/components/Properties'
 
 import { getLoginUserType } from '~/lib/loginApi'
-import { getFarmDiaryBykeys, getGoodsReviewByGoodsNo, getGoodsQnAByKeys, getOtherGoodsReviewByItemNo, getGoodsBannerList } from '~/lib/shopApi'
+import { getFarmDiaryBykeys, getGoodsReviewByGoodsNo, getGoodsQnAByKeys, getOtherGoodsReviewByItemNo, getGoodsBannerList, getPotenCouponMaster } from '~/lib/shopApi'
 import { getGoodsContent } from '~/lib/goodsApi'
 
 import ImageGallery from 'react-image-gallery';
@@ -41,12 +41,13 @@ import { AiOutlineInfoCircle } from 'react-icons/ai'
 import BuyFooter from './buyFooter'
 import {Collapse, Modal, ModalHeader, ModalBody} from 'reactstrap'
 import AnimationLayouts from '~/styledComponents/shared/AnimationLayouts'
+import {RiCoupon3Line} from "react-icons/ri";
 
 const Hr = () => <hr className='m-0 bg-secondary border-0' style={{height: 10}}/>
 
 const GoodsDetail = (props) => {
 
-    const {data: coupons, loading: couponLoading } = useFetch(getGoodsCouponMasters, props.goods.goodsNo)
+    // const {data: coupons, loading: couponLoading } = useFetch(getGoodsCouponMasters, props.goods.goodsNo)
 
     //hooks
     const [tabId, setTabId] = useState(1)
@@ -105,7 +106,7 @@ const GoodsDetail = (props) => {
     //상품공지배너
     const [goodsBannerList, setGoodsBannerList] = useState([]);
 
-
+    const [couponMaster, setCouponMaster] = useState()
 
     //화면 로드시 생산일지, 구매후기, 다른상품구매후기, 상품문의, 공지배너 조회(이때 하는 이유는 사용자 리뷰를 미리 바인딩 해야 하기 때문)
     useEffect(() => {
@@ -115,6 +116,9 @@ const GoodsDetail = (props) => {
         searchGoodsReviewOtherData()
         searchGoodsQnAData()
         searchGoodsBannerList()
+
+        getPotenCoupon()
+
 
 
         // if (props.goods.blyTime) {
@@ -141,11 +145,21 @@ const GoodsDetail = (props) => {
         console.log('lastSeenGoods', lastSeenGoodsList)
 
         //missionEvent 4번.
-        if(!props.goods.directGoods)
-            setMissionClear(4).then( (response) => console.log('GoodsDetail:missionEvent4:' + response.data )); //상품상세 확인.
+        //if(!props.goods.directGoods)
+        //    setMissionClear(4).then( (response) => console.log('GoodsDetail:missionEvent4:' + response.data )); //상품상세 확인.
 
     }, [])
 
+
+    //포텐타임중 쿠폰 마스터 조회
+    const getPotenCoupon = async () => {
+        //포텐타임중인 상품일 경우 쿠폰 마스터 조회
+        if (props.goods.inTimeSalePeriod) {
+            const {data} = await getPotenCouponMaster(props.goods.goodsNo)
+            setCouponMaster(data)
+            console.log({data})
+        }
+    }
 
     const isFinishedDate = (monentDate) => {
         const now = ComUtil.utcToTimestamp(moment());
@@ -593,6 +607,27 @@ const GoodsDetail = (props) => {
         props.history.push(`/farmersDetailActivity?producerNo=${props.goods.producerNo}`)
     }
 
+    const buyCouponGoodsClick = () => {
+        props.history.push({
+            pathname: '/buyCouponGoods',
+            state: {
+                couponNo: props.couponNo,
+                producerNo: props.producer.producerNo,
+                goodsNo: props.goods.goodsNo
+            }
+        })
+    }
+
+    const goodsErrorState = () => {
+        if (props.goods.remainedCnt <= 0)
+            return '품절'
+        if (props.goods.salePaused)
+            return '일시중지된 상품'
+        if (isFinishedDate(ComUtil.utcToTimestamp(props.goods.saleEnd)))
+            return '판매종료'
+        return null
+    }
+
     if(!props.goods) return null
 
     return(
@@ -612,6 +647,7 @@ const GoodsDetail = (props) => {
             <div className={Css.wrap}>
 
                 <div className={Css.meta}>
+
 
                     <div className={classNames(Css.badge, 'd-flex')}>
                         <Div bg={'background'}>
@@ -646,19 +682,34 @@ const GoodsDetail = (props) => {
                             </Div>
                         }
                     </div>
+
+
                     <div className={Css.goodsName}>{goodsNm}</div>
                     <div className={Css.price}>
                         <div className={Css.left}>
                             {
-                                discountRate > 0 && (
+                                (discountRate > 0) && (
                                     <div className={Css.discountBox}>
                                         <div className={Css.danger}><b>{Math.round(discountRate)}</b>%</div>
-                                        <div className={Css.consumerPrice}><del>{ComUtil.addCommas(consumerPrice)}원</del></div>
+                                        <div className={Css.consumerPrice}>
+                                            <del>{ComUtil.addCommas(consumerPrice)}원</del>
+                                        </div>
                                     </div>
                                 )
                             }
                             <div className={Css.currentPrice}>
-                                {ComUtil.addCommas(currentPrice)}원
+                                {
+                                    `${ComUtil.addCommas(currentPrice)}원`
+                                }
+                                {/*{*/}
+                                {/*    (props.goods.inTimeSalePeriod && couponMaster) && (*/}
+                                {/*        <Span fontSize={13} ml={8} fg={'danger'}>*/}
+                                {/*            {*/}
+                                {/*                `포텐타임 추가 ${couponMaster.potenCouponDiscount}% 할인쿠폰`*/}
+                                {/*            }*/}
+                                {/*        </Span>*/}
+                                {/*    )*/}
+                                {/*}*/}
                             </div>
                         </div>
                         <div className={Css.right}>
@@ -671,6 +722,16 @@ const GoodsDetail = (props) => {
                             </div>
                         </div>
                     </div>
+                    {
+                        (props.goods.inTimeSalePeriod && couponMaster) && (
+                            <Flex fontSize={13} mt={10} fg={'danger'}>
+                                <Flex mr={3}><RiCoupon3Line/></Flex>
+                                {
+                                    `구매시 ${ComUtil.addCommas(ComUtil.toNum((currentPrice*couponMaster.potenCouponDiscount/100).toFixed(0)))}원 할인 쿠폰 자동 적용`
+                                }
+                            </Flex>
+                        )
+                    }
                 </div>
 
                 {/*<div className={Css.shareBox}>*/}
@@ -713,7 +774,10 @@ const GoodsDetail = (props) => {
                                     본 상품은 <span className={Css.green}><b>예약상품</b></span>으로 보다 할인된 가격에 구매 가능합니다.
                                 </div>
                                 <hr className={Css.lineLight}/>
-                                <div><span>배송비 </span><span className={Css.black}><b>{getDeliveryFeeTag(props.goods)}</b></span>   </div>
+                                <div>
+                                    <span>배송비 </span>
+                                    <span className={Css.black}><b>{getDeliveryFeeTag(props.goods)}</b></span>
+                                </div>
                                 <div className={Css.dark}>
                                     <span className={Css.black}>{ComUtil.utcToString(expectShippingStart, 'MM[/]DD')}~{ComUtil.utcToString(expectShippingEnd, 'MM[/]DD')}
                                         {
@@ -987,12 +1051,23 @@ const GoodsDetail = (props) => {
                     )
                 }
 
+                {
+                    props.couponNo ? (
+                        <Fixed bottom={0} width={'100%'}  height={56} zIndex={3}>
+                            <Button block bg={'green'} rounded={0} fg={'white'} height={'100%'} onClick={buyCouponGoodsClick} fw={600}
+                                    disabled={goodsErrorState() ? true : false}
+                            >
+                                {goodsErrorState() ? goodsErrorState() : '무료 쿠폰으로 주문하기'}
+                            </Button>
+                        </Fixed>
+                    ) : (
+                        <BuyFooter
+                            goods={props.goods}
+                            onClick={moveDirectBuy}
+                        />
+                    )
+                }
 
-
-                <BuyFooter
-                    goods={props.goods}
-                    onClick={moveDirectBuy}
-                />
 
             </div>
 

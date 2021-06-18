@@ -5,6 +5,7 @@ import ModifyConsumerInfo from './ModifyConsumerInfo'
 import AddressManagement from './AddressManagement'
 import AddressModify from './AddressModify'
 import HintPassPhrase from './HintPassPhrase'
+import ApplySecession from "./ApplySecession";
 
 export {
     InfoManagementMenu,
@@ -13,5 +14,6 @@ export {
     ModifyConsumerInfo,
     AddressManagement,
     AddressModify,
-    HintPassPhrase
+    HintPassPhrase,
+    ApplySecession
 }

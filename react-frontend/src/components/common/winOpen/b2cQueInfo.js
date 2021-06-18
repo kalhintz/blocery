@@ -29,9 +29,9 @@ class b2cQueInfo extends Component{
         this.inputCategory = React.createRef()
     }
 
-    componentDidMount() {
-        window.scrollTo(0,0);
-    }
+    // componentDidMount() {
+    //     window.scrollTo(0,0);
+    // }
 
     onCategoryChange = (e) => {
         // 기타

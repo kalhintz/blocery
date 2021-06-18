@@ -67,8 +67,11 @@ class ConsumerLogin extends Component {
             kakaoJoinOpen: false,
             kakaoJoinInfo:{
                 consumerInfo:null,
-                token:""
-            }
+                token:"",
+                refreshToken:""
+            },
+            stopLoginOpen: false,
+            stopLoginReJoinDate:''
         }
     }
 
@@ -78,16 +81,17 @@ class ConsumerLogin extends Component {
 
         //doKakaoLogin(access_token) 바로 호출.  test필요..
         //USAGE:  login?accessToken="accessToken...."
-        console.log('this.props.location:' + this.props.location);
+        //console.log('this.props.location:' + this.props.location);
         if (!this.props.location) return;
 
         const params = new URLSearchParams(this.props.location.search)
         let accessToken = params.get('accessToken');
+        let refreshToken = params.get('refreshToken')||(localStorage.getItem("refreshToken")||"");
         if (accessToken) {
 
             //React Native 에소 호출된 경우.. 로그인 확인 후, 가입페이지로 이동 or 로그인완료 처리.
             //this.kakaoLoginWithAccessKey(accessToken);
-            await this.kakaoLoginWithAccessKey(accessToken);
+            await this.kakaoLoginWithAccessKey(accessToken,refreshToken);
         }
     }
 
@@ -130,14 +134,14 @@ class ConsumerLogin extends Component {
                 credentials: 'same-origin'
             })
             .then((response) => {
-                console.log(response);
+                //console.log(response);
                 if (response.data.status === Server.ERROR)             //100: login ERROR
                     this.setState({fadeError: true});
                 else
                 {
                     let loginInfo = response.data;
 
-                    console.log(localStorage);
+                    //console.log(localStorage);
 
                     //localStorage.clear();
 
@@ -159,7 +163,7 @@ class ConsumerLogin extends Component {
 
                     sessionStorage.setItem('logined', 1); //1 : true로 이용중
 
-                    console.log('loginInfo : ===========================',loginInfo);
+                    //console.log('loginInfo : ===========================',loginInfo);
                     //Webview.appLog('Login valword:' + data.valword);
                     //Webview.appLog('LoginlocalStorage Val:' + localStorage.getItem('valword'));
 
@@ -169,12 +173,12 @@ class ConsumerLogin extends Component {
                 }
             })
             .catch(function (error) {
-                console.log(error);
+                //console.log(error);
                 alert('로그인 오류:'+error);
             });
 
         if (!this.state.fadeError) { //로그인 성공이면
-            console.log('소비자 로그인 성공');
+            //console.log('소비자 로그인 성공');
             this.closePopup();
         }
     }
@@ -214,7 +218,7 @@ class ConsumerLogin extends Component {
         //미션이벤트용 날짜 check - 베타오픈 후에는 제거해도 됨
         if (Server._serverMode() === 'production') {
             let now = ComUtil.utcToString(ComUtil.getNow());
-            console.log(now);
+            //console.log(now);
 
             if (ComUtil.compareDate(now, '2019-12-30') < 0) {
 
@@ -237,7 +241,7 @@ class ConsumerLogin extends Component {
 
         let response = await getConsumerEmail(this.targetEmail.value);
         let userType = 'consumer';
-
+        //console.log("getConsumerEmail==",response)
         if (!response.data) { //= (response.data == '' || response.data == null) {     // 없는 이메일
             alert("가입정보가 없는 이메일입니다.")
         } else {
@@ -271,10 +275,10 @@ class ConsumerLogin extends Component {
                 credentials: 'same-origin'
             })
             .then((response) => {
-                console.log(response);
+                //console.log(response);
             })
             .catch(function (error) {
-                console.log(error)
+                //console.log(error)
             });
     }
 
@@ -312,35 +316,51 @@ class ConsumerLogin extends Component {
 
             //RN1-1. mobileApp이 아니면 웹로그인(아래)호출.
             window.Kakao.Auth.login({
+                // 세션이 종료된 이후에도 토큰을 유지.
+                persistAccessToken: true,
+                // 세션이 종료된 이후에도 refresh토큰을 유지.
+                persistRefreshToken: true,
                 success: async function (response) {
-                    console.log(response)
+                    //console.log(response)
                     const access_token = response.access_token;
-
+                    const refresh_token = response.refresh_token;
                     //202012 RN을 위해 함수로 분리..
-                    await that.kakaoLoginWithAccessKey(access_token);
+                    await that.kakaoLoginWithAccessKey(access_token, refresh_token);
 
 
                 },
                 fail: function (error) {
-                    console.log(error)
+                    //console.log(error)
                 },
             })
         }
     }
 
     //ReactNative(RN)공용사용을 위해  분리. 202012
-    kakaoLoginWithAccessKey = async(access_token) => {
+    // code: -1 - 가져오기 실패
+    // code: 0  - 가져오기 성공 (로그인 성공)
+    // code: 1 -  회원가입 중=>  결제비번 입력창으로 redirect 필요.
+    // code: 20210101 - 8자리면서 날짜가 나오면 재가입 가능일
+    kakaoLoginWithAccessKey = async(access_token, refresh_token) => {
 
-        const {data:res} = await doKakaoLogin(access_token);
-        console.log("doKakaoLogin===",res)
+        const {data:res} = await doKakaoLogin(access_token, refresh_token);
+        //console.log("doKakaoLogin===",res)
 
         const code = res.code;
-        if(code == 1){
+        if(code > 1 && code.toString().length == 8){
+            //console.log("doKakaoLogin2=code==",code)
+            this.setState({
+                stopLoginReJoinDate:code,
+                stopLoginOpen:true
+            })
+        } else if(code == 1){
             //consumerNo (0보다 크면) -  회원가입 중인 consumerNo =>  결제비번 입력창으로.
+            const consumerInfo = res.consumer;
             this.setState({
                 kakaoJoinInfo:{
-                    consumer:res.consumer,
-                    token:access_token
+                    consumer:consumerInfo,
+                    token:consumerInfo.token,
+                    refreshToken:consumerInfo.refreshToken
                 },
                 kakaoJoinOpen:true
             })
@@ -356,37 +376,44 @@ class ConsumerLogin extends Component {
             localStorage.removeItem('email');
             localStorage.removeItem('valword');
             localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
 
             localStorage.setItem('authType', 1);
             localStorage.setItem('userType', 'consumer');
-            localStorage.setItem('token', access_token);
+            localStorage.setItem('token', consumerInfo.token);
+            localStorage.setItem('refreshToken', consumerInfo.refreshToken);
             localStorage.setItem('autoLogin', 1);
             sessionStorage.setItem('logined', 1); //1 : true로 이용중
             Webview.updateFCMToken({userType: 'consumer', userNo: consumerInfo.consumerNo})
 
-            console.log('kakao Login OK: + history.goback');
+            //console.log('kakao Login OK: + history.goback');
             this.closePopup();
-        }else{
+        } else{
             if(code == -1){
                 // -1 - 가져오기 실패
-                console.log("-1 카카오톡 정보 가져오기 실패");
+                //console.log("-1 카카오톡 정보 가져오기 실패");
             }else{
-                console.log("-1 카카오톡 정보 가져오기 실패");
+                //console.log("-1 카카오톡 정보 가져오기 실패");
             }
         }
 
     }
 
+    StopLoginClose = () => {
+        this.setState({
+            stopLoginOpen: false
+        })
+    }
 
     // 카카오 로그아웃
     KakaoLogout = () => {
         // 카카오 토큰만료
         if (!window.Kakao.Auth.getAccessToken()) {
-            console.log('Not logged in.');
+            //console.log('Not logged in.');
             return;
         }
         window.Kakao.Auth.logout(function() {
-            console.log(window.Kakao.Auth.getAccessToken());
+            //console.log(window.Kakao.Auth.getAccessToken());
             //마켓블리 로그아웃 처리 (세션등)
         });
     }
@@ -396,10 +423,10 @@ class ConsumerLogin extends Component {
         window.Kakao.API.request({
             url: '/v1/user/unlink',
             success: function(response) {
-                console.log(response);
+                //console.log(response);
             },
             fail: function(error) {
-                console.log(error);
+                //console.log(error);
             },
         });
     }
@@ -470,15 +497,16 @@ class ConsumerLogin extends Component {
                     </Form>
                 </Container>
                 {
-                    this.state.isOpen && this.state.type === 'id' && <ModalPopup title={'알림'} content={'가입 시 입력하신 이름을 적어 고객센터로(cs@blocery.io) 메일을 보내주시면 답신 드리도록 하겠습니다.'} onClick={this.onClose}></ModalPopup>
+                    this.state.isOpen && this.state.type === 'id' && <ModalPopup title={'알림'} content={'가입 시 입력하신 성함, 이메일, 연락처 등과 함께 문의사항을 고객센터로(cs@blocery.io) 메일을 보내주시거나, 카카오채널(마켓블리) 1:1 채팅으로 문의주시면 확인 후 회신 드리도록 하겠습니다.'} onClick={this.onClose}></ModalPopup>
                 }
                 {
                     this.state.isOpen && this.state.type === 'pw' &&
                         <Modal isOpen={true} centered>
                             <ModalHeader>비밀번호 찾기</ModalHeader>
                             <ModalBody>고객님의 비밀번호를 초기화하여 결과를 이메일 발송해드립니다.</ModalBody>
+                            <ModalBody>(카카오톡 연동고객은 해당되지 않습니다.<br/> 카카오톡 비밀번호는 카카오에 문의하시기 바랍니다.)</ModalBody>
                             <ModalBody>
-                                <Input type="text" placeholder="Email을 입력해주세요"
+                                <Input type="text" placeholder="마켓블리에 가입하신 Email을 입력해주세요"
                                        innerRef = {(email) => {this.targetEmail = email}}
                                 />
                             </ModalBody>
@@ -502,6 +530,19 @@ class ConsumerLogin extends Component {
                                 <Button color="secondary" onClick={this.KakaoJoinClose}>취소</Button>
                             </ModalFooter>
                         </Modal>
+                }
+                {
+                    this.state.stopLoginOpen &&
+                    <Modal size="lg" isOpen={true} centered>
+                        <ModalHeader>알림</ModalHeader>
+                        <ModalBody>
+                            탈퇴 후 재가입은 90일 이후에 가능합니다. <br/>
+                            재가입 가능일 : {this.state.stopLoginReJoinDate && ComUtil.intToDateString(this.state.stopLoginReJoinDate)}
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color="secondary" onClick={this.StopLoginClose}>확인</Button>
+                        </ModalFooter>
+                    </Modal>
                 }
             </Fragment>
         )

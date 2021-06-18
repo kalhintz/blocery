@@ -17,11 +17,7 @@ const TodaysDeal = (props) => {
         <div className='f4 pl-2 pt-3 pr-2 mb-2 text-dark font-weight-bold' onClick={onClick}>{children}</div>
 
     useEffect(() => {
-        //AWS에서 자동처리:202012 //http로 첫페이지 접속시 https로 자동전환.
-        // if ( window.location.protocol === 'http:' && Server._serverMode() === 'production') {
-        //     console.log('window.location.protocol:' + window.location.protocol);
-        //     window.location = 'https://blocery.com/home/1';  //HARD CODING
-        // }
+
 
         // console.log(props)
         const params = new URLSearchParams(props.location.search)
@@ -31,11 +27,18 @@ const TodaysDeal = (props) => {
             props.history.push('/' + moveTo);
         }
 
-        console.log('didMount TodaysDeal')
+        //추천인코드 localStorage에 임시저장
+        let inviteCode = params.get('inviteCode');
+        if (inviteCode) {
+            console.log('inviteCode:'+ inviteCode);
+            localStorage.setItem('inviteCode', inviteCode);
+        }
+
+        //console.log('didMount TodaysDeal')
 
         localStorage.setItem('today', ComUtil.utcToString(new Date()));
 
-        window.scrollTo(0, 0)
+        //window.scrollTo(0, 0)
         //console.log(localStorage)
     }, [])
 
@@ -51,7 +54,8 @@ const TodaysDeal = (props) => {
                 <div style={{paddingBottom: '59px'}}>
 
                     {/* 특가 Deal [연동필요] */}
-                    <SpecialPriceDeal style={{marginTop: 59}} history={props.history} />
+                    <SpecialPriceDeal //style={{marginTop: 29}}
+                                      history={props.history} />
 
                     {/* 베스트 Best */}
                     <Best style={{marginTop: 76}} history={props.history} />

@@ -11,6 +11,7 @@ function OrderList(props) {
     const [isOpen, setIsOpen] = useState(false)
     const [orderSeq, setOrderSeq] = useState(null)
 
+
     useEffect(() => {
         search()
     }, [])

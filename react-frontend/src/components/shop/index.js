@@ -6,7 +6,7 @@ import Goods from './goods'
 import { DirectBuy, CartBuy, BuyFinish, InputAddress, MultiGiftBuy } from './buy'
 
 import FarmersDetailActivity from './farmersDetailActivity'
-import { Mypage, TokenHistory, Deposit, Withdraw } from './mypage'
+import { Mypage, Index, Deposit, Withdraw } from './mypage'
 import { CartList } from './cartList'
 import GoodsReview from './goodsReview'
 import GoodsReviewList from './goodsReviewList'
@@ -31,7 +31,7 @@ export {
     InputAddress,
     MultiGiftBuy,
     Mypage,
-    TokenHistory,
+    Index,
     Deposit,
     Withdraw,
     CartList,

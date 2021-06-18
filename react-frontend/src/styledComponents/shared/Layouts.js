@@ -18,7 +18,7 @@ const defaultStyle = css`
     text-align: ${props => props.textAlign};
     color: ${props => color[props.fg] || 'inherit'};
     ${props => props.bg && `
-        background-color: ${color[props.bg]}
+        background-color: ${color[props.bg] || props.bg}
     `};    
     
     ${props => (props.bgFrom || props.bgTo) && `background: linear-gradient(${props.deg || 145}deg, ${hasValue(props.bgFrom) ? (color[props.bgFrom] || props.bgFrom) : color.white}, ${hasValue(props.bgTo) ? (color[props.bgTo] || props.bgTo) : color.white});`};
@@ -67,6 +67,16 @@ const defaultStyle = css`
     ${props => props.shadow === 'sm' && 'box-shadow: 1px 1px 3px rgba(0,0,0,0.1);'};
     ${props => props.shadow === 'md' && 'box-shadow: 1px 1px 10px rgba(0,0,0,0.1);'};
     ${props => props.shadow === 'lg' && 'box-shadow: 1px 1px 15px rgba(0,0,0,0.1);'};
+    
+    ${props => props.dot && `
+        &::before {
+            content: '·';
+            display: block;
+            margin-right: 8px;
+        }
+    `}
+    
+    
 `;
 
 export const Div = styled.div`
@@ -164,4 +174,11 @@ export const Coupon = styled(Div)`
 export const Spin = styled(Div)`
   ${spin};
   display: inline-block;
+`;
+
+export const GridColumns = styled(Div)`
+    display: grid;
+    grid-template-columns: ${props => hasValue(props.repeat) ? `repeat(${props.repeat}, 1fr)` : props.tempColumns };
+    grid-column-gap: ${props => props.colGap ? getValue(props.colGap) : getValue(34)};
+    grid-row-gap: ${props => props.rowGap ? getValue(props.rowGap) : getValue(34)};
 `;

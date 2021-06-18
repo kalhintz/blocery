@@ -12,16 +12,22 @@ export default class Goods extends Component {
     constructor(props) {
         super(props)
 
-        // const search = this.props.location.search
-        // const params = new URLSearchParams(search)
-        // const goodsNo = params.get('goodsNo')
-
         console.log('goods props : ', this.props)
-
-        let goodsNo = this.props.goodsNo ||  ComUtil.getParams(this.props).goodsNo
+        let params = null;
+        let goodsNo = null;
+        let couponNo = null;
+        if(this.props.location){
+            params = ComUtil.getParams(props)
+            goodsNo = params.goodsNo;
+            couponNo = params && (params.couponNo || null)
+        }else{
+            goodsNo = this.props.goodsNo;
+            couponNo = this.props.couponNo || null;
+        }
 
         this.state = {
             goodsNo: goodsNo,
+            couponNo: couponNo,
             loading: true,
             goods: null,
             producer: null,
@@ -31,7 +37,7 @@ export default class Goods extends Component {
     }
 
     async componentDidMount(){
-        window.scrollTo(0,0)
+        //window.scrollTo(0,0)
         await this.search()
     }
     search = async () => {
@@ -91,6 +97,7 @@ export default class Goods extends Component {
                                 (
                                     <GoodsDetail
                                         goods={this.state.goods}
+                                        couponNo={this.state.couponNo}
                                         producer={this.state.producer}
                                         farmDiaries={this.state.farmDiaries}
                                         images={this.state.images}

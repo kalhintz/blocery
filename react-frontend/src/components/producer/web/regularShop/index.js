@@ -9,8 +9,8 @@ import classNames from 'classnames';
 import Style from './WebRegularShopList.module.scss'
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+// import 'ag-grid-community/dist/styles/ag-grid.css';
+// import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 
 export default class WebRegularShopList extends Component {
     constructor(props) {
@@ -22,7 +22,13 @@ export default class WebRegularShopList extends Component {
             columnDefs: this.getColumnDefs(),
             defaultColDef: {
                 width: 100,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             components: {
                 formatCurrencyRenderer: this.formatCurrencyRenderer,
@@ -268,8 +274,8 @@ export default class WebRegularShopList extends Component {
                     className={classNames('ag-theme-balham',Style.agGridDivCalc)}
                 >
                     <AgGridReact
-                        enableSorting={true}                //정렬 여부
-                        enableFilter={true}                 //필터링 여부
+                        // enableSorting={true}                //정렬 여부
+                        // enableFilter={true}                 //필터링 여부
                         floatingFilter={true}               //Header 플로팅 필터 여부
                         columnDefs={this.state.columnDefs}  //컬럼 세팅
                         defaultColDef={this.state.defaultColDef}
@@ -277,7 +283,7 @@ export default class WebRegularShopList extends Component {
                         rowHeight={this.rowHeight}
                         //gridAutoHeight={true}
                         //domLayout={'autoHeight'}
-                        enableColResize={true}              //컬럼 크기 조정
+                        // enableColResize={true}              //컬럼 크기 조정
                         overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                         overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                         onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)

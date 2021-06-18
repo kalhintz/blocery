@@ -11,6 +11,7 @@ import {RiDownloadLine} from 'react-icons/ri'
 
 import {withRouter} from 'react-router-dom'
 import appIcon20 from '~/images/appIcon/app-icon-20-pt-x-20-pt@3x.png'
+import {Webview} from "~/lib/webviewApi";
 
 export default withRouter(function B2cBottombar(props){
     const [isOpen, setIsOpen] = useState(false)
@@ -79,6 +80,10 @@ export default withRouter(function B2cBottombar(props){
         window.location.assign(appUrl);
     }
 
+    const moveToJoin = () => {
+        Webview.openPopup('/login',  true);
+    }
+
     if(!isOpen) return null
 
     return(
@@ -104,6 +109,12 @@ export default withRouter(function B2cBottombar(props){
                             <Div>편리한 앱으로 보기<RiDownloadLine/></Div>
                         </Button><br/>
                         <Div mt={30} fg={'white'} onClick={onlyToday} cursor><u>오늘은 모바일 웹으로 볼게요.</u></Div>
+                        {
+                            !localStorage.getItem('userType') &&
+                            <Button mt={30} fg='white' bc='white' px='20px' py='15px' rounded='50px' onClick={moveToJoin} style={{backgroundColor: 'rgba(0,0,0,0)'}}>
+                                <Div>바로 회원가입 하기</Div>
+                            </Button>
+                        }
                     </Div>
 
 

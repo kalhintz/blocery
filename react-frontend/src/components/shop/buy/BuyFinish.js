@@ -49,7 +49,7 @@ export default class BuyFinish extends Component {
     }
 
     async componentDidMount() {
-        window.scrollTo(0,0);
+        // window.scrollTo(0,0);
 
         //로그인 체크
         const consumer = await getLoginUser();
@@ -139,7 +139,7 @@ export default class BuyFinish extends Component {
                             resultStatus: false,
                             imp_uid: imp_uid,
                             merchant_uid: merchant_uid,
-                            imp_success: imp_success,
+                            imp_success: false,
                             error_msg: "주문정보가 존재하지 않습니다."
                         });
                     }
@@ -151,8 +151,19 @@ export default class BuyFinish extends Component {
                             resultStatus: false,
                             imp_uid: imp_uid,
                             merchant_uid: merchant_uid,
-                            imp_success: imp_success,
+                            imp_success: false,
                             error_msg: "비정상적인 결재로 인해 주문취소 처리 되었습니다."
+                        });
+                    }
+                    if (data.resultStatus == "remainCancel") {
+
+                        this.setState({
+                            headTitle: "결재실패",
+                            resultStatus: false,
+                            imp_uid: imp_uid,
+                            merchant_uid: merchant_uid,
+                            imp_success: false,
+                            error_msg: "재고소진으로 인해 주문취소 처리 되었습니다."
                         });
                     }
                     //위조된 결제시도
@@ -162,7 +173,7 @@ export default class BuyFinish extends Component {
                             resultStatus: false,
                             imp_uid: imp_uid,
                             merchant_uid: merchant_uid,
-                            imp_success: imp_success,
+                            imp_success: false,
                             error_msg: "비정상적인 결재로 인해 주문취소 처리 되었습니다."
                         });
                     }
@@ -212,7 +223,7 @@ export default class BuyFinish extends Component {
                             resultStatus: false,
                             imp_uid: imp_uid,
                             merchant_uid: merchant_uid,
-                            imp_success: imp_success,
+                            imp_success: false,
                             error_msg: "주문정보가 존재하지 않습니다."
                         });
                     }
@@ -224,20 +235,13 @@ export default class BuyFinish extends Component {
                 headTitle: "결재실패",
                 imp_uid: imp_uid,
                 merchant_uid: merchant_uid,
-                imp_success: imp_success,
+                imp_success: false,
                 error_msg: error_msg
             });
         }
-
-
-        // setTimeout(()=>{
-        //     console.log({state: this.state})
-        //
-        // }, 10000)
     }
 
     getSumOrders = (orders) => {
-
         let
             sumBlctToken = 0,
             sumExchangedBlctToWon = 0
@@ -284,27 +288,32 @@ export default class BuyFinish extends Component {
         Webview.closePopupAndMovePage('/home/1')
     };
 
-    render() {
-        if(!this.state.orders || !this.state.blctToWon) return null;
-
-        //결재실패화면
-        let failed_render_comp = <Fragment>
-            <ShopXButtonNav home underline> {this.state.headTitle} </ShopXButtonNav>
-            <div className={'text-center pt-3'}>
-                { this.state.error_msg }
-            </div>
-            <hr/>
-            <div className={'d-flex p-1'}>
-                <div className={'flex-grow-1 p-1'}>
-                    <Button color='dark' block onClick={this.onContinueClick}> 계속 쇼핑하기 </Button>
+    failed_render_comp = () => {
+        return(
+            <Fragment>
+                <ShopXButtonNav home underline> {this.state.headTitle} </ShopXButtonNav>
+                <div className={'text-center pt-3'}>
+                    { this.state.error_msg }
                 </div>
-            </div>
+                <hr/>
+                <div className={'d-flex p-1'}>
+                    <div className={'flex-grow-1 p-1'}>
+                        <Button color='dark' block onClick={this.onContinueClick}> 계속 쇼핑하기 </Button>
+                    </div>
+                </div>
 
-            <ToastContainer/>
-        </Fragment>;
+                <ToastContainer/>
+            </Fragment>
+        )
+    }
 
+    render() {
+        if(!this.state.imp_success){
+            return(this.failed_render_comp())
+        }
+
+        if (!this.state.orders || !this.state.blctToWon) return null;
         if(this.state.imp_success){
-
             if(this.state.resultStatus)
             {
                 return(
@@ -360,9 +369,6 @@ export default class BuyFinish extends Component {
                                                 </Flex>
                                             )
                                         }
-
-
-
                                         {/*<Div>주문일련번호 : {order.orderSeq}</Div>*/}
                                         {/*<Div>수량 : {ComUtil.addCommas(order.orderCnt)}개</Div>*/}
                                         {/*<Div>금액 : {ComUtil.addCommas(order.orderPrice)} 원 {(order.payMethod.startsWith('card'))? '': '(' + ComUtil.addCommas(order.blctToken) +'BLY)'}</Div>*/}
@@ -412,13 +418,15 @@ export default class BuyFinish extends Component {
                                         this.state.orders.length === 1 && this.state.orders[0].usedCouponNo !== 0 ?
                                             <Div>
                                                 {
-                                                    `${ComUtil.addCommas(ComUtil.roundDown(this.state.sumOrders.sumBlctToken-this.state.orders[0].usedCouponBlyAmount, 2))} BLY
-                                                    ( - ${ComUtil.addCommas(ComUtil.roundDown((this.state.sumOrders.sumBlctToken-this.state.orders[0].usedCouponBlyAmount)*this.state.blctToWon, 0))} 원)`
+                                                    (this.state.sumOrders.sumBlctToken > this.state.orders[0].usedCouponBlyAmount) ?
+                                                        `${ComUtil.addCommas(ComUtil.roundDown((this.state.sumOrders.sumBlctToken - this.state.orders[0].usedCouponBlyAmount), 2))} BLY
+                                                    ( - ${ComUtil.addCommas(ComUtil.roundDown((this.state.sumOrders.sumBlctToken - this.state.orders[0].usedCouponBlyAmount) * this.state.blctToWon, 0))} 원)`
+                                                         : '0BLY (0원)'
                                                 }
                                             </Div>
                                             :
                                             <Div>
-                                                {`${ComUtil.addCommas(ComUtil.roundDown(this.state.sumOrders.sumBlctToken, 2))} BLY ( - ${ComUtil.addCommas(ComUtil.roundDown(this.state.sumOrders.sumExchangedBlctToWon, 0))} 원)`}
+                                                {`${ComUtil.addCommas(ComUtil.roundDown(this.state.sumOrders.sumBlctToken,2))} BLY ( - ${ComUtil.addCommas(ComUtil.roundDown(this.state.sumOrders.sumExchangedBlctToWon, 0))} 원)`}
                                             </Div>
 
                                     }
@@ -443,11 +451,7 @@ export default class BuyFinish extends Component {
                         <ToastContainer/>
                     </Fragment>
                 )
-            }else{
-                return({failed_render_comp})
             }
-        }else{
-            return({failed_render_comp})
         }
     }
 }

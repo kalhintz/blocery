@@ -21,7 +21,7 @@ export const Webview = {
         //callback 함수
         //this._addEventListener(callback)
 
-        console.log('openPopup url : ', url);
+        //console.log('openPopup url : ', url);
         //if (!callback) this._removeEventListener()
 
         //일반 웹접속일 경우(개발환경 등에서는 그냥 이동
@@ -47,7 +47,7 @@ export const Webview = {
         //callback 함수
         //this._addEventListener(callback)
 
-        console.log('winOpenPopup url : ', url);
+        //console.log('winOpenPopup url : ', url);
         //if (!callback) this._removeEventListener()
 
         //일반 웹접속일 경우(개발환경 등에서는 그냥 이동
@@ -84,6 +84,46 @@ export const Webview = {
         }
     },
 
+    // /*******************************************************
+    //  [public] 카카오 링크 호출.
+    //  @Warning :
+    //  @Param : none
+    //  *******************************************************/
+    // kakaoAppLink: function(inviteUrl){
+    //
+    //     this.appLog('Webview.kakaoApplogin call');
+    //     //일반 웹접속일 경우(개발환경 등에서는 그냥 이동
+    //     if (!ComUtil.isMobileApp()) {
+    //         return;
+    //     }
+    //
+    //     const data = {url: inviteUrl, type: 'KAKAO_LINK'};
+    //     window.ReactNativeWebView.postMessage(JSON.stringify(data));
+    //
+    // },
+
+    /*******************************************************
+     [public] 카카오 링크 호출.
+     (param: urlObject)
+        title     : urlObject.title,
+        url       : urlObject.url = target URL,
+        //urlParam  :
+        imageUrl  : urlObject.imageUrl,
+        desc      : urlObject.desc
+     *******************************************************/
+    kakaoDetailLink: function(urlObject){
+
+        //this.appLog('Webview.kakaoApplogin call');
+        //일반 웹접속일 경우(개발환경 등에서는 그냥 이동
+        if (!ComUtil.isMobileApp()) {
+            return;
+        }
+
+        const data = {url: urlObject, type: 'KAKAO_LINK'};
+        window.ReactNativeWebView.postMessage(JSON.stringify(data));
+
+    },
+
     /*******************************************************
      [public] 카카오 로그인 호출.
      @Warning :
@@ -91,7 +131,7 @@ export const Webview = {
      *******************************************************/
     kakaoAppLogin: function(){
 
-        this.appLog('Webview.kakaoApplogin call');
+        //this.appLog('Webview.kakaoApplogin call');
         //일반 웹접속일 경우(개발환경 등에서는 그냥 이동
         if (!ComUtil.isMobileApp()) {
             return;
@@ -225,7 +265,7 @@ export const Webview = {
         //디바이스 일 경우만 업데이트 함
         if (!ComUtil.isMobileApp()) return;
 
-        console.log('updateFCMToken ========')
+        //console.log('updateFCMToken ========')
 
         const data = {url: '', type: 'UPDATE_FCMTOKEN', param: {userType, userNo}};
         window.ReactNativeWebView.postMessage(JSON.stringify(data));

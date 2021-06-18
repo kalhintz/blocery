@@ -8,7 +8,7 @@ const fakeAuth = {
             return true;
         }
         if (logined == 0) {
-            console.log('fakeAuth return false');
+            //console.log('fakeAuth return false');
             return false;
         }
         return true;
@@ -21,8 +21,8 @@ export function ProducerPrivateRoute({ component: Component, ...rest }) {
             render={
                 props => {
                     const isLoggedIn = fakeAuth.isAuthenticated();
-                    console.log('in privateRoute:', props.location); //쿠키fake로그인 check라서 자주 로그인되어있는 문제가 있음.
-                    console.log('in privateRoute: isLoggedIn: ', isLoggedIn); //쿠키fake로그인 check라서 자주 로그인되어있는 문제가 있음.
+                    //console.log('in privateRoute:', props.location); //쿠키fake로그인 check라서 자주 로그인되어있는 문제가 있음.
+                    //console.log('in privateRoute: isLoggedIn: ', isLoggedIn); //쿠키fake로그인 check라서 자주 로그인되어있는 문제가 있음.
                     return (isLoggedIn) ? (
                             <Component {...props} />
                         ) :

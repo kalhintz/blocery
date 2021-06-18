@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Swiper from 'react-id-swiper'
-import { getConsumerGoodsSorted } from '~/lib/goodsApi'
+import { getConsumerReserveGoodsCached } from '~/lib/goodsApi'
 import Css from './SoonCloseGoods.module.scss'
 import { SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
 import { IconNext } from '~/components/common/icons'
@@ -19,8 +19,9 @@ const SoonCloseGoods = (props) => {
 
     async function search() {
 
-        const sorter = {direction: 'ASC', property: 'saleEnd'}
-        const { data } = await getConsumerGoodsSorted(sorter)
+        // const sorter = {direction: 'ASC', property: 'saleEnd'}
+        // const { data } = await getConsumerGoodsSorted(sorter)
+        const { data } = await getConsumerReserveGoodsCached()
 
         //7건만 보이도록
         if(data.length > limitCount){
@@ -86,6 +87,7 @@ const SoonCloseGoods = (props) => {
                                     remainedCnt={item.remainedCnt}
                                     showTimeText
                                     blyReview={item.blyReviewConfirm}
+                                    buyingRewardFlag={item.buyingRewardFlag}
                                 />
                                 <SlideItemContent
                                     style={{flexGrow:1}}

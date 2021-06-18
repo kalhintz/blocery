@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react'
 import { SlideItemTemplate, SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
 import Swiper from 'react-id-swiper'
-import { getConsumerGoodsSorted } from '~/lib/goodsApi'
+import { getConsumerReserveGoodsCached } from '~/lib/goodsApi'
 import { SpinnerBox } from '~/components/common'
 import { Doc } from '~/components/Properties'
 import { Server } from '~/components/Properties'
@@ -16,9 +16,9 @@ const DeadlineGoods = (props) => {
 
     async function search() {
 
-        const sorter = {direction: 'ASC', property: 'saleEnd'}
-
-        const { data } = await getConsumerGoodsSorted(sorter)
+        // const sorter = {direction: 'ASC', property: 'saleEnd'}
+        // const { data } = await getConsumerGoodsSorted(sorter)
+        const { data } = await getConsumerReserveGoodsCached()
 
         setData(data)
     }
@@ -52,6 +52,7 @@ const DeadlineGoods = (props) => {
                                     discountRate={Math.round(goods.discountRate)}
                                     remainedCnt={goods.remainedCnt}
                                     blyReview={goods.blyReviewConfirm}
+                                    buyingRewardFlag={goods.buyingRewardFlag}
                                 />
                                 <SlideItemContent
                                     className={'p-2'}

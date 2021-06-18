@@ -20,6 +20,8 @@ import { Server } from "../components/Properties";
 export const addProducer = (data) => axios(Server.getRestAPIHost() + '/producer', { method: "post", data: data, withCredentials: true, credentials: 'same-origin' })
 // 로그인한 생산자  조회
 export const getProducer = () => axios(Server.getRestAPIHost() + '/producer', { method: "get", withCredentials: true, credentials: 'same-origin' })
+//
+export const getProducerValword = (valword) => axios(Server.getRestAPIHost() + '/checkProducerValword', { method: "get", params: {valword: valword}, withCredentials: true, credentials: 'same-origin' })
 // 생산자 조회
 export const getProducerByProducerNo = (producerNo) => axios(Server.getRestAPIHost() + '/producer/producerNo', { method: "get", params: {producerNo: producerNo}, withCredentials: true, credentials: 'same-origin' })
 // 생산자 이메일 조회
@@ -41,10 +43,10 @@ export const delFarmDiary = (diaryNo) => axios(Server.getRestAPIHost() + '/produ
 export const getOrderByProducerNo = () => axios(Server.getRestAPIHost() + '/producer/orderByProducerNo', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 // 생산자번호로 주문목록 조회
-export const getOrderWithoutCancelByProducerNo = (year, itemName, payMethod, orderStatus) =>
+export const getOrderWithoutCancelByProducerNo = (itemName, payMethod, orderStatus, startDate, endDate) =>
     axios(Server.getRestAPIHost() + '/producer/orderWithoutCancelByProducerNo', {
         method: "get",
-        params: {year: year, itemName: itemName, payMethod: payMethod, orderStatus: orderStatus},
+        params: {itemName: itemName, payMethod: payMethod, orderStatus: orderStatus, startDate: startDate, endDate: endDate},
         withCredentials: true,
         credentials: 'same-origin'
     })
@@ -114,7 +116,9 @@ export const getOrderStatOrderConfirmOkCntByProducerNo = () => axios(Server.getR
 export const getTransitionWithOrderSaleByProducerNo = () => axios(Server.getRestAPIHost() + '/producer/transitionWithOrderSaleByProducerNo', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 // 생산자 소비자상품문의리스트
-export const getGoodsQnaListByProducerNo = (itemName, status) => axios(Server.getRestAPIHost() + '/producer/goodsQnaListByProducerNo', { method: "get", params:{itemName: itemName, status: status},withCredentials: true, credentials: 'same-origin' })
+export const getGoodsQnaListByProducerNo = (status) => axios(Server.getRestAPIHost() + '/producer/goodsQnaListByProducerNo', { method: "get", params:{status: status},withCredentials: true, credentials: 'same-origin' })
+// 생산자 소비자상품문의 미응답,응답 카운트
+export const getGoodsQnaStatusCountByProducerNo = (status) => axios(Server.getRestAPIHost() + '/producer/goodsQnaStatusCountByProducerNo', { method: "get", params:{status: status},withCredentials: true, credentials: 'same-origin' })
 
 // 생산자 소비자상품문의 조회
 export const getGoodsQnaByGoodsQnaNo = (goodsQnaNo) => axios(Server.getRestAPIHost() + '/producer/goodsQnaByGoodsQnaNo', { method: "get", params:{goodsQnaNo: goodsQnaNo}, withCredentials: true, credentials: 'same-origin' })
@@ -129,7 +133,10 @@ export const getProducerShopByProducerNo = (producerNo) => axios(Server.getRestA
 export const setProducerShopModify = (producerShop) => axios(Server.getRestAPIHost() + '/producer/producerShopModify', { method: "put", data: producerShop, withCredentials: true, credentials: 'same-origin' })
 
 // 생산자 소비자상품후기리스트
-export const getGoodsReviewListByProducerNo = (itemName, searchStars) => axios(Server.getRestAPIHost() + '/producer/goodsReviewListByProducerNo', { method: "post", params:{itemName: itemName, searchStars: searchStars}, withCredentials: true, credentials: 'same-origin' })
+export const getGoodsReviewListByProducerNo = (searchStars) => axios(Server.getRestAPIHost() + '/producer/goodsReviewListByProducerNo', { method: "post", params:{searchStars: searchStars}, withCredentials: true, credentials: 'same-origin' })
+
+// 생산자 소비자상품후기 신규 카운트 [14일이전까지]
+export const getGoodsReviewNewCountByProducerNo = () => axios(Server.getRestAPIHost() + '/producer/goodsReviewNewCountByProducerNo', { method: "get", withCredentials: true, credentials: 'same-origin' })
 
 // 생산자 소비자단골리스트(regularShop list)
 export const getRegularShopListByProducerNo = (producerNo) => axios(Server.getRestAPIHost() + '/producer/regularShopByProducerNo', { method: "post", params:{producerNo: producerNo}, withCredentials: true, credentials: 'same-origin' })
@@ -152,6 +159,9 @@ export const regProducer = (data) => axios(Server.getRestAPIHost() + '/producer/
 // 생산자 주문취소
 export const producerCancelOrder = (data) => axios(Server.getRestAPIHost() + '/producer/cancelOrder', { method: "post", data: data, withCredentials: true, credentials: 'same-origin' })
 
+// 생산자 주문취소 요청
+export const reqProducerOrderCancel = (data) => axios(Server.getRestAPIHost() + '/producer/reqProducerOrderCancel', { method: "post", data: data, withCredentials: true, credentials: 'same-origin' })
+
 // 생산자 부분환불
 export const partialRefundOrder = (data) => axios(Server.getRestAPIHost() + '/producer/partialRefundOrder', { method: "post", data: data, withCredentials: true, credentials: 'same-origin' })
 
@@ -160,3 +170,12 @@ export const getPaymentProducer = (producerNo, year, month) => axios(Server.getR
 
 // 은행정보 조회
 export const getBankInfoList = () => axios(Server.getRestAPIHost() + '/producer/bankInfoList', { method: "get", withCredentials: true, credentials: 'same-origin' })
+
+// 소비자 주문정보 조회
+export const getOrderDetailByOrderSeq = (orderSeq) => axios(Server.getRestAPIHost() + '/producer/order', { method: "get", params: { orderSeq: orderSeq} , withCredentials: true, credentials: 'same-origin' })
+
+//소비자 번호로 소비자정보 조회
+export const getConsumerByConsumerNo = (consumerNo) => axios(Server.getRestAPIHost() + '/producer/consumerNo', { method: "get", params: {consumerNo: consumerNo}, withCredentials: true, credentials: 'same-origin' })
+
+//택배사 조회(전체)
+export const getTransportCompany = () => axios(Server.getRestAPIHost() + '/producer/transportCompany', { method: "get", params: {}, withCredentials: true, credentials: 'same-origin' })

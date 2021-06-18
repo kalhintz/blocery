@@ -8,7 +8,7 @@ const fakeAuth = {
         //cookie check
         const logined = sessionStorage.getItem('logined');
         if (logined == 0) { //logout을 명시적으로 한 경우는 확실히 0 = false로 리턴.
-            console.log('fakeAuth return false');
+            //console.log('fakeAuth return false');
             return false;
         }
         return true;

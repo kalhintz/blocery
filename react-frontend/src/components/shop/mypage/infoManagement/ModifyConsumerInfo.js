@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { Button, Label, Input, Container } from 'reactstrap'
-import { getConsumerByConsumerNo, updateConsumerInfo } from "~/lib/shopApi";
+import {getConsumer, updateName} from "~/lib/shopApi";
 import ComUtil from "~/util/ComUtil"
 import { ShopXButtonNav } from '~/components/common/index'
 import {FaUserAlt, FaEnvelope, FaMobileAlt} from 'react-icons/fa'
@@ -26,31 +26,33 @@ export default class ModifyConsumerInfo extends Component {
 
             fadeSmsCheck: false,
             smsCheckOk: false, //전번 변경시 true가 되어야 통과
-            receivePush: false
+            // receivePush: false
         }
     }
 
-    componentDidMount() {
-        const params = new URLSearchParams(this.props.location.search)
-        const consumerNo = params.get('consumerNo')
-
-        this.search(consumerNo);
+    async componentDidMount() {
+        let loginUser = await getConsumer();
+        if(!loginUser || !loginUser.data){
+            this.props.history.replace('/mypage');
+            return;
+        }
+        this.search();
     }
 
-    search = async (consumerNo) => {
-        const consumerInfo = await getConsumerByConsumerNo(consumerNo)
+    search = async () => {
+        const {data:consumerInfo} = await getConsumer();
 
         this.setState({
-            consumerNo: consumerNo,
-            email: consumerInfo.data.email,
-            valword: consumerInfo.data.valword,
-            name: consumerInfo.data.name,
-            //nickname: consumerInfo.data.nickname,
-            phone: consumerInfo.data.phone,
-            zipNo: consumerInfo.data.zipNo,
-            addr: consumerInfo.data.addr,
-            addrDetail: consumerInfo.data.addrDetail,
-            receivePush: consumerInfo.data.receivePush
+            consumerNo: consumerInfo.consumerNo,
+            email: consumerInfo.email,
+            valword: consumerInfo.valword,
+            name: consumerInfo.name,
+            //nickname: consumerInfo.nickname,
+            phone: consumerInfo.phone,
+            // zipNo: consumerInfo.zipNo,
+            // addr: consumerInfo.addr,
+            // addrDetail: consumerInfo.addrDetail,
+            // receivePush: consumerInfo.data.receivePush
         })
     }
 
@@ -63,23 +65,13 @@ export default class ModifyConsumerInfo extends Component {
 
     // 저장버튼 클릭
     onModifyClick = async () => {
-        let data = {};
-        data.consumerNo = this.state.consumerNo;
-        data.name = this.state.name;
-        //data.nickname = this.state.nickname;
-        //data.phone = this.state.phone;
-        // data.addr = this.state.addr;
-        // data.addrDetail = this.state.addrDetail;
-        // data.zipNo = this.state.zipNo;
-        data.receivePush = this.state.receivePush;
 
-        if(data.name.length == 0){
+        let p_consumerName = this.state.name;
+        if(p_consumerName.length == 0){
             alert('이름을 입력해주세요!')
             return false;
         }
-
-        const modified = await updateConsumerInfo(data)
-
+        const modified = await updateName(p_consumerName)
         if(modified.data === 1) {
             alert('회원정보 수정이 완료되었습니다.')
             this.props.history.push('/myPage');
@@ -98,7 +90,8 @@ export default class ModifyConsumerInfo extends Component {
 
 
     onWithdraw = () => {
-        alert('cs@blocery.io로 탈퇴 신청을 해주세요.')
+        // alert('cs@blocery.io로 탈퇴 신청을 해주세요.')
+        this.props.history.push('/applySecession')
     }
 
     render() {
@@ -119,7 +112,8 @@ export default class ModifyConsumerInfo extends Component {
                             <br/>
                             <div className={'d-flex'}>
                                 <div className={'d-flex justify-content-center align-items-center'}><FaEnvelope className={'mr-2'} /></div>
-                                <Input name="email" value={this.state.email} placeholder="아이디(이메일)" disabled />
+                                {/*<Input name="email" value={this.state.email} placeholder="아이디(이메일)" disabled />*/}
+                                {this.state.email}
                             </div>
                             </>
                         }
@@ -129,7 +123,8 @@ export default class ModifyConsumerInfo extends Component {
                             <br/>
                             <div className={'d-flex'}>
                                 <div className={'d-flex justify-content-center align-items-center'}><FaMobileAlt className={'mr-2'} /></div>
-                                <Input name="phone" value={this.state.phone} placeholder="전화번호" disabled />
+                                {/*<Input name="phone" value={this.state.phone} placeholder="전화번호" disabled />*/}
+                                {this.state.phone}
                             </div>
                             </>
                         }

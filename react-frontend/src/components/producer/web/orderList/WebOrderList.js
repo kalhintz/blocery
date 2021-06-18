@@ -10,72 +10,107 @@ import { Button, FormGroup, Modal, Input, ModalHeader, ModalBody, ModalFooter } 
 import { ProducerFullModalPopupWithNav, ModalConfirm } from '~/components/common'
 import Order from '~/components/producer/web/order'
 import { getItems,getTransportCompany } from '~/lib/adminApi'
-
+import {Div, FilterGroup, Hr} from '~/styledComponents/shared'
 import Select from 'react-select'
 
 import classNames from 'classnames';
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 import Style from './WebOrderList.module.scss'
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/src/stylesheets/datepicker.scss";
+import {Flex} from "~/styledComponents/shared";
+import SearchDates from "~/components/common/search/SearchDates";
+import FilterContainer from "~/components/common/gridFilter/FilterContainer";
+import InputFilter from "~/components/common/gridFilter/InputFilter";
+import CheckboxFilter from "~/components/common/gridFilter/CheckboxFilter";
+
 
 export default class WebOrderList extends Component {
     constructor(props) {
         super(props);
         this.serverToday=null;
-        this.rowHeight=30;
+        // this.rowHeight=30;
         this.state = {
             isExcelUploadModal:false,
             isExcelUploadFileData:false,
             excelUploadData:null,
+            buttonVisible: false,
 
             data: null,
+            selectedRows: [],
 
-            columnDefs: this.getColumnDefs(),
+            gridOptions: {
+                rowHeight: 30,
+                // enableColResize: true,              //컬럼 크기 조정
+                // enableSorting: true,                //정렬 여부
+                // enableFilter: true,                 //필터링 여부
+                // floatingFilter: true,               //Header 플로팅 필터 여부
+                suppressMovableColumns: true,       //헤더고정시키
+                columnDefs: this.getColumnDefs(),
+                onGridReady: this.onGridReady.bind(this),              //그리드 init(최초한번실행)
+                onFilterChanged: this.onGridFilterChanged.bind(this),  //필터온체인지 이벤트
+                onCellDoubleClicked: this.copy,
+                onSelectionChanged: this.onSelectionChanged.bind(this),
+                defaultColDef: {
+                    width: 100,
+                    resizable: true,
+                    filter: true,
+                    sortable: true,
+                    floatingFilter: true,
+                    filterParams: {
+                        newRowsAction: 'keep'
+                    }
+                },
+                components: {
+                    formatCurrencyRenderer: this.formatCurrencyRenderer,
+                    formatDateRenderer: this.formatDateRenderer,
+                    formatDatesRenderer: this.formatDatesRenderer,
+                    vatRenderer: this.vatRenderer
+                },
+                frameworkComponents: {
+                    payStatusRenderer: this.payStatusRenderer,
+                    orderPayMethodRenderer: this.orderPayMethodRenderer,
+                    orderAmtRenderer:this.orderAmtRenderer,
+                    directGoodsRenderer: this.directGoodsRenderer,
+                    orderSeqRenderer: this.orderSeqRenderer,
+                    payoutAmountRenderer: this.payoutAmountRenderer
+                },
+                rowSelection: 'multiple',
+                groupSelectsFiltered: true,
+                suppressRowClickSelection: false,   //false : 셀 클릭시 체크박스도 체크 true: 셀클릭시 체크박스 체크 안함
+                overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
+                overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
+            },
 
-            defaultColDef: {
-                width: 100,
-                resizable: true
-            },
-            components: {
-                formatCurrencyRenderer: this.formatCurrencyRenderer,
-                formatDateRenderer: this.formatDateRenderer,
-                formatDatesRenderer: this.formatDatesRenderer,
-                vatRenderer: this.vatRenderer
-            },
-            frameworkComponents: {
-                payStatusRenderer: this.payStatusRenderer,
-                orderPayMethodRenderer: this.orderPayMethodRenderer,
-                orderAmtRenderer:this.orderAmtRenderer,
-                directGoodsRenderer: this.directGoodsRenderer,
-                orderSeqRenderer: this.orderSeqRenderer
-            },
-            rowSelection: 'single',
-            overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
-            overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
             orderListCnt:0,
             isOpen: false,
             orderSeq: null,
-
+            producerNo: null,
             filterItems: {
                 items: [],
                 payMethodItems:[],
                 orderStatusItems:[],
             },
             searchFilter: {
-                year:moment().format('YYYY'),
+                // year:moment().format('YYYY'),
                 itemName: '',
                 payMethod: 'all',
                 orderStatus:'all'
             },
 
             transportCompany: [],
+
+            search: {
+                selectedGubun: 'week', //'week': 최초화면을 오늘(day)또는 1주일(week)로 설정.
+                startDate: moment(moment().toDate()).add("days", -7),
+                endDate: moment(moment().toDate()),
+            },
         };
         this.excelFile = React.createRef();
     }
@@ -106,6 +141,12 @@ export default class WebOrderList extends Component {
             payStatusNm = "구매확정"
         }
 
+        if(data.reqProducerCancel === 1) {
+            payStatusNm = "취소요청중"
+        } else if (data.reqProducerCancel === 2) {
+            payStatusNm = "환불요청중"
+        }
+
         return payStatusNm;
     }
 
@@ -114,6 +155,8 @@ export default class WebOrderList extends Component {
         //API init
         this.gridApi = params.api;
         this.gridColumnApi = params.columnApi;
+        console.log("ready", this.gridApi)
+
         //console.log("onGridReady");
         /*
         //리사이징 기능
@@ -148,6 +191,7 @@ export default class WebOrderList extends Component {
         // 주문번호 field
         let orderSeqColumn = {
             headerName: "주문번호", field: "orderSeq",
+            sort:"desc",
             width: 100,
             cellStyle: this.getCellStyle,
             cellRenderer: "orderSeqRenderer",
@@ -159,11 +203,14 @@ export default class WebOrderList extends Component {
         // 주문일자 field
         let orderDateColumn = {
             headerName: "주문일시", field: "orderDate",
-            sort:"desc",
             width: 170,
             suppressSizeToFit: true,
             cellStyle:this.getCellStyle({cellAlign: 'center'}),
             cellRenderer: "formatDatesRenderer",
+            headerCheckboxSelection: true,
+            headerCheckboxSelectionFilteredOnly: true,  //전체 체크시 필터된 것만 체크
+            checkboxSelection: true,
+
             /*filterParams: {
                 clearButton: true //클리어버튼
             },*/
@@ -203,6 +250,20 @@ export default class WebOrderList extends Component {
             }
         };
 
+        // 구매확정일자 field
+        let consumerOkDateColumn = {
+            headerName: "구매확정일시", field: "consumerOkDate",
+            width: 150,
+            suppressSizeToFit: true,
+            cellStyle:this.getCellStyle({cellAlign: 'center'}),
+            cellRenderer: "formatDatesRenderer",
+
+            valueGetter: function(params) {
+                return ComUtil.utcToString(params.data.consumerOkDate, 'YYYY-MM-DD HH:mm');
+            },
+            filter: "agDateColumnFilter",
+        };
+
         // 주문 결제방법 field
         let orderPayMethodColumn = {
             headerName: "결제수단", field: "payMethod",
@@ -221,6 +282,9 @@ export default class WebOrderList extends Component {
             suppressSizeToFit: true,
             width: 80,
             cellStyle:this.getCellStyle({cellAlign: 'center'}),
+            valueGetter: function ({data}) {
+                return data.directGoods ? '즉시' : '예약'
+            },
             cellRenderer: "directGoodsRenderer",
             filterParams: {
                 clearButton: true //클리어버튼
@@ -232,9 +296,21 @@ export default class WebOrderList extends Component {
         let orderAmtColumn = {
             headerName: "결제금액", field: "orderAmt",
             suppressSizeToFit: true,
-            width: 180,
+            width: 120,
             cellStyle:this.getCellStyle({cellAlign: 'center'}),
             cellRenderer: "orderAmtRenderer",
+            filterParams: {
+                clearButton: true //클리어버튼
+            }
+        };
+
+        // 정산금액 field
+        let payoutAmtColumn = {
+            headerName: "정산금액", field: "simplePayoutAmount",
+            suppressSizeToFit: true,
+            width: 120,
+            cellStyle:this.getCellStyle({cellAlign: 'center'}),
+            cellRenderer: "payoutAmountRenderer",
             filterParams: {
                 clearButton: true //클리어버튼
             }
@@ -246,6 +322,9 @@ export default class WebOrderList extends Component {
             width: 80,
             cellStyle:this.getCellStyle({cellAlign: 'center'}),
             cellRenderer: "vatRenderer",
+            valueGetter: function ({data}) {
+                return data.vatFlag ? '과세' : '면세'
+            },
             filterParams: {
                 clearButton: true //클리어버튼
             }
@@ -335,6 +414,13 @@ export default class WebOrderList extends Component {
             }
         };
 
+        let trackingNumberColumn = {
+            headerName: "송장번호", field: "trackingNumber",
+            width: 120,
+            suppressSizeToFit: true,
+            cellStyle:this.getCellStyle({cellAlign: 'center'})
+        };
+
         let columnDefs = [
             orderDateColumn,
             payStatusColumn,
@@ -347,13 +433,35 @@ export default class WebOrderList extends Component {
             vatColumn,
             orderPayMethodColumn,
             receiverNameColumn,
+            consumerOkDateColumn,
+            payoutAmtColumn,
             expectShippingStartColumn,
             expectShippingEndColumn,
-            hopeDeliveryDateColumn
+            hopeDeliveryDateColumn,
+            trackingNumberColumn
         ];
 
         return columnDefs
     }
+
+    onSelectionChanged = (event) => {
+        this.updateSelectedRows()
+    }
+
+    // getSelectedRows = () => {
+    //     console.log({gridApi: this.gridApi})
+    //
+    //     let selectedRows;
+    //     selectedRows = this.gridApi.getSelectedRows();
+    //     console.log(selectedRows);
+    //     ///than you can map your selectedRows
+    //     selectedRows.map((row) => {
+    //         console.log(row);
+    //         console.log(row.data);
+    //     });
+    //
+    //
+    // }
 
     // Ag-Grid Cell 스타일 기본 적용 함수
     getCellStyle ({cellAlign,color,textDecoration,whiteSpace}){
@@ -383,6 +491,10 @@ export default class WebOrderList extends Component {
         return (value ? ComUtil.utcToString(value,'YYYY-MM-DD HH:mm') : '-')
     }
 
+    payoutAmountRenderer = ({value, data:rowData}) => {
+        return rowData.consumerOkDate ? (<span>{ComUtil.addCommas(rowData.simplePayoutAmount)} 원</span>) : (<span> - </span>)
+    }
+
     //Ag-Grid Cell 주문 결제 방법 렌더러
     orderPayMethodRenderer = ({value, data:rowData}) => {
         let payMethodTxt = rowData.payMethod === "card" ?  "카드결제" : rowData.payMethod === "cardBlct" ? "카드+BLY결제" : "BLY결제";
@@ -392,22 +504,22 @@ export default class WebOrderList extends Component {
     //Ag-Grid Cell 주문금액 렌더러
     orderAmtRenderer = ({value, data:rowData}) => {
 
-        let orderAmount = rowData.cardPrice + "원";
-        switch (rowData.payMethod) {
-            case "blct":
-                orderAmount = rowData.blctToken + "BLY";
-                break;
+        //202104 orderPrice로 수정.
+        return (<span>{ComUtil.addCommas(rowData.orderPrice)} 원</span>);
 
-            case "cardBlct":
-                orderAmount = rowData.cardPrice + "원 + " + rowData.blctToken + "BLY";
-                break;
-        }
+        // let orderAmount = rowData.cardPrice + "원";
+        // switch (rowData.payMethod) {
+        //     case "blct":
+        //         orderAmount = rowData.blctToken + "BLY";
+        //         break;
+        //
+        //     case "cardBlct":
+        //         orderAmount = rowData.cardPrice + "원 + " + rowData.blctToken + "BLY";
+        //         break;
+        // }
+        //
+        // return (<span>{orderAmount}</span>);
 
-        return (<span>{orderAmount}</span>);
-
-        // let orderAmtTxt = rowData.payMethod === "card" ?  rowData.orderPrice + "원" : rowData.blctToken + "BLCT";
-        // let orderAmtSubTxt = rowData.payMethod === "card" ?  rowData.blctToken + "BLCT" : rowData.orderPrice + "원";
-        // return (<span>{orderAmtTxt}({orderAmtSubTxt})</span>);
     }
 
     vatRenderer = ({value, data:rowData}) => {
@@ -441,7 +553,7 @@ export default class WebOrderList extends Component {
             txtColor = 'text-info';
         }
 
-        return (rowData.payStatus === 'paid' && !rowData.trackingNumber && !rowData.orderConfirm ?
+        return (rowData.payStatus === 'paid' && !rowData.trackingNumber && !rowData.orderConfirm && rowData.reqProducerCancel === 0 ?
             <Button size='sm' onClick={this.onClickOrderConfirm.bind(this, rowData)}>주문확인</Button> : <span className={txtColor}>{val}</span>)
     }
 
@@ -462,19 +574,56 @@ export default class WebOrderList extends Component {
         }
     }
 
-    // 주문확인(all) 클릭
-    onClickAllOrderConfirm = (isConfirmed) => {
+    // 체크박스 선택후 주문확인 클릭
+    onCheckedOrderConfirmClick = async (isConfirmed) => {
+
         if(isConfirmed){
-            const notConfirm = this.state.data.map(async (item ,index)=> {
-                let data = {}
-                if(item.orderConfirm === null) {
-                    data.orderSeq = item.orderSeq;
-                    data.orderConfirm = "confirmed";
+
+            const rows = this.state.selectedRows;
+
+            const updateRows = rows.filter((item) => item.orderConfirm === null)
+
+            if (updateRows.length <= 0) {
+                alert('주문확인 가능한 건이 없습니다.')
+                return
+            }
+
+            if (!window.confirm(`[${updateRows.length}건 가능] 주문확인 하시겠습니까?`)) {
+                return
+            }
+
+
+            const promises = updateRows.map((item ,index)=>
+                setOrderConfirm({
+                    orderSeq: item.orderSeq,
+                    orderConfirm: "confirmed"
+                })
+            )
+
+            const res = await Promise.all(promises)
+
+            let isSuccess = true;
+
+            res.map(({data}) => {
+                if (data !== 1) {
+                    isSuccess = false
                 }
-                return await setOrderConfirm(data)
             })
-            this.search();
+
+            if (isSuccess) {
+                alert(`${updateRows.length}건 주문확인 되었습니다`)
+            }else {
+                alert('주문 확인 처리 실패된 항목이 있씁니다. 다시 시도해주세요.');
+            }
+
+            await this.search();
         }
+    }
+
+    updateSelectedRows = () => {
+        this.setState({
+            selectedRows: this.gridApi.getSelectedRows()
+        })
     }
 
     //Ag-Grid 주문상태 필터링용 온체인지 이벤트 (엑셀데이터 동기화)
@@ -488,8 +637,24 @@ export default class WebOrderList extends Component {
         if(!loginUser){
             this.props.history.push('/producer/webLogin')
         }
+        this.setState({
+            producerNo: loginUser.uniqueNo,
+        });
         this.setFilter();
         this.search()
+    }
+
+
+    searchData = async () => {
+        let { data:serverToday } = await getServerToday();
+        this.serverToday = serverToday;
+        const filter = Object.assign({},this.state.searchFilter)
+        const searchInfo = Object.assign({},this.state.search)
+
+        const startDate = searchInfo.startDate ? moment(searchInfo.startDate).format('YYYYMMDD'):null;
+        const endDate = searchInfo.endDate ? moment(searchInfo.endDate).format('YYYYMMDD'):null;
+
+        return await getOrderWithoutCancelByProducerNo(filter.itemName, filter.payMethod, filter.orderStatus, startDate, endDate);
     }
 
     // 주문조회 (search)
@@ -499,12 +664,7 @@ export default class WebOrderList extends Component {
             this.gridApi.showLoadingOverlay();
         }
 
-        let { data:serverToday } = await getServerToday();
-        this.serverToday = serverToday;
-
-        const filter = Object.assign({},this.state.searchFilter)
-
-        const { status, data } = await getOrderWithoutCancelByProducerNo(filter.year, filter.itemName, filter.payMethod, filter.orderStatus);
+        const { status, data } = await this.searchData();
         if(status !== 200){
             alert('응답이 실패 하였습니다');
             return
@@ -514,6 +674,8 @@ export default class WebOrderList extends Component {
             data: data,
             orderListCnt: data.length,
             columnDefs: this.getColumnDefs()
+        }, () => {
+            this.updateSelectedRows()
         });
 
         //ag-grid api
@@ -596,11 +758,11 @@ export default class WebOrderList extends Component {
         })
     }
 
-    setFilterData = () => {
+    setFilterData (){
         if(!this.gridApi) return;
         let filterData = this.getFilterData();
         this.setState({
-            orderListCnt: filterData.data.length
+            orderListCnt: filterData.data ? filterData.data.length:0
         })
     }
     getFilterData = () => {
@@ -615,7 +777,7 @@ export default class WebOrderList extends Component {
         return sortedData;
     }
 
-    getExcelData = () => {
+    getExcelData = async () => {
         if(!this.gridApi){ return [] }
 
         const columns = [
@@ -625,14 +787,19 @@ export default class WebOrderList extends Component {
             '주문자','주문자이메일', '주문자연락처',
             '구분','상품명','주문수량',
             '결제금액', '부가세', '결제수단',
-            '수령자명','수령자연락처','수령자주소',
+            '수령자명','수령자연락처','우편번호','수령자주소',
             '배송메세지',
             '예상배송시작일', '예상배송종료일',
             '희망수령일'
         ];
 
         //필터링된 데이터
-        let sortedData = this.getFilterData();
+        //let sortedData = this.getFilterData();
+        const { status, data:sortedData } = await this.searchData();
+        if(status !== 200){
+            alert('응답이 실패 하였습니다');
+            return
+        }
 
         //필터링 된 데이터에서 sortedData._original 로 접근하여 그리드에 바인딩 원본 값을 가져옴
         const data = sortedData.map((item ,index)=> {
@@ -643,23 +810,25 @@ export default class WebOrderList extends Component {
             let vatFlag = item.vatFlag ? "과세" : "면세";
 
             let v_receiverAddrInfo = "";
-            if(item.receiverZipNo){
-                v_receiverAddrInfo = "("+item.receiverZipNo+")";
-            }
+            // if(item.receiverZipNo){
+            //     v_receiverAddrInfo = "("+item.receiverZipNo+")";
+            // }
             v_receiverAddrInfo = v_receiverAddrInfo + item.receiverAddr+" "+item.receiverAddrDetail;
 
             let v_directGoodsNm = item.directGoods ? "즉시" : "예약";
 
-            let v_orderAmount = item.cardPrice + "원";
-            switch (item.payMethod) {
-                case "blct":
-                    v_orderAmount = item.blctToken + "BLY";
-                    break;
-
-                case "cardBlct":
-                    v_orderAmount = item.cardPrice + "원 + " + item.blctToken + "BLY";
-                    break;
-            }
+            //202104 orderPrice로 노출
+            let v_orderAmount = item.orderPrice;
+            // let v_orderAmount = item.cardPrice + "원";
+            // switch (item.payMethod) {
+            //     case "blct":
+            //         v_orderAmount = item.blctToken + "BLY";
+            //         break;
+            //
+            //     case "cardBlct":
+            //         v_orderAmount = item.cardPrice + "원 + " + item.blctToken + "BLY";
+            //         break;
+            // }
 
             let payMethodNm = item.payMethod === "card" ? "카드결제" : item.payMethod === "cardBlct" ? "카드+BLY결제":"BLY결제";
 
@@ -675,7 +844,7 @@ export default class WebOrderList extends Component {
                 item.consumerNm,item.consumerEmail, item.consumerPhone,
                 v_directGoodsNm, item.goodsNm, item.orderCnt,
                 v_orderAmount, vatFlag, payMethodNm,
-                item.receiverName, item.receiverPhone, v_receiverAddrInfo,
+                item.receiverName, item.receiverPhone, item.receiverZipNo, v_receiverAddrInfo,
                 item.deliveryMsg,
                 v_expectShippingStart, v_expectShippingEnd,
                 v_hopeDeliveryDate
@@ -767,8 +936,8 @@ export default class WebOrderList extends Component {
 
     }
 
-    onExcelDownload = () => {
-        let excelDataList = this.getExcelData();
+    onExcelDownload = async () => {
+        let excelDataList = await this.getExcelData();
 
         let v_headers = excelDataList[0].columns;
         let v_data = excelDataList[0].data;
@@ -792,11 +961,13 @@ export default class WebOrderList extends Component {
     //송장내역 엑셀 다운로드
     onTrackingNumberInfoExcelDownload = async () => {
 
+        // 송장내역 필요한 데이터 다시 검색
+        const { data:trackingTargetList } = await this.searchData();
+
         const v_Headers = [
             '주문일시',
             '주문상태',
             '주문번호',
-            //'택배사',
             '택배사코드','송장번호',
             '주문자',
             '구분', '상품명',
@@ -810,7 +981,6 @@ export default class WebOrderList extends Component {
             "orderDate",
             "payStatusNm",
             "orderSeq",
-            //"transportCompanyName",
             "transportCompanyCode","trackingNumber",
             "consumerNm",
             "directGoodsNm", "goodsNm",
@@ -820,13 +990,13 @@ export default class WebOrderList extends Component {
             "hopeDeliveryDate"
         ];
 
-        let v_dataList = this.state.data;
+        let v_dataList = trackingTargetList;
         let v_data = v_dataList.filter((row,index) => {
             if(row.trackingNumber == "" || row.trackingNumber == null){
                 return row
             }
         });
-        ComUtil.sortDate(v_data, 'orderDate', true);//주문일시의 엯순.
+        ComUtil.sortNumber(v_data, 'orderSeq', true);//주문일시의 엯순.
 
         let excelDataList = [];
         v_data.map((item ,index)=> {
@@ -979,9 +1149,10 @@ export default class WebOrderList extends Component {
         excelData.map((item ,index)=> {
             if(item["주문번호"] != "" && item["택배사코드"] != "" && item["송장번호"] != ""){
                 excelUploadData.push({
+                    producerNo:this.state.producerNo,
                     orderSeq:item["주문번호"],
-                    transportCompanyCode:item["택배사코드"],
-                    trackingNumber:item["송장번호"]
+                    transportCompanyCode:item["택배사코드"].toString().trim(),
+                    trackingNumber:item["송장번호"].toString().trim().replace(/\-/g,'')
                 });
             }
         });
@@ -995,21 +1166,49 @@ export default class WebOrderList extends Component {
             alert('응답이 실패 하였습니다');
             return
         }
+        const trackingTotalCount = excelUploadData && excelUploadData.length;
 
-        if(data == 1){
+        if(data >= 0){
+
+            const trackingSuccessCount = data;
+
+            alert("전체 "+trackingTotalCount+" 개중 "+trackingSuccessCount+" 처리되었습니다!");
+
             this.setState({
                 isExcelUploadModal:false
             });
             this.search();
+        }else{
+            if(data == -8){
+                alert("생산자 로그인 정보가 다릅니다! 다시 로그인 하거나 새로고침 하십시오! ");
+                return;
+            }
         }
     }
 
-    onSearchDateChange = async (date) => {
-        //console.log("",date.getFullYear())
-        const filter = Object.assign({},this.state.searchFilter)
-        filter.year = date.getFullYear();
-        await this.setState({searchFilter:filter});
-        await this.search();
+    // onSearchDateChange = async (date) => {
+    //     //console.log("",date.getFullYear())
+    //     const filter = Object.assign({},this.state.searchFilter)
+    //     filter.year = date.getFullYear();
+    //     await this.setState({searchFilter:filter});
+    //     await this.search();
+    // }
+
+    copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
+    }
+
+    onDatesChange = async (data) => {
+        await this.setState({
+            search: {
+                startDate: data.startDate,
+                endDate: data.endDate,
+                selectedGubun: data.gubun
+            }
+        });
+        // if(data.isSearch) {
+        //     await this.search();
+        // }
     }
 
     render() {
@@ -1028,16 +1227,16 @@ export default class WebOrderList extends Component {
                     <div className='border p-3'>
                         <div className='pb-3 d-flex'>
                             <div className='d-flex'>
+                                {/*<div className='d-flex'>*/}
+                                {/*    <DatePicker*/}
+                                {/*        selected={new Date(moment().set('year',state.searchFilter.year))}*/}
+                                {/*        onChange={this.onSearchDateChange}*/}
+                                {/*        showYearPicker*/}
+                                {/*        dateFormat="yyyy"*/}
+                                {/*        customInput={<ExampleCustomDateInput />}*/}
+                                {/*    />*/}
+                                {/*</div>*/}
                                 <div className='d-flex'>
-                                    <DatePicker
-                                        selected={new Date(moment().set('year',state.searchFilter.year))}
-                                        onChange={this.onSearchDateChange}
-                                        showYearPicker
-                                        dateFormat="yyyy"
-                                        customInput={<ExampleCustomDateInput />}
-                                    />
-                                </div>
-                                <div className='ml-3 d-flex'>
                                     <div className='d-flex justify-content-center align-items-center textBoldLarge' fontSize={'small'}>상품분류</div>
                                     <div className='pl-3' style={{width:200}}>
                                         <Select
@@ -1048,17 +1247,35 @@ export default class WebOrderList extends Component {
                                     </div>
                                 </div>
                                 <div className='ml-3 d-flex'>
-                                    <div className='d-flex justify-content-center align-items-center textBoldLarge' fontSize={'small'}>결제수단 &nbsp; &nbsp; | </div>
+                                    <div className='d-flex justify-content-center align-items-center textBoldLarge' fontSize={'small'}> | &nbsp; &nbsp; 결제수단  </div>
                                     <div className='pl-3 pt-2 '>
                                         {
                                             state.filterItems.payMethodItems.map( (item,index) => <>
-                                            <input key={'payMethodSearchInput_'+index} type="radio" id={'payMethod'+item.value} name="payMethod" value={item.value} checked={item.value === state.searchFilter.payMethod} onChange={this.onPayMethodChange} />
-                                            <label key={'payMethodSearchLabel_'+index} for={'payMethod'+item.value} className='mb-0 pl-1 mr-3' fontSize={'small'}>{item.label}</label>
+                                                <input key={'payMethodSearchInput_'+index} type="radio" id={'payMethod'+item.value} name="payMethod" value={item.value} checked={item.value === state.searchFilter.payMethod} onChange={this.onPayMethodChange} />
+                                                <label key={'payMethodSearchLabel_'+index} for={'payMethod'+item.value} className='mb-0 pl-1 mr-3' fontSize={'small'}>{item.label}</label>
                                             </>)
                                         }
                                     </div>
                                 </div>
+                                <div className='d-flex justify-content-center align-items-center textBoldLarge' fontSize={'small'}> | &nbsp; &nbsp; 기 간 (주문일) </div>
+
+                                {/*<Div pl={10} pr={20} py={1}> 기 간 (주문일) </Div>*/}
+                                <Div ml={10} >
+                                    {/*<Flex>*/}
+                                    <SearchDates
+                                        isHiddenAll={true}
+                                        isCurrenYeartHidden={true}
+                                        gubun={this.state.selectedGubun}
+                                        startDate={this.state.startDate}
+                                        endDate={this.state.endDate}
+                                        onChange={this.onDatesChange}
+                                    />
+                                    {/*<Button className="ml-3" color="primary" onClick={() => this.search(true)}> 검 색 </Button>*/}
+                                    {/*</Flex>*/}
+                                </Div>
+
                             </div>
+
                         </div>
 
                         <hr className='p-0 m-0' />
@@ -1069,8 +1286,8 @@ export default class WebOrderList extends Component {
                                 <span className='pl-3'>
                                     {
                                         state.filterItems.orderStatusItems.map((item,index) => <>
-                                        <input key={'orderStatusSearchInput_'+index} type="radio" id={'orderStatus'+item.value} name="orderStatus" value={item.value} checked={item.value === state.searchFilter.orderStatus} onChange={this.onOrderStatusChange} />
-                                        <label key={'orderStatusSearchLabel_'+index} for={'orderStatus'+item.value} className='pl-1 mr-3' fontSize={'small'}>{item.label}</label>
+                                            <input key={'orderStatusSearchInput_'+index} type="radio" id={'orderStatus'+item.value} name="orderStatus" value={item.value} checked={item.value === state.searchFilter.orderStatus} onChange={this.onOrderStatusChange} />
+                                            <label key={'orderStatusSearchLabel_'+index} for={'orderStatus'+item.value} className='pl-1 mr-3' fontSize={'small'}>{item.label}</label>
                                         </>)
                                     }
                                 </span>
@@ -1093,15 +1310,98 @@ export default class WebOrderList extends Component {
                     </div>
                 </FormGroup>
 
+                <FilterContainer gridApi={this.gridApi} excelFileName={'주문 목록'}>
+                    <FilterGroup>
+                        <InputFilter
+                            gridApi={this.gridApi}
+                            columns={[
+                                {field: 'orderSeq', name: '주문번호', width: 80},
+                                {field: 'consumerNm', name: '주문자'},
+                                {field: 'goodsNm', name: '상품명'},
+                                {field: 'receiverName', name: '수령자명'},
+                                {field: 'trackingNumber', name: '송장번호', width: 150},
+                            ]}
+                            isRealTime={true}
+                        />
+                    </FilterGroup>
+                    <Hr/>
+                    <FilterGroup>
+                        <CheckboxFilter
+                            gridApi={this.gridApi}
+                            field={'payStatus'}
+                            name={'주문상태'}
+                            data={[
+                                {value: '미배송', name: '미배송'},
+                                {value: '결제완료', name: '결제완료'},
+                                {value: '주문취소', name: '주문취소'},
+                                {value: '출고대기', name: '출고대기'},
+                                {value: '출고완료', name: '출고완료'},
+                                {value: '배송중', name: '배송중'},
+                                {value: '구매확정', name: '구매확정'},
+                                {value: '취소요청중', name: '취소요청중'},
+                                {value: '환불요청중', name: '환불요청중'},
+                            ]}
+                        />
+                        <CheckboxFilter
+                            gridApi={this.gridApi}
+                            field={'payMethod'}
+                            name={'결제수단'}
+                            data={[
+                                {value: 'card', name: '카드'},
+                                {value: 'cardBlct', name: '카드+BLY'},
+                                {value: 'bly', name: '블리'},
+
+                            ]}
+                        />
+                        <CheckboxFilter
+                            gridApi={this.gridApi}
+                            field={'directGoods'}
+                            name={'상품구분'}
+                            data={[
+                                {value: '즉시', name: '즉시'},
+                                {value: '예약', name: '예약'},
+                            ]}
+                        />
+                        {/*<CheckboxFilter*/}
+                        {/*    gridApi={this.gridApi}세*/}
+                        {/*    field={'timeSaleGoods'}*/}
+                        {/*    name={'상품구분'}*/}
+                        {/*    data={[*/}
+                        {/*        {value: '일반상품', name: '일반상품'},*/}
+                        {/*        {value: '슈퍼리워드', name: '슈퍼리워드'},*/}
+                        {/*        {value: '포텐타임', name: '포텐타임'},*/}
+                        {/*        {value: '블리타임', name: '블리타임'},*/}
+                        {/*    ]}*/}
+                        {/*/>*/}
+                        {/*<CheckboxFilter*/}
+                        {/*    gridApi={this.gridApi}*/}
+                        {/*    field={'usedCouponNo'}*/}
+                        {/*    name={'쿠폰'}*/}
+                        {/*    data={[*/}
+                        {/*        {value: '쿠폰사용', name: '쿠폰사용'},*/}
+                        {/*        {value: '-', name: '미사용'},*/}
+                        {/*    ]}*/}
+                        {/*/>*/}
+                        <CheckboxFilter
+                            gridApi={this.gridApi}
+                            field={'vatFlag'}
+                            name={'과세여부'}
+                            data={[
+                                {value: '과세', name: '과세'},
+                                {value: '면세', name: '면세'},
+                            ]}
+                        />
+                    </FilterGroup>
+                </FilterContainer>
+
 
                 <div className="d-flex pt-1 pb-1">
                     <div>총 {this.state.data ? ComUtil.addCommas(this.state.data.length) : 0} 개</div>
                     <div className='d-flex ml-auto'>
-                        <div>
-                            <ModalConfirm title={'일괄 주문확인'} content={<div>모든 주문을 확인상태로 변경하시겠습니까?</div>} onClick={this.onClickAllOrderConfirm}>
-                                <Button className='mr-1' size={'sm'}>주문확인(all)</Button>
-                            </ModalConfirm>
-                        </div>
+
+                        {
+                            this.state.selectedRows.length > 0 && (<Button className='mr-1' size={'sm'} onClick={this.onCheckedOrderConfirmClick}>{this.state.selectedRows.length}건 주문확인</Button>)
+                        }
                         <div>
                             <Button color={'info'} size={'sm'} onClick={this.onExcelDownload}>
                                 엑셀 다운로드
@@ -1119,28 +1419,30 @@ export default class WebOrderList extends Component {
                     className={classNames('ag-theme-balham',Style.agGridDivCalc)}
                 >
                     <AgGridReact
-                        enableSorting={true}                //정렬 여부
-                        enableFilter={true}                 //필터링 여부
-                        floatingFilter={true}               //Header 플로팅 필터 여부
-                        columnDefs={this.state.columnDefs}  //컬럼 세팅
-                        defaultColDef={this.state.defaultColDef}
-                        rowSelection={this.state.rowSelection}  //멀티체크 가능 여부
-                        rowHeight={this.state.rowHeight}
+                        {...this.state.gridOptions}
+                        // enableSorting={true}                //정렬 여부
+                        // enableFilter={true}                 //필터링 여부
+                        // floatingFilter={true}               //Header 플로팅 필터 여부
+                        // columnDefs={this.state.columnDefs}  //컬럼 세팅
+                        // defaultColDef={this.state.defaultColDef}
+                        // rowSelection={this.state.rowSelection}  //멀티체크 가능 여부
+                        // rowHeight={this.state.rowHeight}
                         //gridAutoHeight={true}
                         //domLayout={'autoHeight'}
-                        enableColResize={true}              //컬럼 크기 조정
-                        overlayLoadingTemplate={this.state.overlayLoadingTemplate}
-                        overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
-                        onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
+                        // enableColResize={true}              //컬럼 크기 조정
+                        // overlayLoadingTemplate={this.state.overlayLoadingTemplate}
+                        // overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
+                        // onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
                         rowData={this.state.data}
-                        components={this.state.components}  //custom renderer 지정, 물론 정해져있는 api도 있음
-                        frameworkComponents={this.state.frameworkComponents}
-                        suppressMovableColumns={true} //헤더고정시키
-                        onFilterChanged={this.onGridFilterChanged.bind(this)} //필터온체인지 이벤트
+                        // components={this.state.components}  //custom renderer 지정, 물론 정해져있는 api도 있음
+                        // frameworkComponents={this.state.frameworkComponents}
+                        // suppressMovableColumns={true} //헤더고정시키
+                        // onFilterChanged={this.onGridFilterChanged.bind(this)} //필터온체인지 이벤트
                         // onRowClicked={this.onSelectionChanged.bind(this)}
                         // onRowSelected={this.onRowSelected.bind(this)}
                         // onSelectionChanged={this.onSelectionChanged.bind(this)}
                         // suppressRowClickSelection={true}    //true : 셀 클릭시 체크박스 체크 안됨, false : 셀 클릭시 로우 단위로 선택되어 체크박스도 자동 체크됨 [default 값은 false]
+                        // onCellDoubleClicked={this.copy}
                     >
                     </AgGridReact>
                 </div>
@@ -1166,6 +1468,7 @@ export default class WebOrderList extends Component {
                             </div>
                         </div>
                         <small>* 위 엑셀다운로드 양식 처럼 주문번호,택배사코드,송장번호를 입력하셔서 업로드 하시면 됩니다.</small><br/>
+                        <small>* 위 엑셀다운로드 양식은 주문번호 기준으로 내림차순으로 정렬됩니다.</small><br/>
                         <small>* 엑셀데이터가 100건 이상일 경우 나눠서 업로드 해주세요!(데이터가 많을경우 오래 걸릴수 있습니다)</small>
                     </ModalHeader>
                     <ModalBody>
@@ -1175,7 +1478,7 @@ export default class WebOrderList extends Component {
                                 <div className="ml-3 mb-2">
                                     {
                                         state.transportCompany.map( (item,index) => <>
-                                        - {item.transportCompanyName} : {item.transportCompanyCode} <br/>
+                                            - {item.transportCompanyName} : {item.transportCompanyCode} <br/>
                                         </>)
                                     }
                                 </div>

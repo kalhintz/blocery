@@ -32,7 +32,7 @@ const Content = ({goods}) => {
             </Div>
             <Div bold mb={15} fontSize={16} textAlign={'left'}>{goodsNm}</Div>
             <Flex mb={10} fontSize={14}>
-                <Div mr={10} width={80}><CustomBadge bg={'secondary'}>판매가</CustomBadge></Div>
+                <Div mr={10} width={80}><CustomBadge bg={'secondary'}>상시판매가</CustomBadge></Div>
                 <Div fontSize={12} mr={5} fg={'dark'}><del>{ComUtil.addCommas(consumerPrice)}원</del></Div>
                 <Div fg={'danger'} bold textAlign={'right'} mr={5}>{defaultDiscountRate.toFixed(0)}%</Div>
                 <Div bold fg={'black'} mr={10}>{ComUtil.addCommas(defaultCurrentPrice)}원</Div>

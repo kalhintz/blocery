@@ -13,8 +13,8 @@ import Select from 'react-select'
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/src/stylesheets/datepicker.scss";
@@ -34,7 +34,13 @@ export default class WebOrderCancelList extends Component {
             columnDefs: this.getColumnDefs(),
             defaultColDef: {
                 width: 100,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             components: {
                 formatCurrencyRenderer: this.formatCurrencyRenderer,
@@ -129,6 +135,7 @@ export default class WebOrderCancelList extends Component {
         // 주문번호 field
         let orderSeqColumn = {
             headerName: "주문번호", field: "orderSeq",
+            sort:"desc",
             width: 100,
             cellStyle: this.getCellStyle,
             cellRenderer: "orderSeqRenderer",
@@ -171,7 +178,6 @@ export default class WebOrderCancelList extends Component {
         // 주문일자 field
         let orderDateColumn = {
             headerName: "주문일시", field: "orderDate",
-            sort:"desc",
             width: 150,
             suppressSizeToFit: true,
             cellStyle:this.getCellStyle({cellAlign: 'center'}),
@@ -671,6 +677,10 @@ export default class WebOrderCancelList extends Component {
         await this.search();
     }
 
+    copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
+    }
+
     render() {
         const state = this.state
 
@@ -748,8 +758,8 @@ export default class WebOrderCancelList extends Component {
                     className='ag-theme-balham'
                 >
                     <AgGridReact
-                        enableSorting={true}                //정렬 여부
-                        enableFilter={true}                 //필터링 여부
+                        // enableSorting={true}                //정렬 여부
+                        // enableFilter={true}                 //필터링 여부
                         floatingFilter={true}               //Header 플로팅 필터 여부
                         columnDefs={this.state.columnDefs}  //컬럼 세팅
                         defaultColDef={this.state.defaultColDef}
@@ -757,7 +767,7 @@ export default class WebOrderCancelList extends Component {
                         rowHeight={this.state.rowHeight}
                         //gridAutoHeight={true}
                         //domLayout={'autoHeight'}
-                        enableColResize={true}              //컬럼 크기 조정
+                        // enableColResize={true}              //컬럼 크기 조정
                         overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                         overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                         onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
@@ -770,6 +780,7 @@ export default class WebOrderCancelList extends Component {
                         // onRowSelected={this.onRowSelected.bind(this)}
                         // onSelectionChanged={this.onSelectionChanged.bind(this)}
                         // suppressRowClickSelection={true}    //true : 셀 클릭시 체크박스 체크 안됨, false : 셀 클릭시 로우 단위로 선택되어 체크박스도 자동 체크됨 [default 값은 false]
+                        onCellDoubleClicked={this.copy}
                     >
                     </AgGridReact>
                 </div>

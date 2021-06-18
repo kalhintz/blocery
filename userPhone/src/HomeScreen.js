@@ -10,6 +10,8 @@ import SplashScreen from 'react-native-splash-screen';
 import ComUtil from "./ComUtil";
 import ClearCacheModule from './ClearNativeAppCache';
 import RNExitApp from 'react-native-exit-app';
+//import RNKakaoLink from 'react-native-kakao-links';
+import KakaoLink from '@actbase/react-native-kakao-link';
 
 const VERSION_KEY = "version";
 const USER_TYPE = {
@@ -211,7 +213,7 @@ export default class HomeScreen extends React.Component {
             if(this.state.serverVersion)
                 AsyncStorage.setItem(VERSION_KEY, this.state.serverVersion);
             console.log('============= is different Version');
-            const kakaoUpdateTime = new Date(2020, 11, 18, 9, 0, 0); // ios는 2020년 12월 18일 금요일 오전 9시 이후에 update 하도록
+            const kakaoUpdateTime = new Date(2020, 11, 30, 9, 0, 0); // ios는 2020년 12월 18일 금요일 오전 9시 이후에 update 하도록
             const now = new Date();
             const isOverStartTime = kakaoUpdateTime.getTime() - now.getTime();
             if(isOverStartTime < 0 || Platform.OS === 'android') {
@@ -487,9 +489,37 @@ export default class HomeScreen extends React.Component {
 
     /* 여기까지 */
 
+    kakaoLink = async (urlObject) => {
+        console.log(urlObject);
+
+        const linkObject = {
+            webURL: urlObject.url,
+            mobileWebURL : urlObject.url
+        };
+
+        const contentObject = {
+            title     : urlObject.title,
+            link      : linkObject,
+            imageURL  : urlObject.imageUrl,
+            desc      : urlObject.desc
+        }
+
+        try {
+            const options = {
+                content: contentObject,
+            };
+
+            const response = await KakaoLink.sendFeed(options);
+            console.log(response);
+        } catch (e) {
+            // alert("catch : " + e);
+            console.warn(e);
+        }
+    };
+
     // popup
     onMessageFromFront = async(event) => {
-        //console.log({eventData: event.nativeEvent.data});
+        console.log({eventData: event.nativeEvent.data});
         if (!event.nativeEvent.data) {
             return; //empty URL - 왜 호출되는지..
         }
@@ -507,7 +537,11 @@ export default class HomeScreen extends React.Component {
             return;
         }
 
-        if (type === 'APP_REFRESH') { //isNoUsePopup 용도로 추가. 로그인후 refresh문제 해결. - 현재 미사용.
+        if(type === 'KAKAO_LINK') {
+            this.kakaoLink(url);
+            return;
+
+        } else if (type === 'APP_REFRESH') { //isNoUsePopup 용도로 추가. 로그인후 refresh문제 해결. - 현재 미사용.
             this.setState({key: this.getNewKey()});
             //alert('app_refresh');
 

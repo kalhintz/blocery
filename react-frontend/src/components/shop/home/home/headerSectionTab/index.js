@@ -7,7 +7,7 @@ import {Link} from '~/styledComponents/shared'
 
 const store = [
     {value: 1, label: '추천', to: '/home/1'},
-    {value: 2, label: '블리타임', to: '/home/2'},
+    // {value: 2, label: '블리타임', to: '/home/2'},
     {value: 3, label: '포텐타임', to: '/home/3'},
     {value: 'superReward', label: '슈퍼리워드', to: '/home/superReward'},
     {value: 4, label: '예약할인', to: '/home/4'},
@@ -54,19 +54,19 @@ const HeaderSectionTab = (props) => {
     async function getTimeSaleBadge() {
         let {data} = await isTimeSaleBadge();
         setTimeSaleBadge(data);
-        console.log('timeSaleBadge:' + data);
+        //console.log('timeSaleBadge:' + data);
     }
 
     async function getBlyTimeBadge() {
         let {data} = await isBlyTimeBadge();
         setBlyTimeBadge(data);
-        console.log('blyTimeBadge:' + data);
+        //console.log('blyTimeBadge:' + data);
     }
 
     async function getSuperRewardBadge() {
         let {data} = await isSuperRewardBadge();
         setSuperRewardBadge(data);
-        console.log('blyTimeBadge:' + data);
+        //console.log('blyTimeBadge:' + data);
     }
 
     const SectionLink = ({item}) => {

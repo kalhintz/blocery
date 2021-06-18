@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { Label, Container } from 'reactstrap'
-import { getConsumerByConsumerNo } from "~/lib/shopApi";
+import {getConsumer} from "~/lib/shopApi";
 import { ShopXButtonNav } from '../../../common/index'
 
 export default class HintPassPhrase extends Component {
@@ -12,19 +12,20 @@ export default class HintPassPhrase extends Component {
         }
     }
 
-    componentDidMount() {
-        const params = new URLSearchParams(this.props.location.search)
-
-        const consumerNo = params.get('consumerNo')
-
-        this.search(consumerNo)
+    async componentDidMount() {
+        let loginUser = await getConsumer();
+        if(!loginUser || !loginUser.data){
+            this.props.history.replace('/mypage');
+            return;
+        }
+        this.search()
     }
 
-    search = async(consumerNo) => {
-        const consumerInfo = await getConsumerByConsumerNo(consumerNo)
+    search = async() => {
+        const {data:consumerInfo} = await getConsumer();
 
         this.setState({
-            hintFront: consumerInfo.data.hintFront
+            hintFront: consumerInfo.hintFront
         })
     }
 

@@ -5,9 +5,9 @@ import Style from './WebGoodsReg.module.scss'
 import { addGoods, copyGoodsByGoodsNo } from '~/lib/goodsApi'
 import { scOntPayProducerDeposit } from '~/lib/smartcontractApi'
 import { getProducer } from '~/lib/producerApi'
-import { getGoodsByGoodsNo, deleteGoods, updateConfirmGoods, updateGoodsSalesStop, getGoodsContent, updateSalePaused, getBlyReview } from '~/lib/goodsApi'
+import { getGoodsByGoodsNo, deleteGoods, updateConfirmGoods, updateGoodsSalesStop, getGoodsContent, updateSalePaused, getBlyReview, sendPriceUpdateMail } from '~/lib/goodsApi'
 import { getItems } from '~/lib/adminApi'
-import { getLoginProducerUser, checkPassPhraseForProducer } from '~/lib/loginApi'
+import {getLoginProducerUser, checkPassPhraseForProducer, getLoginAdminUser} from '~/lib/loginApi'
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import ComUtil from '~/util/ComUtil'
 import Select from 'react-select'
@@ -17,7 +17,7 @@ import { DateRangePicker, SingleDatePicker } from 'react-dates';
 import { BlocerySpinner, Spinner, BlockChainSpinner, ModalWithNav, PassPhrase, Agricultural } from '~/components/common'
 
 import CurrencyInput from '~/components/common/inputs/CurrencyInput'
-import {Span} from "~/styledComponents/shared/Layouts";
+import {Div, Span} from "~/styledComponents/shared/Layouts";
 
 import { TERMS_OF_DELIVERYFEE } from '~/lib/bloceryConst'
 
@@ -37,7 +37,7 @@ let bindData = {
     goodsTypes: [],
     vatFlag: null         // 과세여부
 }
-
+// 즉시상품
 export default class WebDirectGoodsReg extends Component {
     editorRef = React.createRef();
 
@@ -125,7 +125,8 @@ export default class WebDirectGoodsReg extends Component {
             //202012-selfDeposit제외.  modalType: '',              //모달 종류
             //202012-selfDeposit제외.  passPhrase: '', //비밀번호 6 자리 PIN CODE
             //202012-selfDeposit제외.  clearPassPhrase: true,
-            producerInfo: null
+            producerInfo: null,
+            isTempProdAdmin: false,     // tempProducer 관리자 여부
 
         }
         this.inputPackUnit = React.createRef()
@@ -135,8 +136,15 @@ export default class WebDirectGoodsReg extends Component {
         await this.bind()
         const loginUser = await this.setLoginUserInfo();
 
+        let adminUser = await getLoginAdminUser();
+
         const {data:producerInfo} = await getProducer();
         const state = Object.assign({}, this.state)
+
+        if(adminUser && adminUser.email === "tempProducer@ezfarm.co.kr") {
+            state.isTempProdAdmin = true;
+        }
+
         state.isDidMounted = true
         state.loginUser = loginUser
         state.producerInfo = producerInfo;
@@ -189,7 +197,7 @@ export default class WebDirectGoodsReg extends Component {
     bind = async () => {
 
         const { data: itemsData } = await getItems(true)
-        const items =  itemsData.map(item => ({value: item.itemNo, label: item.itemName, itemKinds: item.itemKinds, enabled: item.enabled}))
+        const items =  itemsData.map(item => ({value: item.itemNo, label: item.itemName, itemKinds: item.itemKinds, enabled: item.enabled, itemFeeRate: item.itemFeeRate}))
 
         //품목
         // const item = [
@@ -333,6 +341,9 @@ export default class WebDirectGoodsReg extends Component {
                 obj.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE ?                //무료배송 일 경우 밸리데이션 체크 안함
                     null : ComUtil.toNum(obj.deliveryFee) ? null : '배송비는 필수 입니다',             //배송비
 
+            //희망배송일
+            expectShippingDate: obj.hopeDeliveryFlag ? (obj.expectShippingStart && obj.expectShippingEnd) ? null : '소비자 희망수령일 기능을 사용 하려면 발송일(소비자가 선택해야 하는 일자)을 달력에서 지정 해 주세요.' : null,
+
             consumerPrice: ComUtil.toNum(obj.consumerPrice) > 0 ? null : '소비자가를 입력해 주세요',
             currentPrice: ComUtil.toNum(obj.currentPrice) > 0 ? null : '실제 판매되는 가격을 입력해 주세요',
             // priceSteps: priceSteps,
@@ -457,6 +468,25 @@ export default class WebDirectGoodsReg extends Component {
         let { name, value } = e.target
         const goods = Object.assign({}, this.state.goods)
 
+        let nowDate = moment().toDate();
+        let eventStartDay = moment('2021-05-03');
+        let eventEndDay = moment('2021-06-01');
+
+        if(nowDate >= eventStartDay && nowDate < eventEndDay) {
+            if(!this.state.isTempProdAdmin){
+                if((name === 'currentPrice' || name === 'consumerPrice') && this.state.goods.goodsNo){
+                    alert(`
+                    2021.05.03 ~ 2021.05.31
+                    '적립형 쿠폰 이벤트' 진행으로 기간내 금액 수정이 제한됩니다.
+                    금액 변경 희망 시 관리자 문의 바랍니다.
+
+                    031-8090-3108
+                    `)
+                    return
+                }
+            }
+        }
+
         if(name === 'currentPrice'){
             if(goods.consumerPrice === null || goods.consumerPrice === '') {
                 alert('소비자가를 먼저 입력해주세요.');
@@ -508,6 +538,9 @@ export default class WebDirectGoodsReg extends Component {
             goods.vatFlag = false;
         }
 
+        goods.goodsInfo = Object.assign([], goods.goodsInfoData[goods.goodsTypeCode])
+        this.setState({goods})
+
         await this.save(goods)
     }
 
@@ -553,6 +586,16 @@ export default class WebDirectGoodsReg extends Component {
 
     //상품수정(노출이후)
     onUpdateClick = async () => {
+        if(this.state.goods.inSuperRewardPeriod || this.state.goods.inTimeSalePeriod){
+            let vTitle = "수퍼리워드 및 포텐타임";
+            if(this.state.goods.inSuperRewardPeriod) vTitle = '수퍼리워드';
+            if(this.state.goods.inTimeSalePeriod) vTitle = '포텐타임';
+            if(!this.state.isTempProdAdmin){
+                alert(vTitle+" 기간중에는 수정하실 수 없습니다. 관리자에게 문의 바랍니다.")
+                return
+            }
+        }
+
         if(!this.isPassedValidation()) return
         if(!window.confirm('수정되는 상품은 즉시 반영 됩니다')) return
         this.loadingToggle('update')
@@ -567,7 +610,6 @@ export default class WebDirectGoodsReg extends Component {
 
     //저장(DB에 selectedStepPrice 가 없어져서, 사용자가 선택한 단계와는 상관없이 단계별 값이 있는 마지막 )
     save = async (goods) => {
-
         //상품상세
         goods.goodsContent = this.state.goods.goodsContent; //this.editorRef.current.getInstance().getValue()
 
@@ -615,6 +657,11 @@ export default class WebDirectGoodsReg extends Component {
             this.setState({
                 goods: goods
             })
+        }
+
+        // 판매가격이 수정된 경우 관리자에 메일발송
+        if((this.props.goodsNo) && ComUtil.toNum(goods.currentPrice) !== goods.defaultCurrentPrice && !this.state.isTempProdAdmin) {
+            await sendPriceUpdateMail(this.state.goods.goodsNo)
         }
     }
 
@@ -716,13 +763,12 @@ export default class WebDirectGoodsReg extends Component {
     // 상품정보제공 고시 설정
     onGoodsTypeModal = (data) => {
         let goods = Object.assign({}, this.state.goods)
+        //console.log("onGoodsTypeModal====",data)
         if(data) {
             goods.goodsInfoData[goods.goodsTypeCode] = data
-
             this.setValidatedObj({goods})
             this.setState({goods})
         }
-
         this.setState({
             goodsTypeModalOpen: !this.state.goodsTypeModalOpen
         })
@@ -730,7 +776,6 @@ export default class WebDirectGoodsReg extends Component {
 
     //품목
     onItemChange = (item) => {
-
         //품종 세팅
         this.setItemKinds(item.value)
 
@@ -962,16 +1007,17 @@ export default class WebDirectGoodsReg extends Component {
 
     onHopeDeliveryFlag = (e) => {
         const hopeDeliveryFlag = e.target.checked;
-        const state = Object.assign({}, this.state);
-        state.goods.hopeDeliveryFlag = hopeDeliveryFlag;
-        this.setState(state);
+        const goods = Object.assign({}, this.state.goods);
+        goods.hopeDeliveryFlag = hopeDeliveryFlag;
+        this.setValidatedObj({goods})
+        this.setState({goods});
     }
 
 
     render(){
         if(!this.state.isDidMounted) return <BlocerySpinner/>
 
-        const { goods } = this.state
+        const { isTempProdAdmin, goods } = this.state
         const star = <span className='text-danger'>*</span>
 
         const saleEndDate = ComUtil.utcToString(goods.saleEnd, 'YYYY-MM-DD');
@@ -989,13 +1035,13 @@ export default class WebDirectGoodsReg extends Component {
 
         const salesStopText = goods.saleStopped && <div className='p-3 text-center text-danger ml-1 mr-1'>상품이 판매중단되어 판매가 불가능 합니다</div>
         const confirmText = (goods.confirm && !goods.saleStopped) && <div className='p-3 text-center text-danger ml-1 mr-1'>상품이 판매개시되어 수정내용이 제한됩니다</div>
-        const btnAddTempGoods = !goods.confirm ? <Button className='d-flex align-items-center justify-content-center mr-2' onClick={this.onAddTempGoodsClick} disabled={this.state.isLoading.temp} color='warning'>임시저장{this.state.isLoading.temp && <Spinner/> }</Button> : null
-        const btnConfirm = (goods.goodsNo && !goods.confirm) ?  <Button className='mr-2' onClick={this.onConfirmClick} color={'warning'}>확인(판매개시)</Button> : null
-        const btnDelete = (goods.goodsNo && !goods.confirm) ? <ModalConfirm title={'상품을 삭제 하시겠습니까?'} content={'삭제된 상품은 복구가 불가능 합니다'} onClick={this.onDeleteGoodsClick}><Button color={'danger'} className='mr-2'>삭제</Button></ModalConfirm> : null
-        const btnPreview = goods.goodsNo ? <Button className='mr-2' onClick={this.onPreviewClick}>미리보기</Button> : null
-        const btnGoodsStop = (goods.confirm && !goods.saleStopped) ? <ModalConfirm title={'상품을 판매중단 하시겠습니까?'} content={'판매중단된 상품은 다시 판매가 불가능 합니다'} onClick={this.onGoodsStopClick}><Button color={'danger'} className='mr-2'>판매중단</Button></ModalConfirm> : null
-        const btnUpdate = (goods.confirm && !goods.saleStopped) ? <Button className='d-flex align-items-center justify-content-center mr-2'  onClick={this.onUpdateClick} disabled={this.state.isLoading.update} color={'warning'}>수정완료{this.state.isLoading.update && <Spinner/>}</Button> : null
-        const btnCopy = (goods.goodsNo && goods.confirm )? <ModalConfirm title={'상품복사를 진행 하시겠습니까?'} content={<Fragment>마지막 저장된 내용을 기준으로 복사가 진행 됩니다<br/>복사 진행전 저장을 꼭 해 주세요</Fragment>} onClick={this.onCopyClick}><Button className='mr-2' color={'secondary'}>상품복사</Button></ModalConfirm> : null
+        const btnAddTempGoods = !goods.confirm ? <Button className='d-flex align-items-center justify-content-center' onClick={this.onAddTempGoodsClick} disabled={this.state.isLoading.temp} color='warning'>임시저장{this.state.isLoading.temp && <Spinner/> }</Button> : null
+        const btnConfirm = (goods.goodsNo && !goods.confirm) ?  <Button onClick={this.onConfirmClick} color={'warning'}>확인(판매개시)</Button> : null
+        const btnDelete = (goods.goodsNo && !goods.confirm) ? <ModalConfirm title={'상품을 삭제 하시겠습니까?'} content={'삭제된 상품은 복구가 불가능 합니다'} onClick={this.onDeleteGoodsClick}><Button color={'danger'} >삭제</Button></ModalConfirm> : null
+        const btnPreview = goods.goodsNo ? <Button onClick={this.onPreviewClick}>미리보기</Button> : null
+        const btnGoodsStop = (goods.confirm && !goods.saleStopped) ? <ModalConfirm title={'상품을 판매중단 하시겠습니까?'} content={'판매중단된 상품은 다시 판매가 불가능 합니다'} onClick={this.onGoodsStopClick}><Button color={'secondary'} >판매중단</Button></ModalConfirm> : null
+        const btnUpdate = (goods.confirm && !goods.saleStopped) ? <Button className='d-flex align-items-center justify-content-center'  onClick={this.onUpdateClick} disabled={this.state.isLoading.update} color={'warning'}>수정완료{this.state.isLoading.update && <Spinner/>}</Button> : null
+        const btnCopy = (goods.goodsNo && goods.confirm )? <ModalConfirm title={'상품복사를 진행 하시겠습니까?'} content={<Fragment>마지막 저장된 내용을 기준으로 복사가 진행 됩니다<br/>복사 진행전 저장을 꼭 해 주세요</Fragment>} onClick={this.onCopyClick}><Button color={'secondary'}>상품복사</Button></ModalConfirm> : null
         const btnPaused = (!goods.salePaused && goods.confirm && !goods.saleStopped && goods.remainedCnt != 0 && !saleEnd) ? <ModalConfirm title={'판매 일시중지'} content={'일시중지 후 다시 판매개시를 할 수 있습니다. 일시중지 하시겠습니까?'} onClick={this.onGoodsPausedClick}><Button>일시중지</Button></ModalConfirm> : null
         const btnResume = (goods.salePaused && goods.confirm && !goods.saleStopped && goods.remainedCnt != 0 && !saleEnd) ? <ModalConfirm title={'판매재개'} content={'해당 상품을 다시 판매개시하시겠습니까?'} onClick={this.onGoodsResumeClick}><Button color='info'>판매재개</Button></ModalConfirm> : null
 
@@ -1011,66 +1057,72 @@ export default class WebDirectGoodsReg extends Component {
             goods.deliveryFee = this.state.producerInfo.producerWrapFee;
         }
 
+        const compSalesCnt = <>
+            <div className='mr-2'><Button size='sm' onClick={this.modifyPackCnt}>수정</Button></div>
+            <div><Button size='sm' onClick={this.resetPackCnt}>수정취소</Button></div>
+        </>;
+
         return(
             <Fragment>
                 <div className={Style.wrap}>
                     {
                         this.state.chainLoading && <BlockChainSpinner/>
                     }
-                        <Row>
-                            <Col className='border p-0'>
-                                {
-                                    this.state.validationCnt > 0 && (
-                                        <div className={Style.badge}>
-                                            <Badge color="danger" pill>필수{this.state.validationCnt}</Badge>
-                                        </div>
-                                    )
-                                }
-                                {
-                                    salesStopText
-                                }
-                                {
-                                    confirmText
-                                }
-                                <Container>
-                                    <br/>
-                                    <h6>즉시상품정보</h6>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>대표 이미지{star}</Label>
-                                        <SingleImageUploader images={goods.goodsImages} defaultCount={10} isShownMainText={true} onChange={this.onGoodsImageChange} />
+                    <Row>
+                        <Col className='border p-0'>
+                            {
+                                this.state.validationCnt > 0 && (
+                                    <div className={Style.badge}>
+                                        <Badge color="danger" pill>필수{this.state.validationCnt}</Badge>
+                                    </div>
+                                )
+                            }
+                            {
+                                salesStopText
+                            }
+                            {
+                                confirmText
+                            }
+                            <Container>
+                                <br/>
+                                <h6>즉시상품정보</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>대표 이미지{star}</Label>
+                                    <SingleImageUploader images={goods.goodsImages} defaultCount={10} isShownMainText={true} onChange={this.onGoodsImageChange} />
 
-                                        {/*<SingleImageUploader images={goods.goodsImages} defaultCount={10} onChange={this.onGoodsImageChange} />*/}
-                                        {/*<ImageUploader onChange={this.onGoodsImageChange} multiple={true} limit={10}/>*/}
-                                        <Fade in={validatedObj.goodsImages ? true : false} className="text-danger small mt-1" >{validatedObj.goodsImages}</Fade>
-                                    </FormGroup>
-                                    <h6>상세이미지업로드(소비자에게 노출되지 않는 Markdown방식 URL복사용 이미지 입니다)</h6>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>이미지{star}</Label>
-                                        <SingleImageUploader
-                                            images={goods.contentImages}
-                                            defaultCount={10}
-                                            isShownMainText={false}
-                                            onChange={this.onContentImageChange}
-                                            isShownCopyButton={true}
-                                            isNoResizing={true}
-                                        />
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>상품명{star}</Label>
-                                        <Input name={this.names.goodsNm} value={goods.goodsNm} onChange={this.onInputChange}/>
-                                        <Fade in={validatedObj.goodsNm? true : false} className="text-danger small mt-1" >{validatedObj.goodsNm}</Fade>
-                                    </FormGroup>
-                                    {/*<FormGroup>*/}
-                                    {/*<Label className={'text-secondary'}>태그</Label>*/}
-                                    {/*<Input name={this.names.searchTag} value={goods.searchTag} onChange={this.onInputChange}/>*/}
-                                    {/*</FormGroup>*/}
-                                </Container>
-                                <hr/>
-                                <Container>
-                                    <h6>기본정보</h6>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>품목{star}</Label>
-                                        {
+                                    {/*<SingleImageUploader images={goods.goodsImages} defaultCount={10} onChange={this.onGoodsImageChange} />*/}
+                                    {/*<ImageUploader onChange={this.onGoodsImageChange} multiple={true} limit={10}/>*/}
+                                    <Fade in={validatedObj.goodsImages ? true : false} className="text-danger small mt-1" >{validatedObj.goodsImages}</Fade>
+                                </FormGroup>
+                                <h6>상세이미지업로드(소비자에게 노출되지 않는 Markdown방식 URL복사용 이미지 입니다)</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>이미지{star}</Label>
+                                    <SingleImageUploader
+                                        images={goods.contentImages}
+                                        defaultCount={10}
+                                        isShownMainText={false}
+                                        onChange={this.onContentImageChange}
+                                        isShownCopyButton={true}
+                                        isNoResizing={true}
+                                    />
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>상품명{star}</Label>
+                                    <Input name={this.names.goodsNm} value={goods.goodsNm} onChange={this.onInputChange}/>
+                                    <Fade in={validatedObj.goodsNm? true : false} className="text-danger small mt-1" >{validatedObj.goodsNm}</Fade>
+                                </FormGroup>
+                                {/*<FormGroup>*/}
+                                {/*<Label className={'text-secondary'}>태그</Label>*/}
+                                {/*<Input name={this.names.searchTag} value={goods.searchTag} onChange={this.onInputChange}/>*/}
+                                {/*</FormGroup>*/}
+                            </Container>
+                            <hr/>
+                            <Container>
+                                <h6>기본정보</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>품목{star}</Label>
+                                    {
+                                        !isTempProdAdmin ?
                                             goods.confirm ? <div>{goods.itemName}</div> : (
                                                 <Fragment>
                                                     <Select options={bindData.items}
@@ -1079,14 +1131,22 @@ export default class WebDirectGoodsReg extends Component {
                                                     />
                                                     <Fade in={validatedObj.itemNo? true : false} className="text-danger small mt-1" >{validatedObj.itemNo}</Fade>
                                                 </Fragment>
-                                            )
-                                        }
+                                            ) :
+                                            <Fragment>
+                                                <Select options={bindData.items}
+                                                        value={ bindData.items.find(item => item.value === goods.itemNo)}
+                                                        onChange={this.onItemChange}
+                                                />
+                                                <Fade in={validatedObj.itemNo? true : false} className="text-danger small mt-1" >{validatedObj.itemNo}</Fade>
+                                            </Fragment>
+                                    }
 
 
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>품종{star}</Label>
-                                        {
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>품종{star}</Label>
+                                    {
+                                        !isTempProdAdmin ?
                                             goods.confirm ? <div>{goods.itemKindName}</div> : (
                                                 <Fragment>
                                                     <Select options={bindData.itemKinds}
@@ -1095,401 +1155,435 @@ export default class WebDirectGoodsReg extends Component {
                                                     />
                                                     <Fade in={validatedObj.itemKind? true : false} className="text-danger small mt-1" >{validatedObj.itemKind}</Fade>
                                                 </Fragment>
-                                            )
-                                        }
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>생산지{star}</Label>
-                                        <Input name={this.names.productionArea} value={goods.productionArea} placeholder='ex)전남 여수' onChange={this.onInputChange} />
-                                        <Fade in={validatedObj.productionArea? true : false} className="text-danger small mt-1" >{validatedObj.productionArea}</Fade>
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>재배방법</Label>
-                                        {/*<RadioButtons nameField='cultivationNm' value={goods.cultivationNm} defaultIndex={0} data={bindData.cultivationNm || []} onClick={this.onCultivationNmClick} />*/}
-                                        <RadioButtons
-                                            value={bindData.cultivationNm.find(item => item.value === goods.cultivationNm)}
-                                            options={bindData.cultivationNm} onClick={this.onCultivationNmClick} />
-                                        <Fade in={validatedObj.cultivationNm? true : false} className="text-danger small mt-1" >{validatedObj.cultivationNm}</Fade>
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>농약유무</Label>
-                                        <RadioButtons
-                                            value={bindData.pesticideYn.find(item => item.value === goods.pesticideYn)}
-                                            options={bindData.pesticideYn} onClick={this.onPesticideYnClick} />
-                                        <Fade in={validatedObj.pesticideYn? true : false} className="text-danger small mt-1" >{validatedObj.pesticideYn}</Fade>
-                                        {/*<RadioButtons nameField='pesticideYn' defaultIndex={0} data={bindData.pesticideYn || []} onClick={this.onPesticideYnClick} />*/}
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>과세여부</Label>
-                                        <Fragment>
-                                            <div className='d-flex align-items-center'>
+                                            ) :
+                                            <Fragment>
+                                                <Select options={bindData.itemKinds}
+                                                        value={goods.itemKindCode ? bindData.itemKinds.find(itemKind => itemKind.value === goods.itemKindCode) : null}
+                                                        onChange={this.onItemKindChange}
+                                                />
+                                                <Fade in={validatedObj.itemKind? true : false} className="text-danger small mt-1" >{validatedObj.itemKind}</Fade>
+                                            </Fragment>
+                                    }
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>생산지{star}</Label>
+                                    <Input name={this.names.productionArea} value={goods.productionArea} placeholder='ex)전남 여수' onChange={this.onInputChange} />
+                                    <Fade in={validatedObj.productionArea? true : false} className="text-danger small mt-1" >{validatedObj.productionArea}</Fade>
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>재배방법</Label>
+                                    {/*<RadioButtons nameField='cultivationNm' value={goods.cultivationNm} defaultIndex={0} data={bindData.cultivationNm || []} onClick={this.onCultivationNmClick} />*/}
+                                    <RadioButtons
+                                        value={bindData.cultivationNm.find(item => item.value === goods.cultivationNm)}
+                                        options={bindData.cultivationNm} onClick={this.onCultivationNmClick} />
+                                    <Fade in={validatedObj.cultivationNm? true : false} className="text-danger small mt-1" >{validatedObj.cultivationNm}</Fade>
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>농약유무</Label>
+                                    <RadioButtons
+                                        value={bindData.pesticideYn.find(item => item.value === goods.pesticideYn)}
+                                        options={bindData.pesticideYn} onClick={this.onPesticideYnClick} />
+                                    <Fade in={validatedObj.pesticideYn? true : false} className="text-danger small mt-1" >{validatedObj.pesticideYn}</Fade>
+                                    {/*<RadioButtons nameField='pesticideYn' defaultIndex={0} data={bindData.pesticideYn || []} onClick={this.onPesticideYnClick} />*/}
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>과세여부</Label>
+                                    <Fragment>
+                                        <div className='d-flex align-items-center'>
 
+                                            {
+                                                bindData.vatFlag.map((item, index) => {
+                                                        const id = `vatFlag_${index}`
+                                                        return(
+                                                            <Fragment key={id}>
+                                                                <input
+                                                                    checked={goods.vatFlag === item.value ? true : false}
+                                                                    className={'mr-2'}
+                                                                    type="radio"
+                                                                    id={id}
+                                                                    name="vatFlag"
+                                                                    value={item.value}
+                                                                    onChange={this.onVatChange} />
+                                                                <label for={id} className='p-0 m-0 mr-3'>{item.label}</label>
+                                                            </Fragment>
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        </div>
+
+                                        <Fade in={validatedObj.vatFlag? true : false} className="text-danger small mt-1" >{validatedObj.vatFlag}</Fade>
+                                    </Fragment>
+                                </FormGroup>
+                            </Container>
+                            <hr/>
+                            <Container>
+                                <h6>상품정보제공 고시 설정</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>분류선택{star}</Label>
+                                    {
+                                        <Fragment>
+                                            <div className='d-flex'>
+                                                <div style={{width:'500px'}}>
+                                                    <Select options={bindData.goodsTypes}
+                                                            value={ bindData.goodsTypes.find(item => item.value === goods.goodsTypeCode)}
+                                                            onChange={this.onGoodsTypeChange}
+                                                    />
+                                                </div>
+                                                <div className='d-flex align-items-center justify-content-center'>
+                                                    {
+                                                        goods.goodsTypeCode != 'none' &&
+                                                        <Button className='ml-2' size='sm' color='secondary' onClick={this.goodsTypeSetting}>설정</Button>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <Fade in={validatedObj.goodsTypeCode? true : false} className="text-danger small mt-1" >{validatedObj.goodsTypeCode}</Fade>
+                                        </Fragment>
+                                    }
+                                </FormGroup>
+                            </Container>
+                            <hr/>
+                            <Container>
+                                <h6>판매정보</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>포장 양{star}</Label>
+                                    {/*{*/}
+                                    {/*    goods.confirm ? <div>{ComUtil.addCommas(goods.packAmount)}</div> : (*/}
+                                    <Fragment>
+                                        <Input type="number" className={'mr-1'} name={this.names.packAmount} value={goods.packAmount} onChange={this.onInputChange}/>
+                                        <Fade in={validatedObj.packAmount? true : false} className="text-danger small mt-1" >{validatedObj.packAmount}</Fade>
+                                    </Fragment>
+                                    {/*    )*/}
+                                    {/*}*/}
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>포장 단위{star}</Label>
+                                    {/*{*/}
+                                    {/*    goods.confirm ? <div>{ComUtil.addCommas(goods.packAmount)}</div> : (*/}
+                                    <Fragment>
+                                        <div className='d-flex align-items-center'>
+
+                                            {
+                                                bindData.packUnit.filter(item=>item.value !== '99').map((item, index) => {
+                                                        const id = `packUnit_${index}`
+                                                        return(
+                                                            <Fragment key={id}>
+                                                                <input
+                                                                    checked={goods.packUnit === item.value ? true : false}
+                                                                    className={'mr-2'}
+                                                                    type="radio"
+                                                                    id={id}
+                                                                    name="packUnit"
+                                                                    value={item.value}
+                                                                    onChange={this.onPackUnitChange} />
+                                                                <label for={id} className='p-0 m-0 mr-3'>{item.label}</label>
+                                                            </Fragment>
+                                                        )
+                                                    }
+                                                )
+                                            }
+
+                                            <input
+                                                checked={this.isEtcPackUnit()}
+                                                className={'mr-2'}
+                                                type="radio"
+                                                id={'packUnit_3'}
+                                                name="packUnit"
+                                                value={bindData.packUnit[3].value}
+                                                onChange={this.onPackUnitChange} />
+                                            <label for={'packUnit_3'} className='p-0 m-0 mr-3'>{bindData.packUnit[3].label}</label>
+
+                                            {
+                                                // goods.packUnitCode === '99' && <input type='text' name='packUnitText' value={goods.packUnit} onChange={this.onInputPackUnitChange} />
+                                            }
+                                        </div>
+
+                                        <Input
+                                            className={'mt-2'}
+                                            // style={{display: document.getElementById('packUnit_3').checked ? 'block' : 'none'}}
+                                            innerRef={this.inputPackUnit}
+                                            value={goods.packUnit}
+                                            onChange={this.onInputPackUnitChange}
+                                            placeholder={'l(리터), 개, 등의 단위 입력'}
+                                        />
+
+                                        <Fade in={validatedObj.packUnit? true : false} className="text-danger small mt-1" >{validatedObj.packUnit}</Fade>
+                                    </Fragment>
+                                    {/*    )*/}
+                                    {/*}*/}
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>판매수량{star}</Label>
+                                    {
+                                        goods.confirm ?
+                                            <div className='d-flex'>
+                                                <div className='mr-2'>{goods.packCnt}</div>
                                                 {
-                                                    bindData.vatFlag.map((item, index) => {
-                                                            const id = `vatFlag_${index}`
-                                                            return(
-                                                                <Fragment key={id}>
-                                                                    <input
-                                                                        checked={goods.vatFlag === item.value ? true : false}
-                                                                        className={'mr-2'}
-                                                                        type="radio"
-                                                                        id={id}
-                                                                        name="vatFlag"
-                                                                        value={item.value}
-                                                                        onChange={this.onVatChange} />
-                                                                    <label for={id} className='p-0 m-0 mr-3'>{item.label}</label>
-                                                                </Fragment>
-                                                            )
-                                                        }
-                                                    )
+                                                    (goods.inSuperRewardPeriod || goods.inTimeSalePeriod) ?
+                                                        (
+                                                            isTempProdAdmin ? compSalesCnt
+                                                                :
+                                                                <span className='text-danger'>{goods.inSuperRewardPeriod && '수퍼리워드'}{goods.inTimeSalePeriod && '포텐타임'} 기간에는 판매수량을 수정하실 수 없습니다. 관리자에게 문의 바랍니다!</span>
+                                                        )
+                                                        :
+                                                        compSalesCnt
                                                 }
                                             </div>
-
-                                            <Fade in={validatedObj.vatFlag? true : false} className="text-danger small mt-1" >{validatedObj.vatFlag}</Fade>
-                                        </Fragment>
-                                    </FormGroup>
-                                </Container>
-                                <hr/>
-                                <Container>
-                                    <h6>상품정보제공 고시 설정</h6>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>분류선택{star}</Label>
-                                        {
-                                            <Fragment>
-                                                <div className='d-flex'>
-                                                    <div style={{width:'500px'}}>
-                                                        <Select options={bindData.goodsTypes}
-                                                                value={ bindData.goodsTypes.find(item => item.value === goods.goodsTypeCode)}
-                                                                onChange={this.onGoodsTypeChange}
-                                                        />
-                                                    </div>
-                                                    <div className='d-flex align-items-center justify-content-center'>
-                                                        {
-                                                            goods.goodsTypeCode != 'none' &&
-                                                            <Button className='ml-2' size='sm' color='secondary' onClick={this.goodsTypeSetting}>설정</Button>
-                                                        }
-                                                    </div>
-                                                </div>
-                                                <Fade in={validatedObj.goodsTypeCode? true : false} className="text-danger small mt-1" >{validatedObj.goodsTypeCode}</Fade>
-                                            </Fragment>
-                                        }
-                                    </FormGroup>
-                                </Container>
-                                <hr/>
-                                <Container>
-                                    <h6>판매정보</h6>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>포장 양{star}</Label>
-                                        {
-                                            goods.confirm ? <div>{ComUtil.addCommas(goods.packAmount)}</div> : (
-                                                <Fragment>
-                                                    <Input type="number" className={'mr-1'} name={this.names.packAmount} value={goods.packAmount} onChange={this.onInputChange}/>
-                                                    <Fade in={validatedObj.packAmount? true : false} className="text-danger small mt-1" >{validatedObj.packAmount}</Fade>
-                                                </Fragment>
-                                            )
-                                        }
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>포장 단위{star}</Label>
-                                        {
-                                            goods.confirm ? <div>{ComUtil.addCommas(goods.packAmount)}</div> : (
-                                                <Fragment>
-                                                    <div className='d-flex align-items-center'>
-
-                                                        {
-                                                            bindData.packUnit.filter(item=>item.value !== '99').map((item, index) => {
-                                                                    const id = `packUnit_${index}`
-                                                                    return(
-                                                                        <Fragment key={id}>
-                                                                            <input
-                                                                                checked={goods.packUnit === item.value ? true : false}
-                                                                                className={'mr-2'}
-                                                                                type="radio"
-                                                                                id={id}
-                                                                                name="packUnit"
-                                                                                value={item.value}
-                                                                                onChange={this.onPackUnitChange} />
-                                                                            <label for={id} className='p-0 m-0 mr-3'>{item.label}</label>
-                                                                        </Fragment>
-                                                                    )
-                                                                }
-                                                            )
-                                                        }
-
-                                                        <input
-                                                            checked={this.isEtcPackUnit()}
-                                                            className={'mr-2'}
-                                                            type="radio"
-                                                            id={'packUnit_3'}
-                                                            name="packUnit"
-                                                            value={bindData.packUnit[3].value}
-                                                            onChange={this.onPackUnitChange} />
-                                                        <label for={'packUnit_3'} className='p-0 m-0 mr-3'>{bindData.packUnit[3].label}</label>
-
-                                                        {
-                                                            // goods.packUnitCode === '99' && <input type='text' name='packUnitText' value={goods.packUnit} onChange={this.onInputPackUnitChange} />
-                                                        }
-                                                    </div>
-
-                                                    <Input
-                                                        className={'mt-2'}
-                                                        // style={{display: document.getElementById('packUnit_3').checked ? 'block' : 'none'}}
-                                                        innerRef={this.inputPackUnit}
-                                                        value={goods.packUnit}
-                                                        onChange={this.onInputPackUnitChange}
-                                                        placeholder={'l(리터), 개, 등의 단위 입력'}
-                                                    />
-
-                                                    <Fade in={validatedObj.packUnit? true : false} className="text-danger small mt-1" >{validatedObj.packUnit}</Fade>
-                                                </Fragment>
-                                            )
-                                        }
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>판매수량{star}</Label>
-                                        {
-                                            goods.confirm ?
-                                                <div className='d-flex'>
-                                                    <div className='mr-2'>{goods.packCnt}</div>
-                                                    <div className='mr-2'><Button size='sm' onClick={this.modifyPackCnt}>수정</Button></div>
-                                                    <div><Button size='sm' onClick={this.resetPackCnt}>수정취소</Button></div>
-                                                </div>
-                                                :
-                                                (
+                                            :
+                                            (
                                                 <Fragment>
                                                     <CurrencyInput name={this.names.packCnt} value={goods.packCnt} onChange={this.onInputChange}/>
                                                     <Fade in={validatedObj.packCnt? true : false} className="text-danger small mt-1" >{validatedObj.packCnt}</Fade>
                                                 </Fragment>
                                             )
-                                        }
-                                    </FormGroup>
-                                </Container>
-                                <hr/>
-                                <Container>
-                                    <h6>가격정보</h6>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>소비자가{star}</Label>
-                                        <Fragment>
-                                            <InputGroup  size={'md'}>
-                                                <CurrencyInput name={this.names.consumerPrice} value={goods.consumerPrice} onChange={this.onInputChange} placeholder={'소비자가'}/>
-                                                <InputGroupAddon addonType="append">
-                                                    <InputGroupText>원</InputGroupText>
-                                                </InputGroupAddon>
-                                            </InputGroup>
-                                            <Fade in={validatedObj.consumerPrice ? true : false} className="text-danger small mt-1" >{validatedObj.consumerPrice}</Fade>
-                                        </Fragment>
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <div className={'d-flex'}>
-                                            <Label className={'text-secondary small'}>판매가{star}</Label>
-                                            <span className={'ml-auto text-secondary small'}>{Math.round(ComUtil.addCommas(goods.discountRate),0)} %
-                                                {
-                                                    goods.consumerPrice && goods.consumerPrice > 0 && goods.currentPrice && goods.currentPrice > 0 && (
-                                                        ` (- ${ ComUtil.addCommas(ComUtil.toNum(goods.consumerPrice) - ComUtil.toNum(goods.currentPrice))} 원) `
-                                                    )
-                                                }
-                                                할인
+                                    }
+                                </FormGroup>
+                            </Container>
+                            <hr/>
+                            <Container>
+                                <h6>가격정보</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>소비자가{star}</Label>
+                                    <Fragment>
+                                        <InputGroup  size={'md'}>
+                                            <CurrencyInput name={this.names.consumerPrice} value={goods.consumerPrice} onChange={this.onInputChange} placeholder={'소비자가'}/>
+                                            <InputGroupAddon addonType="append">
+                                                <InputGroupText>원</InputGroupText>
+                                            </InputGroupAddon>
+                                        </InputGroup>
+                                        <Fade in={validatedObj.consumerPrice ? true : false} className="text-danger small mt-1" >{validatedObj.consumerPrice}</Fade>
+                                    </Fragment>
+                                </FormGroup>
+                                <FormGroup>
+                                    <div className={'d-flex'}>
+                                        <Label className={'text-secondary small'}>판매가{star}</Label>
+                                        <span className={'ml-auto text-secondary small'}>{Math.round(ComUtil.addCommas(goods.discountRate),0)} %
+                                            {
+                                                goods.consumerPrice && goods.consumerPrice > 0 && goods.currentPrice && goods.currentPrice > 0 && (
+                                                    ` (- ${ ComUtil.addCommas(ComUtil.toNum(goods.consumerPrice) - ComUtil.toNum(goods.currentPrice))} 원) `
+                                                )
+                                            }
+                                            할인
                                                 </span>
-                                        </div>
-                                        <Fragment>
-                                            <InputGroup  size={'md'}>
-                                                <CurrencyInput name={this.names.currentPrice} value={goods.currentPrice} onChange={this.onInputChange} placeholder={`판매가`}/>
-                                                <InputGroupAddon addonType="append">
-                                                    <InputGroupText>원</InputGroupText>
-                                                </InputGroupAddon>
-                                            </InputGroup>
-                                            <Fade in={validatedObj.currentPrice ? true : false} className="text-danger small mt-1" >{validatedObj.currentPrice}</Fade>
-                                        </Fragment>
-                                    </FormGroup>
-                                </Container>
-                                <hr/>
-                                <Container>
-                                    <h6>생산/배송정보</h6>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>무료배송 조건{star}</Label>
-                                        {
-                                            goods.confirm ? (
+                                    </div>
+                                    <Fragment>
+                                        <InputGroup  size={'md'}>
+                                            <CurrencyInput name={this.names.currentPrice} value={goods.currentPrice} onChange={this.onInputChange} placeholder={`판매가`}/>
+                                            <InputGroupAddon addonType="append">
+                                                <InputGroupText>원</InputGroupText>
+                                            </InputGroupAddon>
+                                        </InputGroup>
+                                        <Fade in={validatedObj.currentPrice ? true : false} className="text-danger small mt-1" >{validatedObj.currentPrice}</Fade>
+                                    </Fragment>
+                                </FormGroup>
+                            </Container>
+                            <hr/>
+                            <Container>
+                                <h6>생산/배송정보</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>무료배송 조건{star}</Label>
+                                    {/*{*/}
+                                    {/*    goods.confirm ? (*/}
 
-                                                <div>
+                                    {/*        <div>*/}
+                                    {/*            {*/}
+                                    {/*                (goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.NO_FREE || goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE) ? null : <span>{goods.deliveryQty}</span>*/}
+                                    {/*            }*/}
+                                    {/*            <span>{termsOfDeliveryFeeLabel}</span>*/}
+                                    {/*        </div>*/}
+
+                                    {/*    ) : (*/}
+                                    <Fragment>
+                                        <InputGroup>
+                                            <CurrencyInput
+                                                disabled={goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.NO_FREE || goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE} readOnly={producerWrapDeliver}
+                                                style={{width:50}} name={this.names.deliveryQty} value={goods.deliveryQty} onChange={this.onInputChange} placeholder={'배송조건(숫자)'}/>
+                                            <InputGroupButtonDropdown addonType="append" style={{zIndex:0}} isOpen={this.state.isDeliveryFeeTermsOpen} toggle={()=>this.setState({isDeliveryFeeTermsOpen:!this.state.isDeliveryFeeTermsOpen})}>
+                                                <DropdownToggle caret>
                                                     {
-                                                        (goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.NO_FREE || goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE) ? null : <span>{goods.deliveryQty}</span>
+                                                        termsOfDeliveryFeeLabel
                                                     }
-                                                    <span>{termsOfDeliveryFeeLabel}</span>
-                                                </div>
+                                                </DropdownToggle>
+                                                { producerWrapDeliver ? null :
+                                                    <DropdownMenu>
+                                                        {
+                                                            bindData.termsOfDeliveryFees.map((terms, index) =>
+                                                                <DropdownItem
+                                                                    key={'termsOfDeliveryFees' + index}
+                                                                    onClick={this.onTermsOfDeliveryFeeChange.bind(this, terms)}>{terms.label}</DropdownItem>)
+                                                        }
+                                                    </DropdownMenu>
+                                                }
+                                            </InputGroupButtonDropdown>
+                                        </InputGroup>
+                                        <Fade in={validatedObj.deliveryQty ? true : false} className="text-danger small mt-1" >{validatedObj.deliveryQty}</Fade>
+                                    </Fragment>
+                                    {/*    )*/}
+                                    {/*}*/}
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>배송비{star}</Label>
+                                    {/*{*/}
+                                    {/*    goods.confirm ? (*/}
+                                    {/*        <div>*/}
+                                    {/*            {*/}
+                                    {/*                ComUtil.addCommas(Math.round(goods.deliveryFee,0))*/}
+                                    {/*            }*/}
+                                    {/*        </div>*/}
+                                    {/*    ) : (*/}
+                                    <Fragment>
+                                        <CurrencyInput disabled={goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE}  name={this.names.deliveryFee} value={goods.deliveryFee} onChange={this.onInputChange} placeholder={'배송비'} readOnly={producerWrapDeliver}/>
+                                        <Fade in={validatedObj.deliveryFee ? true : false} className="text-danger small mt-1" >{validatedObj.deliveryFee}</Fade>
+                                    </Fragment>
+                                    {/*    )*/}
+                                    {/*}*/}
+                                </FormGroup>
+                                {/*<FormGroup>*/}
+                                {/*<Label className={'text-secondary small'}>발송일{star}</Label>*/}
+                                {/*<div className='d-flex'>*/}
+                                {/*<div className="mr-2">주문접수 후</div>*/}
+                                {/*<div className="mr-2" style={{width:'100px'}}><Input onChange={this.onInputChange}></Input></div>*/}
+                                {/*<div> 일 이내(최대 7일)</div>*/}
+                                {/*</div>*/}
+                                {/*<Fade in={false} className="text-danger small mt-1">7일 이내로 작성해주세요.</Fade>*/}
+                                {/*</FormGroup>*/}
+                            </Container>
+                            <hr/>
+                            <Container>
+                                <h6>판매종료일{star}</h6>
+                                <SingleDatePicker
+                                    placeholder="판매종료일"
+                                    date={goods.saleEnd ? moment(goods.saleEnd) : null}
+                                    onDateChange={this.onDateChange}
+                                    focused={this.state['focused']} // PropTypes.bool
+                                    onFocusChange={({ focused }) => this.setState({ ['focused']:focused })} // PropTypes.func.isRequired
+                                    id={"stepPriceDate"} // PropTypes.string.isRequired,
+                                    numberOfMonths={1}
+                                    withPortal
+                                    small
+                                    readOnly
+                                    calendarInfoPosition="top"
+                                    enableOutsideDays
+                                    // daySize={45}
+                                    verticalHeight={700}
+                                    // renderCalendarInfo={this.renderUntilCalendarInfo.bind(this, stepNo)}
+                                />
 
-                                            ) : (
-                                                <Fragment>
-                                                    <InputGroup>
-                                                        <CurrencyInput
-                                                            disabled={goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.NO_FREE || goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE} readOnly={producerWrapDeliver}
-                                                            style={{width:50}} name={this.names.deliveryQty} value={goods.deliveryQty} onChange={this.onInputChange} placeholder={'배송조건(숫자)'}/>
-                                                        <InputGroupButtonDropdown addonType="append" style={{zIndex:0}} isOpen={this.state.isDeliveryFeeTermsOpen} toggle={()=>this.setState({isDeliveryFeeTermsOpen:!this.state.isDeliveryFeeTermsOpen})}>
-                                                            <DropdownToggle caret>
-                                                                {
-                                                                    termsOfDeliveryFeeLabel
-                                                                }
-                                                            </DropdownToggle>
-                                                            { producerWrapDeliver ? null :
-                                                                <DropdownMenu>
-                                                                    {
-                                                                        bindData.termsOfDeliveryFees.map((terms, index) =>
-                                                                            <DropdownItem
-                                                                                key={'termsOfDeliveryFees' + index}
-                                                                                onClick={this.onTermsOfDeliveryFeeChange.bind(this, terms)}>{terms.label}</DropdownItem>)
-                                                                    }
-                                                                </DropdownMenu>
-                                                            }
-                                                        </InputGroupButtonDropdown>
-                                                    </InputGroup>
-                                                    <Fade in={validatedObj.deliveryQty ? true : false} className="text-danger small mt-1" >{validatedObj.deliveryQty}</Fade>
-                                                </Fragment>
-                                            )
-                                        }
-                                    </FormGroup>
+
+                            </Container>
+                            <hr/>
+                            <Container>
+                                <h6>발송일</h6>
+                                <DateRangePicker
+                                    startDateId='expectShippingStart'
+                                    endDateId='expectShippingEnd'
+                                    startDatePlaceholderText="시작일"
+                                    endDatePlaceholderText="종료일"
+                                    startDate={goods.expectShippingStart ? moment(goods.expectShippingStart) : null}
+                                    endDate={goods.expectShippingEnd ? moment(goods.expectShippingEnd) : null}
+                                    onDatesChange={this.onExpectShippingChange}
+                                    focusedInput={this.state.focusedInput}
+                                    onFocusChange={(focusedInput) => { this.setState({ focusedInput })}}
+                                    numberOfMonths={1}          //달력 갯수(2개로 하면 모바일에서는 옆으로 들어가버리기 때문에 orientation='vertical'로 해야함), pc 에서는 상관없음
+                                    orientation={'horizontal'}
+                                    openDirection="up"
+                                    withPortal
+                                    small
+                                    readOnly
+                                    showClearDates
+                                    calendarInfoPosition="top"
+                                    // isDayBlocked={(date)=>{
+                                    //     //상품판매기한보다 작거나 같은 일자는 블록처리하여 선택할 수 없도록 함
+                                    //     if(date.isSameOrBefore(moment(goods.saleEnd))) return true
+                                    //     return false
+                                    // }}
+                                    // renderCalendarInfo={this.renderExpectShippingCalendarInfo}
+                                    // displayFormat={'YYYY.MM.DD'}
+                                />
+                                <Span ml={40}>
+                                    <Label check>
+                                        <Input type="checkbox" checked={goods.hopeDeliveryFlag ? true:false} onChange={this.onHopeDeliveryFlag} />소비자 희망수령일 기능 적용
+                                    </Label>
+                                </Span>
+                                <Fade in={validatedObj.expectShippingDate ? true : false} className="text-danger small mt-1" >{validatedObj.expectShippingDate}</Fade>
+                            </Container>
+
+                            <hr/>
+
+                            {/*<ProducerFullModalPopupWithNav show={this.state.isOpen} title={'상품미리보기'} onClose={this.onPreviewClose}>*/}
+                            {/*<Goods goodsNo={goods.goodsNo} />*/}
+                            {/*</ProducerFullModalPopupWithNav>*/}
+                            <Container>
+                                <h6>상품상세설명{star}</h6>
+                                <FormGroup>
+                                    <Label className={'text-secondary small'}>상세설명입력{star}</Label>
+                                    <TuiEditor
+                                        editorHtml={goods.goodsContent||null}
+                                        onChange={this.onChangeGoodsContent}
+                                    />
                                     <FormGroup>
-                                        <Label className={'text-secondary small'}>배송비{star}</Label>
-                                        {
-                                            goods.confirm ? (
-                                                <div>
-                                                    {
-                                                        ComUtil.addCommas(Math.round(goods.deliveryFee,0))
-                                                    }
-                                                </div>
-                                            ) : (
-                                                <Fragment>
-                                                    <CurrencyInput disabled={goods.termsOfDeliveryFee === TERMS_OF_DELIVERYFEE.FREE}  name={this.names.deliveryFee} value={goods.deliveryFee} onChange={this.onInputChange} placeholder={'배송비'} readOnly={producerWrapDeliver}/>
-                                                    <Fade in={validatedObj.deliveryFee ? true : false} className="text-danger small mt-1" >{validatedObj.deliveryFee}</Fade>
-                                                </Fragment>
-                                            )
-                                        }
+                                        <Fade in={validatedObj.goodsContent ? true : false} className="text-danger small mt-1" >{validatedObj.goodsContent}</Fade>
                                     </FormGroup>
-                                    {/*<FormGroup>*/}
-                                        {/*<Label className={'text-secondary small'}>발송일{star}</Label>*/}
-                                        {/*<div className='d-flex'>*/}
-                                            {/*<div className="mr-2">주문접수 후</div>*/}
-                                            {/*<div className="mr-2" style={{width:'100px'}}><Input onChange={this.onInputChange}></Input></div>*/}
-                                            {/*<div> 일 이내(최대 7일)</div>*/}
-                                        {/*</div>*/}
-                                        {/*<Fade in={false} className="text-danger small mt-1">7일 이내로 작성해주세요.</Fade>*/}
-                                    {/*</FormGroup>*/}
-                                </Container>
-                                <hr/>
-                                <Container>
-                                    <h6>판매종료일{star}</h6>
-                                    <SingleDatePicker
-                                        placeholder="판매종료일"
-                                        date={goods.saleEnd ? moment(goods.saleEnd) : null}
-                                        onDateChange={this.onDateChange}
-                                        focused={this.state['focused']} // PropTypes.bool
-                                        onFocusChange={({ focused }) => this.setState({ ['focused']:focused })} // PropTypes.func.isRequired
-                                        id={"stepPriceDate"} // PropTypes.string.isRequired,
-                                        numberOfMonths={1}
-                                        withPortal
-                                        small
-                                        readOnly
-                                        calendarInfoPosition="top"
-                                        enableOutsideDays
-                                        // daySize={45}
-                                        verticalHeight={700}
-                                        // renderCalendarInfo={this.renderUntilCalendarInfo.bind(this, stepNo)}
-                                    />
+                                </FormGroup>
+                            </Container>
+                            <hr/>
 
-
-                                </Container>
-                                <hr/>
-                                <Container>
-                                    <h6>발송일</h6>
-                                    <DateRangePicker
-                                        startDateId='expectShippingStart'
-                                        endDateId='expectShippingEnd'
-                                        startDatePlaceholderText="시작일"
-                                        endDatePlaceholderText="종료일"
-                                        startDate={goods.expectShippingStart ? moment(goods.expectShippingStart) : null}
-                                        endDate={goods.expectShippingEnd ? moment(goods.expectShippingEnd) : null}
-                                        onDatesChange={this.onExpectShippingChange}
-                                        focusedInput={this.state.focusedInput}
-                                        onFocusChange={(focusedInput) => { this.setState({ focusedInput })}}
-                                        numberOfMonths={1}          //달력 갯수(2개로 하면 모바일에서는 옆으로 들어가버리기 때문에 orientation='vertical'로 해야함), pc 에서는 상관없음
-                                        orientation={'horizontal'}
-                                        openDirection="up"
-                                        withPortal
-                                        small
-                                        readOnly
-                                        showClearDates
-                                        calendarInfoPosition="top"
-                                        // isDayBlocked={(date)=>{
-                                        //     //상품판매기한보다 작거나 같은 일자는 블록처리하여 선택할 수 없도록 함
-                                        //     if(date.isSameOrBefore(moment(goods.saleEnd))) return true
-                                        //     return false
-                                        // }}
-                                        // renderCalendarInfo={this.renderExpectShippingCalendarInfo}
-                                        // displayFormat={'YYYY.MM.DD'}
-                                    />
-                                    <Span ml={40}>
-                                        <Label check>
-                                            <Input type="checkbox" checked={goods.hopeDeliveryFlag ? true:false} onChange={this.onHopeDeliveryFlag} />소비자 희망수령일 기능 적용
+                            <Container>
+                                <h6>블리리뷰</h6>
+                                <FormGroup>
+                                    <div className='d-flex'>
+                                        <Label className={'text-secondary small'}>블리리뷰입력</Label>
+                                        <Label check className='ml-auto'>
+                                            <Input type="checkbox" checked={goods.blyReviewConfirm} onChange={this.onChangeBlyReview} />블리리뷰 노출
                                         </Label>
-                                    </Span>
-                                </Container>
+                                    </div>
+                                    <QullEditor
+                                        editorHtml={goods.blyReview}
+                                        onChange={this.onblyReviewChange}
+                                    />
+                                </FormGroup>
 
-                                <hr/>
+                            </Container>
+                        </Col>
+                    </Row>
 
-                                {/*<ProducerFullModalPopupWithNav show={this.state.isOpen} title={'상품미리보기'} onClose={this.onPreviewClose}>*/}
-                                {/*<Goods goodsNo={goods.goodsNo} />*/}
-                                {/*</ProducerFullModalPopupWithNav>*/}
-                                <Container>
-                                    <h6>상품상세설명{star}</h6>
-                                    <FormGroup>
-                                        <Label className={'text-secondary small'}>상세설명입력{star}</Label>
-                                        <TuiEditor
-                                            editorHtml={goods.goodsContent||null}
-                                            onChange={this.onChangeGoodsContent}
-                                        />
-                                        <FormGroup>
-                                            <Fade in={validatedObj.goodsContent ? true : false} className="text-danger small mt-1" >{validatedObj.goodsContent}</Fade>
-                                        </FormGroup>
-                                    </FormGroup>
-                                </Container>
-                                <hr/>
-
-                                <Container>
-                                    <h6>블리리뷰</h6>
-                                    <FormGroup>
-                                        <div className='d-flex'>
-                                            <Label className={'text-secondary small'}>블리리뷰입력</Label>
-                                            <Label check className='ml-auto'>
-                                                <Input type="checkbox" checked={goods.blyReviewConfirm} onChange={this.onChangeBlyReview} />블리리뷰 노출
-                                            </Label>
-                                        </div>
-                                        <QullEditor
-                                            editorHtml={goods.blyReview}
-                                            onChange={this.onblyReviewChange}
-                                        />
-                                    </FormGroup>
-
-                                </Container>
+                    <br/>
+                    {/* 버튼 */}
+                    <Container>
+                        <Row>
+                            <Col className='p-0'>
+                                <div className='d-flex align-items-center justify-content-center'>
+                                    <Div mr={5}>
+                                        {btnAddTempGoods}
+                                    </Div>
+                                    <Div mr={5}>
+                                        {btnCopy}
+                                    </Div>
+                                    <Div mr={5}>
+                                        {btnPreview}
+                                    </Div>
+                                    <Div mr={5}>
+                                        {btnConfirm}
+                                    </Div>
+                                    <Div mr={5}>
+                                        {btnUpdate}
+                                    </Div>
+                                    <Div mr={5}>
+                                        {btnDelete}
+                                    </Div>
+                                    <Div mr={5}>
+                                        {btnPaused}
+                                    </Div>
+                                    <Div mr={5}>
+                                        {btnResume}
+                                    </Div>
+                                    <Div mr={5}>
+                                        {btnGoodsStop}
+                                    </Div>
+                                </div>
                             </Col>
                         </Row>
-
-                        <br/>
-                        {/* 버튼 */}
-                        <Container>
-                            <Row>
-                                <Col className='p-0'>
-                                    <div className='d-flex align-items-center justify-content-center'>
-                                        {btnAddTempGoods}
-                                        {btnConfirm}
-                                        {btnDelete}
-                                        {btnPreview}
-                                        {btnGoodsStop}
-                                        {btnUpdate}
-                                        {btnCopy}
-                                        {btnPaused}
-                                        {btnResume}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Container>
+                    </Container>
 
                     <ModalWithNav show={this.state.isOpen} title={'상품미리보기'} onClose={this.onPreviewClose} noPadding={true}>
                         <Container>
@@ -1507,7 +1601,11 @@ export default class WebDirectGoodsReg extends Component {
                     {/* 상품정보제공 고시 설정 입력 */}
                     <ModalWithNav show={this.state.goodsTypeModalOpen} title={'고시 항목 설정'} onClose={this.onGoodsTypeModal} noPadding={true}>
                         {
-                            <Agricultural code={this.state.goods.goodsTypeCode} infoValues={this.state.goods.goodsInfoData[this.state.goods.goodsTypeCode]}/>
+                            <Agricultural
+                                code={this.state.goods.goodsTypeCode}
+                                infoValues={this.state.goods.goodsInfoData[this.state.goods.goodsTypeCode]}
+                                onClose={this.onGoodsTypeModal}
+                            />
                         }
                     </ModalWithNav>
 

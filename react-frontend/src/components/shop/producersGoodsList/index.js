@@ -42,7 +42,7 @@ const ProducersGoodsList = (props) => {
 
             search(filter, sorters[0].sorter)   //상품조회
 
-            window.scrollTo(0,0)
+            // window.scrollTo(0,0)
         }
         fetch()
     }, [])
@@ -132,7 +132,7 @@ const ProducersGoodsList = (props) => {
                                             className='p-0'
                                             onClick={movePage.bind(this, goods.goodsNo)}
                                         >
-                                            <div className='mr-2 mb-2 border'
+                                            <div className='mr-2 mb-2'
                                                 // onClick={movePage.bind(this, {type: 'GOODS_DETAIL', payload: {goodsNo: goods.goodsNo}})}
                                             >
                                                 <SlideItemHeaderImage
@@ -142,6 +142,7 @@ const ProducersGoodsList = (props) => {
                                                     discountRate={Math.round(goods.discountRate)}
                                                     remainedCnt={goods.remainedCnt}
                                                     blyReview={goods.blyReviewConfirm}
+                                                    buyingRewardFlag={goods.buyingRewardFlag}
                                                 />
                                                 <SlideItemContent
                                                     className={'p-2'}

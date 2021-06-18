@@ -3,16 +3,25 @@ import React, {Fragment, Component} from 'react';
 import {ShopXButtonNav} from '~/components/common/index'
 
 import AddressManagementContent from './AddressManagementContent'
+import {getConsumer} from "~/lib/shopApi";
 
 export default class AddressManagement extends Component {
     constructor(props) {
         super(props);
-
-        const params = new URLSearchParams(this.props.location.search)
-        const consumerNo = params.get('consumerNo')
         this.state = {
-            consumerNo: consumerNo
+            consumerNo: null
         }
+    }
+    async componentDidMount() {
+        const loginUser = await getConsumer();
+        if(!loginUser || !loginUser.data){
+            this.props.history.replace('/mypage');
+            return;
+        }
+        const consumerNo = loginUser.data.consumerNo;
+        this.setState({
+            consumerNo: consumerNo
+        })
     }
 
     render() {

@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react'
 import { SlideItemTemplate, SlideItemHeaderImage, SlideItemContent } from '~/components/common/slides'
 import Swiper from 'react-id-swiper'
-import { getConsumerGoodsJustSorted } from '~/lib/goodsApi'
+import { getConsumerGoodsJustCached } from '~/lib/goodsApi'
 import { SpinnerBox } from '~/components/common'
 import { Doc } from '~/components/Properties'
 import { Server } from '~/components/Properties'
@@ -18,9 +18,9 @@ const NewestOfWeekness = (props) => {
 
     async function search() {
 
-        const sorter = {direction: 'DESC', property: 'timestamp'}
-
-        const { data } = await getConsumerGoodsJustSorted(sorter)
+        // const sorter = {direction: 'DESC', property: 'timestamp'}
+        // const { data } = await getConsumerGoodsJustSorted(sorter)
+        const { data } = await getConsumerGoodsJustCached()
 
         //7건만 보이도록
         if(data.length > limitCount){
@@ -69,6 +69,7 @@ const NewestOfWeekness = (props) => {
                                     discountRate={Math.round(goods.discountRate)}
                                     remainedCnt={goods.remainedCnt}
                                     blyReview={goods.blyReviewConfirm}
+                                    buyingRewardFlag={goods.buyingRewardFlag}
                                 />
                                 <SlideItemContent
                                     className={'p-2'}

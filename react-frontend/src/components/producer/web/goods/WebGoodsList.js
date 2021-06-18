@@ -1,11 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import { Container, Row, Col, Button, Badge, FormGroup } from 'reactstrap'
 import { getLoginProducerUser } from '~/lib/loginApi'
-import { getProducerFilterGoods } from '~/lib/goodsApi'
+import {getGoodsByGoodsNo, getProducerFilterGoods, updateGoodsSalesStop, updateSalePaused} from '~/lib/goodsApi'
 import { getServerToday } from '~/lib/commonApi'
 import { getItems } from '~/lib/adminApi'
 import Select from 'react-select'
-import { ProducerFullModalPopupWithNav, Cell, ModalPopup } from '~/components/common'
+import {ProducerFullModalPopupWithNav, Cell, ModalPopup, ModalConfirm} from '~/components/common'
 import { WebGoodsReg, WebDirectGoodsReg } from '~/components/producer'
 import ComUtil from '~/util/ComUtil'
 import { ExcelDownload } from '~/components/common'
@@ -14,14 +14,18 @@ import {FaClock, FaBolt} from "react-icons/fa";
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
+import {Div, Flex, Hr, FilterGroup} from "~/styledComponents/shared";
+import InputFilter from "~/components/common/gridFilter/InputFilter";
+import CheckboxFilter from "~/components/common/gridFilter/CheckboxFilter";
+import FilterContainer from "~/components/common/gridFilter/FilterContainer";
 
 export default class WebGoodsList extends Component {
     constructor(props) {
         super(props);
         this.serverToday=null;
-        this.rowHeight=30;
+        this.rowHeight=50;
         this.isPcWeb=false;
         this.state = {
             isGoodsSelectionOpen: false,    //상품종류 선택 팝업
@@ -34,6 +38,7 @@ export default class WebGoodsList extends Component {
                 columns: [],
                 data: []
             },
+            selectedRows: [],
             // 검색용 필터
             searchFilter: {
                 itemNo: 0,
@@ -46,34 +51,62 @@ export default class WebGoodsList extends Component {
             },
             items: [],
 
-            columnDefs: this.getColumnDefs(),
-            defaultColDef: {
-                width: 100,
-                resizable: true
+            gridOptions: {
+                columnDefs: this.getColumnDefs(),
+                defaultColDef: {
+                    width: 100,
+                    resizable: true,
+                    filter: true,
+                    sortable: true,
+                    floatingFilter: false,
+                    filterParams: {
+                        newRowsAction: 'keep'
+                    }
+                },
+                components: {
+                    formatCurrencyRenderer: this.formatCurrencyRenderer,
+                    formatDateRenderer: this.formatDateRenderer,
+                    saleCntRenderer: this.saleCntRenderer,
+                    vatRenderer: this.vatRenderer
+                },
+                frameworkComponents: {
+                    directGoodsRenderer: this.directGoodsRenderer,
+                    goodsTagRenderer: this.goodsTagRenderer,
+                    goodsSttRenderer: this.goodsSttRenderer,
+                    goodsSttActRenderer: this.goodsSttActRenderer,
+                    goodsStateRenderer: this.goodsStateRenderer,
+                    goodsNameRenderer: this.goodsNameRenderer
+                },
+                rowHeight: this.rowHeight,
+                rowSelection: 'multiple',
+                suppressRowClickSelection: false,   //false : 셀 클릭시 체크박스도 체크 true: 셀클릭시 체크박스 체크 안함
+                overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
+                overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
+
+                // enableSorting: true,                //정렬 여부
+                // enableFilter: true,                 //필터링 여부
+
+                // enableColResize: true,              //컬럼 크기 조정
+                onGridReady: this.onGridReady.bind(this),   //그리드 init(최초한번실행)
+                suppressMovableColumns: true, //헤더고정시키
+                onFilterChanged: this.onGridFilterChanged.bind(this),
+                onSelectionChanged: this.onSelectionChanged.bind(this),
             },
-            components: {
-                formatCurrencyRenderer: this.formatCurrencyRenderer,
-                formatDateRenderer: this.formatDateRenderer,
-                saleCntRenderer: this.saleCntRenderer,
-                vatRenderer: this.vatRenderer
-            },
-            frameworkComponents: {
-                directGoodsRenderer: this.directGoodsRenderer,
-                goodsTagRenderer: this.goodsTagRenderer,
-                goodsSttRenderer: this.goodsSttRenderer,
-                goodsSttActRenderer: this.goodsSttActRenderer,
-                goodsStateRenderer: this.goodsStateRenderer,
-                goodsNameRenderer: this.goodsNameRenderer
-            },
-            rowHeight: this.rowHeight,
-            rowSelection: 'single',
-            overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
-            overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
+
             isPcWeb: this.isPcWeb
         }
 
         //상품보기,상품수정,신규상품 타이틀 명칭 용
         // this.goodsPopTitle = "신규상품";
+    }
+
+    onSelectionChanged = (event) => {
+        this.updateSelectedRows()
+    }
+    updateSelectedRows = () => {
+        this.setState({
+            selectedRows: this.gridApi.getSelectedRows()
+        })
     }
 
     //[이벤트] 그리드 로드 후 callback 이벤트
@@ -144,21 +177,30 @@ export default class WebGoodsList extends Component {
     getColumnDefs () {
         let columnDefs = [
             // {headerName: "상태/수정", field: "", width: 80, suppressSizeToFit: true, cellStyle:this.getCellStyle({cellAlign: 'center'}), suppressMenu:"false",suppressSorting:"false", cellRenderer: 'goodsSttActRenderer'},
-            {headerName: "구분", field: "directGoods", width: 30, cellStyle:this.getCellStyle({cellAlign: 'center'}), cellRenderer: 'directGoodsRenderer'},
+            {headerName: "구분", field: "directGoods", width: 30, cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                valueGetter: function ({data}) {
+                    return data.directGoods ? '즉시' : '예약'
+                },
+                cellRenderer: 'directGoodsRenderer'},
+            {headerName: "상품No", field: "goodsNo", width: 80, cellStyle:this.getCellStyle({whiteSpace: 'normal'}),
+                headerCheckboxSelection: true,
+                headerCheckboxSelectionFilteredOnly: true,  //전체 체크시 필터된 것만 체크
+                checkboxSelection: true,
+            },
             {headerName: "상품명", field: "goodsNm", width: 120, cellStyle:this.getCellStyle({whiteSpace: 'normal'}), cellRenderer: 'goodsNameRenderer' },
             {headerName: "소비자가", field: "consumerPrice", width: 50, cellStyle:this.getCellStyle({cellAlign: 'right'}), cellRenderer: 'formatCurrencyRenderer'},
             {headerName: "단일가", field: "priceSteps", width: 40, cellStyle:this.getCellStyle({cellAlign: 'right'}), valueGetter: function(params) {
-                let firstPrice = params.data.priceSteps[0] ? ComUtil.addCommas(params.data.priceSteps[0].price) : '-'
-                return firstPrice
-            }},
+                    let firstPrice = params.data.priceSteps[0] ? ComUtil.addCommas(params.data.priceSteps[0].price) : '-'
+                    return firstPrice
+                }},
             {headerName: "2단계할인가", field: "priceSteps", width: 50, cellStyle:this.getCellStyle({cellAlign: 'right'}), valueGetter: function(params) {
-                let secondPrice = params.data.priceSteps[1] ? ComUtil.addCommas(params.data.priceSteps[1].price) : '-'
-                return secondPrice
-            }},
+                    let secondPrice = params.data.priceSteps[1] ? ComUtil.addCommas(params.data.priceSteps[1].price) : '-'
+                    return secondPrice
+                }},
             {headerName: "3단계할인가", field: "priceSteps", width: 50, cellStyle:this.getCellStyle({cellAlign: 'right'}), valueGetter: function(params) {
-                let thirdPrice = params.data.priceSteps[2] ? ComUtil.addCommas(params.data.priceSteps[2].price) : '-'
-                return thirdPrice
-            }},
+                    let thirdPrice = params.data.priceSteps[2] ? ComUtil.addCommas(params.data.priceSteps[2].price) : '-'
+                    return thirdPrice
+                }},
             {headerName: "판매가", field: "defaultCurrentPrice", width: 40, cellStyle:this.getCellStyle({cellAlign: 'right',color:'red'}), cellRenderer: 'formatCurrencyRenderer'},
             {headerName: "부가세", field: "vatFlag", width:40, cellRenderer: 'vatRenderer'},
             {headerName: "대분류", field: "itemName", width: 50},
@@ -449,10 +491,13 @@ export default class WebGoodsList extends Component {
             this.gridApi.hideOverlay();
 
             //ag-grid 높이 리셋 및 렌더링
-            this.gridApi.resetRowHeights();
             this.gridApi.sizeColumnsToFit();
 
             this.setExcelData();
+
+            //ag-grid 높이 리셋 및 렌더링
+            // Following line dymanic set height to row on content
+            this.gridApi.resetRowHeights();
         }
     }
 
@@ -635,6 +680,106 @@ export default class WebGoodsList extends Component {
         await this.search();
     }
 
+    //일시중지, 판매중지, 판매재개 일괄처리
+    onCheckedActionClick = async (action) => {
+
+        const selectedRows = this.gridApi.getSelectedRows()
+
+        const promises = selectedRows.map(({goodsNo}) => getGoodsByGoodsNo(goodsNo))
+
+        const result = await Promise.all(promises)
+
+        //필터 처리
+        const goodsList =
+            this.getListFromPromised(result)
+                .filter(goods =>
+                    goods.confirm === true &&       //노출된 상품
+                    goods.saleStopped !== true      //현재 판매중인 상품만 필더
+                )
+
+        //TODO data 를 푸시 해서 아래에서 판별 해야함
+
+        console.log({goodsList})
+
+        //판매중단
+        if (action === 'stop') {
+
+            const len = goodsList.length
+            if (len <= 0) {
+                alert('판매중단 가능한 상품이 없습니다.')
+                return
+            }
+
+            if (!window.confirm(`[${len}개 상품 가능] 판매중단 하시겠습니까?`)) {
+                return
+            }
+
+            //TODO update
+            //노출된 상품, 판매중인 상품은 모두 판매중지
+            await this.doSaleStop(goodsList)
+            alert(`${len}개 상품이 판매중단 되었습니다.`);
+        }
+        //일시중지
+        else if (action === 'pause') {
+            const list = goodsList.filter(goods =>
+                goods.directGoods === true &&       //즉시상품만
+                goods.salePaused === false          //일시중지가 아닌것만
+            )
+
+            const len = list.length
+            if (len <= 0) {
+                alert('일시중지 가능한 상품이 없습니다.')
+                return
+            }
+
+            if (!window.confirm(`[${list.length}개 상품 가능] 일시중지 하시겠습니까?`)) {
+                return
+            }
+
+            this.doSalePauseOrContinue(list, true)
+            alert(`${list.length}개 상품이 일시중지 되었습니다.`);
+        }
+        //판매재개
+        else if (action === 'continue') {
+            const list = goodsList.filter(goods =>
+                goods.directGoods === true &&       //즉시상품만
+                goods.salePaused === true          //일시중지인 것만
+            )
+
+            const len = list.length
+            if (len <= 0) {
+                alert('판매재개 가능한 상품이 없습니다.')
+                return
+            }
+
+
+            if (!window.confirm(`[${list.length}개 상품 가능] 판매재개 하시겠습니까?`)) {
+                return
+            }
+
+            this.doSalePauseOrContinue(list, false)
+            alert(`${list.length}개 상품이 판매재개 되었습니다.`);
+        }
+
+        this.search()
+
+    }
+
+    //판매중단
+    doSaleStop = async (goodsList) => {
+        const promises = goodsList.map(goods => updateGoodsSalesStop(goods.goodsNo))
+        await Promise.all(promises)
+    }
+
+    doSalePauseOrContinue = async (goodsList, salePaused) => {
+        const promises = goodsList.map(goods => updateSalePaused(goods.goodsNo, salePaused))
+        await Promise.all(promises)
+    }
+
+    getListFromPromised = (result) => {
+        return result.map(({data}) => data)
+    }
+
     render() {
         const state = this.state
         return(
@@ -691,9 +836,44 @@ export default class WebGoodsList extends Component {
                     </div>
                 </FormGroup>
 
+                <FilterContainer gridApi={this.gridApi} excelFileName={'상품 목록'}>
+                    <FilterGroup>
+                        <InputFilter
+                            gridApi={this.gridApi}
+                            columns={[
+                                {field: 'goodsNo', name: '상품번호'},
+                                {field: 'goodsNm', name: '상품명'},
+                            ]}
+                            isRealTime={true}
+                        />
+                    </FilterGroup>
+                    <Hr/>
+                    <Flex p={10}>
+                        <CheckboxFilter
+                            gridApi={this.gridApi}
+                            field={'directGoods'}
+                            name={'상품구분'}
+                            data={[
+                                {value: '즉시', name: '즉시'},
+                                {value: '예약', name: '예약'},
+                            ]}
+                        />
+                    </Flex>
+                </FilterContainer>
+
                 <div className='d-flex mb-1 align-items-center'>
                     <div>총 {this.state.data ? ComUtil.addCommas(this.state.data.length) : 0} 개</div>
                     <div className={'d-flex ml-auto'}>
+                        {
+                            this.state.selectedRows.length > 0 && (
+                                <Flex>
+                                    <Button className='mr-1' size={'sm'} onClick={this.onCheckedActionClick.bind(this, 'stop')}>{this.state.selectedRows.length}건 판매중지</Button>
+                                    <Button className='mr-1' size={'sm'} onClick={this.onCheckedActionClick.bind(this, 'pause')}>{this.state.selectedRows.length}건 일시중지</Button>
+                                    <Button className='mr-1' size={'sm'} onClick={this.onCheckedActionClick.bind(this, 'continue')}>{this.state.selectedRows.length}건 판매재개</Button>
+                                </Flex>
+                            )
+                        }
+
                         <div><Button className='mr-1' color={'info'} size={'sm'} onClick={this.onNewGoodsClick}>신규상품</Button></div>
                         <div>
                             <ExcelDownload data={this.state.excelData} fileName="goodsList" />
@@ -709,22 +889,23 @@ export default class WebGoodsList extends Component {
                     className='ag-theme-balham'
                 >
                     <AgGridReact
-                        enableSorting={true}                //정렬 여부
-                        enableFilter={true}                 //필터링 여부
-                        columnDefs={this.state.columnDefs}  //컬럼 세팅
-                        defaultColDef={this.state.defaultColDef}
-                        rowSelection={this.state.rowSelection}  //멀티체크 가능 여부
-                        rowHeight={this.state.rowHeight}
-                        //gridAutoHeight={true}
-                        enableColResize={true}              //컬럼 크기 조정
-                        overlayLoadingTemplate={this.state.overlayLoadingTemplate}
-                        overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
-                        onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
+                        {...this.state.gridOptions}
+                        // enableSorting={true}                //정렬 여부
+                        // enableFilter={true}                 //필터링 여부
+                        // columnDefs={this.state.columnDefs}  //컬럼 세팅
+                        // defaultColDef={this.state.defaultColDef}
+                        // rowSelection={this.state.rowSelection}  //멀티체크 가능 여부
+                        // rowHeight={this.state.rowHeight}
+                        // //gridAutoHeight={true}
+                        // enableColResize={true}              //컬럼 크기 조정
+                        // overlayLoadingTemplate={this.state.overlayLoadingTemplate}
+                        // overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
+                        // onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
                         rowData={this.state.data}
-                        components={this.state.components}  //custom renderer 지정, 물론 정해져있는 api도 있음
-                        frameworkComponents={this.state.frameworkComponents}
-                        suppressMovableColumns={true} //헤더고정시키
-                        onFilterChanged={this.onGridFilterChanged.bind(this)}
+                        // components={this.state.components}  //custom renderer 지정, 물론 정해져있는 api도 있음
+                        // frameworkComponents={this.state.frameworkComponents}
+                        // suppressMovableColumns={true} //헤더고정시키
+                        // onFilterChanged={this.onGridFilterChanged.bind(this)}
                         // onRowClicked={this.onSelectionChanged.bind(this)}
                         // onRowSelected={this.onRowSelected.bind(this)}
                         // onSelectionChanged={this.onSelectionChanged.bind(this)}

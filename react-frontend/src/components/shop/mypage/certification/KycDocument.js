@@ -3,15 +3,14 @@ import {ShopXButtonNav} from '~/components/common'
 import { Div, Span, Flex, Button } from '~/styledComponents/shared'
 import Checkbox from '~/components/common/checkboxes/Checkbox'
 import KycSingleImageUploader from '~/components/common/ImageUploader/KycSingleImageUploader'
-import { Webview } from '~/lib/webviewApi'
 import { regConsumerKyc } from '~/lib/shopApi'
-import { getLoginUserType } from '~/lib/loginApi'
 import { getConsumer } from '~/lib/shopApi'
 import { BlocerySpinner } from '~/components/common'
 import styled, {keyframes} from 'styled-components'
 import {getValue} from '~/styledComponents/Util'
 import {color, hoverColor} from "~/styledComponents/Properties";
 import {ScrollDummy, scrollIntoView} from '~/components/common/scrollDummy/ScrollDummy'
+import SecureApi from "~/lib/secureApi";
 
 let validatedObj = {};
 
@@ -106,7 +105,6 @@ export default class KycDocument extends Component {
         super(props);
         this.state = {
             loginUser: null,
-            loginUserType: null,
             btnDisabled: false,
             kycType: '',         // 신분증 종류
             kycImages: [],
@@ -123,26 +121,22 @@ export default class KycDocument extends Component {
     }
 
     async componentDidMount() {
-        const loginUserType = await getLoginUserType();
-        let loginUser;
 
-        if(loginUserType.data === 'consumer') {
-            loginUser = await getConsumer();
-        } else if (loginUserType.data === 'producer') {
-            //생산자용 mypage로 자동이동.
-            Webview.movePage('/producer/mypage');
+        // 혹시나 CSRF 세팅이 안될 경우 대비 한번더 넣게 처리
+        SecureApi.setCsrf().then(()=>{
+            SecureApi.getCsrf().then(({data})=>{
+                localStorage.setItem('xToken',data);
+            });
+        });
+
+        const {data:loginUser} = await getConsumer();
+        if(!loginUser){
+            this.props.history.replace('/mypage');
+            return;
         }
-
         this.setState({
-            loginUser: (loginUser) ? loginUser.data : '',
-            loginUserType: loginUserType.data
-        })
-
-        // kyc 인증 신청 여부 확인
-        // const { data: result} = await getConsumerKyc();
-        // if(result && result.kycAuth === 1) {
-        //     Webview.movePage('/kycFinish');
-        // }
+            loginUser: (loginUser) ? loginUser : null
+        });
     }
 
     onImageChange = (items) => {
@@ -160,11 +154,9 @@ export default class KycDocument extends Component {
 
     onIdTypeClick = (type) => {
         this.setState({ kycType: type })
-
         setTimeout(() => {
             scrollIntoView(this.step2)
         }, 500)
-
     }
 
     onCheckBoxChange = (e) => {
@@ -274,30 +266,18 @@ export default class KycDocument extends Component {
                         <Heading>03. 확인 및 제출</Heading>
                         <Div my={20}>
                             <CheckBoxFlex alignItems={'flex-start'}>
-
                                 <Checkbox id={'check1'} bg={'green'} onChange={this.onCheckBoxChange}
                                           size={'sm'}>
                                     <Span fontSize={13} fg={this.state.check1 ? 'darkBlack' : 'dark'}>신분증의 주민등록번호 뒷자리를 가리셨나요?</Span>
                                 </Checkbox>
-
-                                {/*<Checkbox id={'check1'} onChange={this.onCheckBoxChange} />*/}
-                                {/*<Label for={'check1'}><Span fontSize={13} fg={this.state.check1 ? 'darkBlack' : 'dark'}>신분증의 주민등록번호 뒷자리를 가리셨나요?</Span></Label>*/}
                             </CheckBoxFlex>
                             <CheckBoxFlex>
-                                {/*<Checkbox id={'check2'} onChange={this.onCheckBoxChange} />*/}
-                                {/*<Label for={'check2'}><Span fontSize={13} fg={this.state.check2 ? 'darkBlack' : 'dark'}>신원확인용 사진은 얼굴, 신분증, 메모가 모두 나오게 촬영하셨나요?</Span></Label>*/}
-
-
                                 <Checkbox id={'check2'} bg={'green'} onChange={this.onCheckBoxChange}
                                           size={'sm'}>
                                     <Span fontSize={13} fg={this.state.check2 ? 'darkBlack' : 'dark'}>신원확인용 사진은 얼굴, 신분증, 메모가 모두 나오게 촬영하셨나요?</Span>
                                 </Checkbox>
-
                             </CheckBoxFlex>
                             <CheckBoxFlex>
-                                {/*<Checkbox id={'check3'} onChange={this.onCheckBoxChange} />*/}
-                                {/*<Label for={'check3'}><Span fontSize={13} fg={this.state.check3 ? 'darkBlack' : 'dark'}>메모에 '블로서리(또는 마켓블리)'와 '날짜'를 적어 주셨나요?</Span></Label>*/}
-
                                 <Checkbox id={'check3'} bg={'green'} onChange={this.onCheckBoxChange}
                                           size={'sm'}>
                                     <Span fontSize={13} fg={this.state.check3 ? 'darkBlack' : 'dark'}>메모에 '블로서리(또는 마켓블리)'와 '날짜'를 적어 주셨나요?</Span>
@@ -305,10 +285,17 @@ export default class KycDocument extends Component {
                             </CheckBoxFlex>
                         </Div>
                         <Flex justifyContent={'center'}>
-                            <Button fontSize={18} bg={'green'} fg={'white'} rounded={2} py={13} width={'70%'} onClick={this.save} disabled={btnDisabled}>서류 제출하기</Button>
+                            <Button fontSize={18} bg={'green'} fg={'white'} rounded={2} py={13} block onClick={this.save} disabled={btnDisabled}>서류 제출하기</Button>
                         </Flex>
                     </Card>
-
+                    <Card shadow={'sm'}>
+                        <Heading>KYC 신원 확인 처리 시간 안내</Heading>
+                        <Desc lineHeight={20}>
+                            - 전일 17시 ~ 당일 09시 접수건 : 당일 09시~<br/>
+                            - 당일 09시 ~ 당일 17시 접수건 : 당일 17시~
+                        </Desc>
+                        <Desc>※ 주말 및 공휴일은 진행되지 않습니다.</Desc>
+                    </Card>
                 </Body>
             </Fragment>
         )

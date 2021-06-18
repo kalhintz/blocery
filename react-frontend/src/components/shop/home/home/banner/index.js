@@ -16,7 +16,7 @@ const Banner = () => {
 
         ComUtil.sortNumber(data, 'imageNo')
 
-        console.log(data)
+        //console.log(data)
         for(var i=0; i < data.length; i++){
             data[i].imageUrl = Server.getImageURL() + data[i].imageUrl
         }

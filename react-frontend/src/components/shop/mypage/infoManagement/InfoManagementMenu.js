@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react'
 import { ListGroup, ListGroupItem } from 'reactstrap'
 
-import { getConsumerByConsumerNo } from '~/lib/shopApi'
-import {doLogout, doLogoutChannOut} from '~/lib/loginApi'
+import {getConsumer} from '~/lib/shopApi'
+import {doLogout, doLogoutChannOut, getLoginUserType} from '~/lib/loginApi'
 
 import {FaUnlink, FaUserAlt, FaEnvelope, FaUserEdit, FaAngleRight, FaHome, FaLock, FaWallet, FaSignOutAlt} from "react-icons/fa";
 
@@ -23,13 +23,13 @@ export default class infoManagementMenu extends Component {
     }
 
     async componentDidMount() {
-        const params = new URLSearchParams(this.props.location.search)
-        const consumerNo = params.get('consumerNo')
-
-        const loginUser = await getConsumerByConsumerNo(consumerNo)
-
+        let loginUser = await getConsumer();
+        if(!loginUser || !loginUser.data){
+            this.props.history.replace('/mypage');
+            return;
+        }
         this.setState({
-            consumerNo: consumerNo,
+            consumerNo: loginUser.data.consumerNo,
             loginUser: loginUser.data
         })
     }
@@ -37,32 +37,32 @@ export default class infoManagementMenu extends Component {
     // 비밀번호 변경 클릭
     onClickValwordModify = () => {
         const loginUser = Object.assign({}, this.state.loginUser)
-        this.props.history.push('/mypage/checkCurrentValword?consumerNo='+loginUser.consumerNo+'&flag=1')
+        this.props.history.push('/mypage/checkCurrentValword?flag=1')
     }
 
     // 회원정보 수정 클릭
     onClickInfoModify = () => {
         const loginUser = Object.assign({}, this.state.loginUser)
         if(localStorage.getItem('authType') == 1){
-            this.props.history.push('/modifyConsumerInfo?consumerNo='+loginUser.consumerNo)
+            this.props.history.push('/modifyConsumerInfo')
         }else{
-            this.props.history.push('/mypage/checkCurrentValword?consumerNo='+loginUser.consumerNo+'&flag=2')
+            this.props.history.push('/mypage/checkCurrentValword?flag=2')
         }
     }
 
     // 배송지 관리
     onClickAddressModify = () => {
         const loginUser = Object.assign({}, this.state.loginUser)
-        this.props.history.push('/mypage/addressManagement?consumerNo='+loginUser.consumerNo)
+        this.props.history.push('/mypage/addressManagement')
     }
 
     // 결제비밀번호 관리
     onClickHintPassPhrase = () => {
         const loginUser = Object.assign({}, this.state.loginUser)
         if(localStorage.getItem('authType') == 1){
-            this.props.history.push('/mypage/hintPassPhrase?consumerNo='+loginUser.consumerNo)
+            this.props.history.push('/mypage/hintPassPhrase')
         }else{
-            this.props.history.push('/mypage/checkCurrentValword?consumerNo='+loginUser.consumerNo+'&flag=3')
+            this.props.history.push('/mypage/checkCurrentValword?flag=3')
         }
     }
 

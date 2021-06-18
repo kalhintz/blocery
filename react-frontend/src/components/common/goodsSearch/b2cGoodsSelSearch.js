@@ -1,14 +1,14 @@
 import React, { Component } from 'react'
 import { Container, Row, Col, Input, Button, Badge } from 'reactstrap'
 
-import { getAllGoodsSaleList, getAllGoodsNotEvent, getAllGoods } from '~/lib/adminApi'
+import { getAllGoodsSaleList, getAllGoodsNotEvent, getAllGoods, getPotenCouponMaster } from '~/lib/adminApi'
 
 import ComUtil from '~/util/ComUtil'
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+// import 'ag-grid-community/dist/styles/ag-grid.css';
+// import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 
 class B2cGoodsSelSearch extends Component{
     constructor(props){
@@ -123,7 +123,13 @@ class B2cGoodsSelSearch extends Component{
             ],
             defaultColDef: {
                 width: 120,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             components: {
                 formatCurrencyRenderer: this.formatCurrencyRenderer,
@@ -272,33 +278,31 @@ class B2cGoodsSelSearch extends Component{
         }
     };
 
-    goodsSearchSelected = (row) => {
-        let producerNo = row.producerNo;
-        let producerNm = row.producerNm;
-        let producerFarmNm = row.producerFarmNm;
+    goodsSearchSelected = async (row) => {
 
-        let goodsNo = row.goodsNo;
-        let goodsNm = row.goodsNm;
+        // let result = {
+        //     producerNo : row.producerNo,
+        //     producerNm : row.producerNm,
+        //     producerFarmNm : row.producerFarmNm,
+        //     goodsNo : row.goodsNo,
+        //     goodsNm : row.goodsNm,
+        //
+        //     consumerPrice: row.consumerPrice,
+        //     currentPrice: row.defaultCurrentPrice,
+        //     discountRate: row.defaultDiscountRate,
+        //     feeRate: row.feeRate,
+        //     packCnt: row.packCnt,
+        //     remainedCnt: row.remainedCnt,
+        // };
 
-        let consumerPrice = row.consumerPrice;
-        let defaultCurrentPrice = row.defaultCurrentPrice;
-        let defaultDiscountRate = row.defaultDiscountRate;
-        let feeRate = row.feeRate;
+        const {data:couponInfo} = await getPotenCouponMaster(row.goodsNo)
+        if(couponInfo) {
+            row.potenCouponDiscount = couponInfo.potenCouponDiscount
+        }
 
-        let result = {
-            producerNo : producerNo,
-            producerNm : producerNm,
-            producerFarmNm : producerFarmNm,
-            goodsNo : goodsNo,
-            goodsNm : goodsNm,
+        this.props.onChange(row);
 
-            consumerPrice:consumerPrice,
-            currentPrice:defaultCurrentPrice,
-            discountRate:defaultDiscountRate,
-            feeRate:feeRate,
-        };
-
-        this.props.onChange(result);
+        // this.props.onChange(result);
     };
 
     onSelectGoodsSearchType = (e) => {
@@ -351,14 +355,14 @@ class B2cGoodsSelSearch extends Component{
                                     style={{height:"400px"}}
                                 >
                                     <AgGridReact
-                                        enableSorting={true}                //정렬 여부
-                                        enableFilter={true}                 //필터링 여부
+                                        // enableSorting={true}                //정렬 여부
+                                        // enableFilter={true}                 //필터링 여부
                                         floatingFilter={true}               //Header 플로팅 필터 여부
                                         columnDefs={this.state.columnDefs}  //컬럼 세팅
                                         defaultColDef={this.state.defaultColDef}
                                         rowSelection={false}  //멀티체크 가능 여부
                                         rowHeight={this.state.rowHeight}
-                                        enableColResize={true}              //컬럼 크기 조정
+                                        // enableColResize={true}              //컬럼 크기 조정
                                         overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                                         overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                                         onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)

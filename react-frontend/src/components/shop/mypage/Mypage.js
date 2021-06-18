@@ -1,9 +1,17 @@
 import React, { Component, Fragment } from 'react';
 
-import { getConsumer, countRegularShop, countGoodsReview, getOrderDetailCountForMypage, getConsumerKyc, getUsableCouponList } from '~/lib/shopApi'
-import { getLoginUserType, autoLoginCheckAndTryAsync } from '~/lib/loginApi'
+import {
+    getConsumer,
+    countRegularShop,
+    countGoodsReview,
+    getOrderDetailCountForMypage,
+    getUsableCouponList,
+    getRecommenderInfo,
+    getAbuser
+} from '~/lib/shopApi'
+import { autoLoginCheckAndTryAsync } from '~/lib/loginApi'
 import { scOntGetBalanceOfBlct } from "~/lib/smartcontractApi";
-import {Button} from "~/styledComponents/shared";
+import {getDonTotal, isAbuser} from '~/lib/donAirDropApi'
 
 import ComUtil from '~/util/ComUtil'
 
@@ -38,6 +46,8 @@ import icRank3 from '~/images/icons/ic_rank_g.svg'  //3등급
 import icRank2 from '~/images/icons/ic_rank_v.svg'  //2등급
 import icRank1 from '~/images/icons/ic_rank_vv.svg'  //1등급
 import icCoupon from '~/images/icons/ic_cP_02.svg'
+import icInviteFriend from '~/images/icons/plus_friends.svg'
+import { FaUserPlus } from 'react-icons/fa'
 
 import {BlocerySymbolGreen} from '~/components/common/logo'
 import styled from 'styled-components'
@@ -46,6 +56,11 @@ import {Div, Link as StyledLink, Flex} from '~/styledComponents/shared'
 import { MdInfo } from 'react-icons/md'
 import { color } from "~/styledComponents/Properties";
 import Skeleton from '~/components/common/cards/Skeleton'
+import {FiEdit} from 'react-icons/fi'
+import {AiOutlineInfoCircle} from "react-icons/ai";
+import {Modal, ModalBody, ModalHeader} from "reactstrap";
+import BlySise from "~/components/common/blySise";
+import SecureApi from "~/lib/secureApi";
 
 
 const Link = styled(StyledLink)`
@@ -69,78 +84,97 @@ export default class Mypage extends Component {
             newNotificationBadge: false,
             newNoticeRegBadge: false,
             newCouponBadge: false,
-            kycAuth: null,              // KYC승인 [-1:승인거절, 0:미신청, 1:신청중, 2:승인처리]
             modalOpen: false,
             loading: true,
-            couponCount: 0
+            couponCount: 0,
+            recommenderInfo: {},
+
+            donnieBalance: '',
+            abuser: null,
+            abuserInfoModal: false,
         }
     }
 
     // 화면 로딩시 로그인한 consumer정보 호출
     async componentDidMount() {
+
+        // CSRF 마이페이지에서 한번더 세팅
+        SecureApi.setCsrf().then(()=>{
+            SecureApi.getCsrf().then(({data})=>{
+                localStorage.setItem('xToken',data);
+            });
+        });
+
         //////////// consumer push수신시 바로이동용으로 추가: history때문에 항상 mypage거쳐서 가야함.
         //USAGE:  mypage?moveTo=orderList
         const params = new URLSearchParams(this.props.location.search)
         let moveTo = params.get('moveTo');
         if (moveTo)  {
-            await autoLoginCheckAndTryAsync(); //push수신시 자동로그인 test : 20200825
             this.props.history.push('/mypage'); //back을 대비해서 mypage로 돌아오도록 넣어놔야 함...
             this.props.history.push('/mypage/' + moveTo);
         }
-        const {loginUser,loginUserType} = await this.refreshCallback(); //로그인 정보 가져오기
-        //console.log("loginUser=====",loginUser)
-        if (loginUser && loginUser.account) {
 
-            const result = await Promise.all([
-                countRegularShop(loginUser.consumerNo).then((res)=>res.data),
-                countGoodsReview(loginUser.consumerNo).then((res)=>res.data),
-                scOntGetBalanceOfBlct(loginUser.account).then((res)=>res.data),
-                getCart().then((res)=>res.data),
-                getOrderDetailCountForMypage().then((res)=>res.data),
-                getUsableCouponList().then((res)=>res.data),
-                getConsumerKyc().then((res)=>res.data)
-            ]);
+        const {loginUser} = await this.refreshCallback(); //로그인 정보 가져오기
 
-            let regularShopCount = result[0];
-            let goodsReviewCount = result[1];
-            let blyBalance = result[2];
-            let cartData = result[3];
-            let detailCount = result[4];
-            let couponList = result[5];
-            let kycData = result[6];
+        this.setState({
+            loginUser: loginUser
+        }, () => {
 
-            console.log('blyBalance : ', blyBalance);
-            console.log('getCart : ', cartData);
-            console.log('detailCount : ', detailCount);
+            if (loginUser && loginUser.account)
+                this.searchAll({
+                    consumerNo: loginUser.consumerNo,
+                    account: loginUser.account
+                })
+        })
+    }
 
-            this.setState({
-                loginUser: loginUser,
-                loginUserType: loginUserType,
+    searchAll = async ({account}) => {
+        const result = await Promise.all([
+            countRegularShop().then((res)=>res.data),
+            countGoodsReview().then((res)=>res.data),
+            scOntGetBalanceOfBlct(account).then((res)=>res.data),
+            getCart().then((res)=>res.data),
+            getOrderDetailCountForMypage().then((res)=>res.data),
+            getUsableCouponList().then((res)=>res.data),
+            getRecommenderInfo().then((res)=>res.data),
+            getDonTotal().then((res)=>res.data),
+            isAbuser().then((res)=>res.data)
+        ]);
 
-                tokenBalance: blyBalance,
-                regularShopCount: regularShopCount,
-                goodsReviewCount: goodsReviewCount,
-                couponCount: couponList.length,
+        let regularShopCount = result[0];
+        let goodsReviewCount = result[1];
+        let blyBalance = result[2];
+        let cartData = result[3];
+        let detailCount = result[4];
+        let couponList = result[5];
+        let recommenderInfo = result[6];
+        let donTotal = result[7];
+        let abuser = result[8];
 
-                //202003추가.
-                cartLength : cartData.length,
-                paymentDoneCount: detailCount.paymentDoneCount,
-                inDeliveryCount: detailCount.inDeliveryCount,
-                consumerOkCount: detailCount.consumerOkCount,
-                newNoticeRegBadge: detailCount.newNoticeRegBadge,
-                newNotificationBadge: detailCount.newNotificationBadge,
-                newCouponBadge: detailCount.newCouponBadge,
-                kycAuth: kycData.kycAuth,
+        //console.log('blyBalance : ', blyBalance);
+        //console.log('getCart : ', cartData);
+        //console.log('detailCount : ', detailCount);
 
-                loading: false
-            });
-        }else{
-            this.setState({
-                loginUser: loginUser,
-                loginUserType: loginUserType,
-                loading: false
-            });
-        }
+        this.setState({
+            tokenBalance: blyBalance,
+            regularShopCount: regularShopCount,
+            goodsReviewCount: goodsReviewCount,
+            couponCount: couponList.length,
+            recommenderInfo: recommenderInfo,
+            donnieBalance: donTotal,
+            abuser: abuser,
+
+            //202003추가.
+            cartLength : cartData.length,
+            paymentDoneCount: detailCount.paymentDoneCount,
+            inDeliveryCount: detailCount.inDeliveryCount,
+            consumerOkCount: detailCount.consumerOkCount,
+            newNoticeRegBadge: detailCount.newNoticeRegBadge,
+            newNotificationBadge: detailCount.newNotificationBadge,
+            newCouponBadge: detailCount.newCouponBadge,
+
+            loading: false
+        });
     }
 
     //react-toastify usage: this.notify('메세지', toast.success/warn/error);
@@ -151,33 +185,21 @@ export default class Mypage extends Component {
     }
 
     refreshCallback = async () => {
-        const loginUserType = await getLoginUserType();
-        console.log('refreshCallback',loginUserType);
-        let loginUser = null;
-        if(loginUserType.data === 'consumer') {
-            //console.log('loginUserType', loginUserType.data)
-            loginUser = await getConsumer();
-            console.log(loginUser.data)
-            // if(!loginUser){  로그인버튼 제거 시 필요
-            //     Webview.openPopup('/login');
-            // }
-        }
+        await autoLoginCheckAndTryAsync(); //push수신시 자동로그인 test : 20200825
+        const {data} = await getConsumer();
+
         return {
-            loginUser: (loginUser) ? loginUser.data : null,
-            loginUserType: loginUserType.data
+            loginUser: (data) ? data : null,
         }
     }
 
     onClickLogin = () => {
-        Webview.openPopup('/login');//, this.refreshCallback); //로그인을 팝업으로 변경.
-
-        //TEST with accessToken
-        //Webview.openPopup('login?accessToken=KBhiOsiJRrbzBM2WZwoFOe0xj4Pu4vxJFeDCvQopyNgAAAF2QUB4FQ');
+        Webview.openPopup('/login');    //로그인을 팝업으로 변경.
     }
 
     clickInfoModify = () => {
         const loginUser = Object.assign({}, this.state.loginUser)
-        this.props.history.push('/mypage/infoManagementMenu?consumerNo='+loginUser.consumerNo)
+        this.props.history.push('/mypage/infoManagementMenu');
     }
 
 
@@ -196,10 +218,15 @@ export default class Mypage extends Component {
         })
     }
 
-
     onClose = () => {
         this.setState({
             modalOpen: false
+        })
+    }
+
+    onAbuserModalToggle = () => {
+        this.setState({
+            abuserInfoModal: !this.state.abuserInfoModal
         })
     }
 
@@ -216,7 +243,6 @@ export default class Mypage extends Component {
                             icon
                             regularList
                             description={<div><div>로그인을 하면 마켓블리에서 제공하는</div><div>다양한 서비스와 혜택을 만나실 수 있습니다.</div></div>}
-                            //description={"로그인을 하면 마켓블리에서 제공하는 \n 다양한 서비스와 혜택을 만나실 수 있습니다."}
                             style={{width: '80vmin'}}
                             onClick={this.onClickLogin}/>
                     </BodyFullHeight>
@@ -231,52 +257,23 @@ export default class Mypage extends Component {
                     <div className={Css.greenContainer}>
                         <div>
                             {/*<div className={Css.grade}>{this.state.loginUser.level?this.state.loginUser.level:'5'}등급</div>*/}
-                            <div className={Css.icon}><img  src={this.getGradeIcon(this.state.loginUser.level)} alt={`user level${this.state.loginUser.level}`}/></div>
-                            <Flex>
-                                <div className={Css.name}>{this.state.loginUser.name}님</div>
-                                <Div ml={3} fg={'white'} fontSize={12}> | KYC 신원확인</Div>
-                                {/*TODO : KYC인증 여부 뱃지*/}
-                                {/* KYC승인 [-1:승인거절, 0:미신청, 1:신청중, 2:승인처리] */}
+                            <Flex flexWrap={'wrap'} flexGrow={1}>
+                                <div className={Css.icon}><img  src={this.getGradeIcon(this.state.loginUser.level)} alt={`user level${this.state.loginUser.level}`}/></div>
+                                <Flex className={Css.name} ml={3}>{this.state.loginUser.name}{this.state.abuser ? <Div fontSize={12}>(어뷰저)</Div> :''}</Flex>
                                 {
-                                    this.state.loginUser.kycLevel === 0 ?
-                                        <Div>
-                                            {
-                                                this.state.kycAuth === null && <Skeleton.Row width={60} mx={10}/>
-                                            }
-                                            {
-                                                (this.state.kycAuth === 1) && (<Div mr={5} fg={'white'} fontSize={12}>(승인대기중)</Div>)
-                                            }
-                                            {
-                                                (this.state.kycAuth === 0 || this.state.kycAuth === -1 ) && (
-                                                    <Flex mr={5} fg={'white'} fontSize={12}>
-                                                        <Div mr={5}>(미완료)</Div>
-                                                        <Link to={'/kycCertification'}><Button bg={'white'} fg={'green'} py={3} fontSize={10} >인증하기</Button></Link>
-                                                    </Flex>
-                                                )
-                                            }
-
-                                            {/*{*/}
-                                            {/*this.state.kycAuth === 1 ?*/}
-                                            {/*<Div mr={5} fg={'white'} fontSize={12}>승인대기중)</Div>*/}
-                                            {/*:*/}
-                                            {/*<Flex mr={5} fg={'white'} fontSize={12}>*/}
-                                            {/*<Div mr={5}>미완료)</Div>*/}
-                                            {/*<Link to={'/kycCertification'}><Button bg={'white'} fg={'green'} py={3} fontSize={10} >인증하기</Button></Link>*/}
-                                            {/*</Flex>*/}
-                                            {/*}*/}
+                                    this.state.abuser &&
+                                        <Div ml={3} mb={1} onClick={this.onAbuserModalToggle}>
+                                            <AiOutlineInfoCircle color={color.white}/>
                                         </Div>
-                                        :
-                                        <Div mr={5} fg={'white'} fontSize={12}>(완료)</Div>
                                 }
-
-                                <Div ml={-1} mb={1} onClick={this.onHelpClick}>
-                                    <MdInfo color={color.white}/>
-                                </Div>
-
                             </Flex>
                         </div>
-                        <Link to={`/mypage/infoManagementMenu?consumerNo=${this.state.loginUser.consumerNo}`} className={Css.modify}>
-                            <img src={icEdit}/>
+                        <Link to={`/mypage/infoManagementMenu`} className={Css.modify}>
+                            <Flex>
+                                <Div mr={5} fg={'white'}>정보수정</Div>
+                                <FiEdit color={'white'} />
+                                {/*<img src={icEdit}/>*/}
+                            </Flex>
                         </Link>
 
                     </div>
@@ -284,23 +281,38 @@ export default class Mypage extends Component {
 
 
                     <div className={Css.summaryContainer}>
-                        <div className={Css.item}>
-                            <Link to={'/mypage/regularShopList'}>
-                                <div className={Css.number}>{!this.state.loading ? this.state.regularShopCount : <Skeleton.Row width={'50%'} mb={10}/>}</div>
-                                <div>단골상점</div>
-                            </Link>
-                        </div>
-                        <div className={Css.item}>
-                            <Link to={'/goodsReviewList/1'}>
-                                <div className={Css.number}>{!this.state.loading ? this.state.goodsReviewCount : <Skeleton.Row width={'50%'} mb={10}/>}</div>
-                                <div>상품후기</div>
-                            </Link>
-                        </div>
-                        <div className={Css.item}>
-                            <Link to={`/tokenHistory?account=${this.state.loginUser.account}`}>
+                        {/*<div className={Css.item}>*/}
+                        {/*    <Link to={'/mypage/regularShopList'}>*/}
+                        {/*        <div className={Css.number}>{!this.state.loading ? this.state.regularShopCount : <Skeleton.Row width={'50%'} mb={10}/>}</div>*/}
+                        {/*        <div>단골상점</div>*/}
+                        {/*    </Link>*/}
+                        {/*</div>*/}
+                        {/*<div className={Css.item}>*/}
+                        {/*    <Link to={'/goodsReviewList/1'}>*/}
+                        {/*        <div className={Css.number}>{!this.state.loading ? this.state.goodsReviewCount : <Skeleton.Row width={'50%'} mb={10}/>}</div>*/}
+                        {/*        <div>상품후기</div>*/}
+                        {/*    </Link>*/}
+                        {/*</div>*/}
+                        <div className={Css.item} style={{textAlign:'center'}}>
+                            <Link to={`/tokenHistory`}>
                                 <div className={Css.number}>{!this.state.loading ? ComUtil.addCommas(ComUtil.roundDown(this.state.tokenBalance, 2)):<Skeleton.Row width={'50%'} mb={10}/>}</div>
                                 <div>자산(BLY)</div>
                             </Link>
+                        </div>
+                        <div className={Css.item} style={{textAlign:'center'}}>
+                            {
+                                this.state.abuser ?
+                                    <Div>
+                                        <div className={Css.number}>{!this.state.loading ? '-' : <Skeleton.Row width={'50%'} mb={10}/>}</div>
+                                        <div>자산(DON)</div>
+                                    </Div>
+                                    :
+                                    <Link to={'/donHistory'}>
+                                        <div className={Css.number}>{!this.state.loading ? ComUtil.addCommas(ComUtil.roundDown(this.state.donnieBalance, 2)) : <Skeleton.Row width={'50%'} mb={10}/>}</div>
+                                        <div>자산(DON)</div>
+                                    </Link>
+                            }
+
                         </div>
                     </div>
 
@@ -321,21 +333,21 @@ export default class Mypage extends Component {
                                         <div className={classNames(Css.icon, 'mt-2')}><img src={icMoreArrow} alt={'more'}/></div>
                                     </div>
                                     <div className={Css.item}>
-                                        <Link to={`/mypage/orderList?consumerNo=${this.state.loginUser.consumerNo}`}>
+                                        <Link to={`/mypage/orderList`}>
                                             <div className={classNames(Css.green, Css.number)}>{this.state.paymentDoneCount}</div>
                                             <div className={Css.text}>결제완료</div>
                                         </Link>
                                         <div className={classNames(Css.icon, 'mt-2')}><img src={icMoreArrow} alt={'more'}/></div>
                                     </div>
                                     <div className={Css.item}>
-                                        <Link to={`/mypage/orderList?consumerNo=${this.state.loginUser.consumerNo}`}>
+                                        <Link to={`/mypage/orderList`}>
                                             <div className={classNames(Css.green, Css.number)}>{this.state.inDeliveryCount}</div>
                                             <div className={Css.text}>배송중</div>
                                         </Link>
                                         <div className={classNames(Css.icon, 'mt-2')}><img src={icMoreArrow} alt={'more'}/></div>
                                     </div>
                                     <div className={Css.item}>
-                                        <Link to={`/mypage/orderList?consumerNo=${this.state.loginUser.consumerNo}`}>
+                                        <Link to={`/mypage/orderList`}>
                                             <div className={classNames(Css.green, Css.number)}>{this.state.consumerOkCount}</div>
                                             <div className={Css.text}>구매확정</div>
                                         </Link>
@@ -345,11 +357,9 @@ export default class Mypage extends Component {
                             )
                         }
 
-
-
                     </div>
                     <div className={Css.listContainer}>
-                        <Link to={`/mypage/orderList?consumerNo=${this.state.loginUser.consumerNo}`}>
+                        <Link to={`/mypage/orderList`}>
                             <div className={Css.item}>
                                 <img className={Css.icon} src={icMy1}/>
                                 <div className={Css.text}>주문목록
@@ -388,7 +398,7 @@ export default class Mypage extends Component {
                         </Link>
                     </div>
                     <div className={Css.listContainer}>
-                        <Link to={`/tokenHistory?account=${this.state.loginUser.account}`}>
+                        <Link to={`/tokenHistory`}>
                             <div className={Css.item}>
                                 <img className={Css.icon}  src={icMy6}/>
                                 <div className={Css.text}>
@@ -428,6 +438,22 @@ export default class Mypage extends Component {
                                 </div>
                             </div>
                         </Link>
+
+                        <Link to={'/mypage/inviteFriend'}>
+                            <div className={Css.item}>
+                                <img className={Css.icon}  src={icInviteFriend}/>
+                                {/*<FaUserPlus/>*/}
+                                <Div className={Css.text}>친구초대</Div>
+                                <div className={classNames(Css.right, Css.icon)}>
+                                    {
+                                        //this.state.friendsCount > 0 &&
+                                        <div>{this.state.recommenderInfo.friendCount}명</div>
+                                    }
+                                    <img src={icMoreArrow}/>
+                                </div>
+                            </div>
+                        </Link>
+
 
                         <Link to={'/mypage/notificationList'}>
                             <div className={Css.item}>
@@ -479,10 +505,52 @@ export default class Mypage extends Component {
                     <ModalPopup title={'KYC 신원 확인 안내'}
                                 content={<div>KYC 신원 확인은 마켓블리(MarketBly) App 내에서 토큰(BLY)출금 등 자산과 관련된 서비스를 이용하는데 있어 필요한 신원 확인 및 보증 절차입니다.
                                     <br/><br/> 계정 보안, 자금 세탁과 테러 자금 조달 방지를 위해 출금 금액이 제한되어 있으며, KYC 신원 확인을 완료하면 출금 제한이 상향 조정됩니다.
-                                    <br/><br/> -KYC 신원 확인 전 : 일 한도 1,250BLY <br/> -KYC 신원 확인 후 : 일 한도 250,000BLY</div>}
+                                    {/*<br/><br/> -KYC 신원 확인 전 : 일 한도 1,250BLY <br/> -KYC 신원 확인 후 : 일 한도 250,000BLY</div>}*/}
+                                    <br/><br/> -KYC 신원 확인 전 : 일 한도 500BLY <br/> -KYC 신원 확인 후 : 일 한도 5,000BLY</div>}
                                 onClick={this.onClose}>
 
                     </ModalPopup>
+                }
+
+                {
+                    this.state.abuserInfoModal &&
+                    <ModalPopup title={'어뷰저에 대한 안내'}
+                                onClick={this.onAbuserModalToggle}
+                                content={
+                                    <Div lineHeight={20} fontSize={13}>
+                                        <Flex dot alignItems={'flex-start'} mb={8}>
+                                            <Div>
+                                                어뷰저 등록은 <b>보안로직 감지에 의해 자동 처리</b>되며 사유는 다음과 같습니다. <br/>
+                                                - 마켓블리 불법적 접근 <br/>
+                                                - 이벤트 부정 참여 <br/>
+                                                - 기타 어뷰징에 인정되는 각종 행위
+                                            </Div>
+                                        </Flex>
+                                        <Flex dot alignItems={'flex-start'} mb={8}>
+                                            <Div>
+                                                어뷰저로 등록된 경우<br/>
+                                                - 상품구매 불가 <br/>
+                                                - BLY 입/출금 등의 지갑 이용 불가
+                                            </Div>
+                                        </Flex>
+                                        <Flex alignItems={'flex-start'} mb={8}>
+                                            <Div>
+                                                등의 조치가 되오니 이점 참고 부탁 드립니다.
+                                            </Div>
+                                        </Flex>
+                                    </Div>
+                                }
+                                />
+
+                                // content={<div>어뷰저 등록은 보안로직 감지에 의해 자동 처리되며 사유는 다음과 같습니다.
+                                //     <br/>- 마켓블리 불법적 접근
+                                //     <br/>- 이벤트 부정 참여
+                                //     <br/>- 기타 어뷰징에 인정되는 각종 행위
+                                //     <br/><br/>어뷰저로 등록된 경우
+                                //     <br/>- 상품구매 불가
+                                //     <br/>- BLY 입/출금 등의 지갑 이용 불가
+                                //     <br/>등의 조치가 되오니 이점 참고 부탁 드립니다.</div>}
+                                // onClick={this.onAbuserModalToggle}>
                 }
             </Fragment>
         )

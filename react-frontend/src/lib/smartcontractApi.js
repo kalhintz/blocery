@@ -34,6 +34,7 @@ export const scOntTransferManagerBlct = (account, amount) =>
         }
     )
 
+//현재 BLCT 조회 ( -잠긴 금액 해서 가용 BLCT 리턴)
 export const scOntGetBalanceOfBlct = (owner) =>
     axios(Server.getRestAPIHost() + '/ont/getBalanceOfBlct',
         {   method:"get",
@@ -41,6 +42,55 @@ export const scOntGetBalanceOfBlct = (owner) =>
             credentials: 'same-origin',
             params: {
                 account: owner
+            }
+        }
+    );
+
+//전체 BLCT, 가용 BLCT, 잠긴 BLCT 리턴
+export const scOntGetBalanceOfBlctMypage = (owner) =>
+    axios(Server.getRestAPIHost() + '/ont/getBalanceOfBlctMypage',
+        {
+            method: "get",
+            withCredentials: true,
+            credentials: 'same-origin',
+            params: {
+                account: owner
+            }
+        }
+    );
+
+//현재 BLCT 조회 (생산자용)
+export const scOntGetBalanceOfBlctProducer = (owner) =>
+    axios(Server.getRestAPIHost() + '/ont/getBalanceOfBlctProducer',
+        {   method:"get",
+            withCredentials: true,
+            credentials: 'same-origin',
+            params: {
+                account: owner
+            }
+        }
+    );
+
+//현재 BLCT 조회 (Admin용)
+export const scOntGetBalanceOfBlctAdmin = (owner) =>
+    axios(Server.getRestAPIHost() + '/ont/getBalanceOfBlctAdmin',
+        {   method:"get",
+            withCredentials: true,
+            credentials: 'same-origin',
+            params: {
+                account: owner
+            }
+        }
+    );
+
+export const getBalanceOfBlctAllAdmin = (consumerNo) =>
+    axios(Server.getRestAPIHost() + '/ont/getBalanceOfBlctAllAdmin',
+        {
+            method: "get",
+            withCredentials: true,
+            credentials: 'same-origin',
+            params: {
+                consumerNo: consumerNo
             }
         }
     );
@@ -69,7 +119,7 @@ export const scOntManagerSendBlctToManager = (email, amount) =>
         }
     )
 
-export const scOntTransferManagerBlctWithEvent = (eventTitle, eventSubTitle, consumerNo, amount, sendKakao) =>
+export const scOntTransferManagerBlctWithEvent = (eventTitle, eventSubTitle, consumerNo, amount, sendKakao, justHistory) =>
     axios(Server.getRestAPIHost() + '/ont/transferMangerTokenToMany',
         {
             method:"post",
@@ -80,7 +130,8 @@ export const scOntTransferManagerBlctWithEvent = (eventTitle, eventSubTitle, con
                 eventSubTitle: eventSubTitle,
                 consumerNo: consumerNo,
                 amount: amount,
-                sendKakao: sendKakao
+                sendKakao: sendKakao,
+                justHistory: justHistory
             }
         }
     );
@@ -168,19 +219,70 @@ export const scOntOrderGoodsBlct = (orderSeqNo, blctAmount, price, ordersParam) 
         }
     );
 
-// 주문취소
-export const scOntCancelOrderBlct = (orderSeq, goodsPriceBlct, cancelBlctFee, cancelFee, isNotDelivery) =>
-    axios(Server.getRestAPIHost() + '/ont/cancelOrderBlct',
+// 무료쿠폰 주문 (blct 주문)
+export const scOntOrderFreeCouponGoodsBlct = ({
+                                        usedCouponNo,
+                                        goodsNo,
+                                        hopeDeliveryDate,
+                                        deliveryFee,            //배송비
+                                        additionalDeliveryFee,  //도서산간 지방 일 경우 들어오는 배송비
+
+                                        gift,                   //선물여부
+                                        senderName,             //보내는이
+                                        giftMsg,                //선물메세지
+                                        deliveryMsg,            //배송메세지
+                                        receiverName,           //수령자
+                                        receiverPhone,          //수령자연락처
+                                        receiverZipNo,          //수령자우편번호
+                                        receiverAddr,           //수령자주소
+                                        receiverAddrDetail      //수령자주소상세
+                                    }) =>
+    axios(Server.getRestAPIHost() + '/ont/orderFreeCouponGoodsBlct',
         {   method:"post",
             withCredentials: true,
             credentials: 'same-origin',
             data: {
-                orderSeqNo: orderSeq,
-                cancelFee: cancelFee,
-                isNotDelivery: isNotDelivery,
-                goodsPriceBlct: goodsPriceBlct,
-                cancelBlctFee: cancelBlctFee
+                usedCouponNo,
+                goodsNo,
+                hopeDeliveryDate,
+                deliveryFee,            //배송비
+                additionalDeliveryFee,  //도서산간 지방 일 경우 들어오는 배송비
+
+                gift,                   //선물여부
+                senderName,             //보내는이
+                giftMsg,                //선물메세지
+                deliveryMsg,            //배송메세지
+                receiverName,           //수령자
+                receiverPhone,          //수령자연락처
+                receiverZipNo,          //수령자우편번호
+                receiverAddr,           //수령자주소
+                receiverAddrDetail      //수령자주소상세
             }
+        }
+    );
+
+// 주문취소
+// export const scOntCancelOrderBlct = (orderSeq, goodsPriceBlct, cancelBlctFee, cancelFee, isNotDelivery) =>
+//     axios(Server.getRestAPIHost() + '/ont/cancelOrderBlct',
+//         {   method:"post",
+//             withCredentials: true,
+//             credentials: 'same-origin',
+//             data: {
+//                 orderSeqNo: orderSeq,
+//                 cancelFee: cancelFee,
+//                 isNotDelivery: isNotDelivery,
+//                 goodsPriceBlct: goodsPriceBlct,
+//                 cancelBlctFee: cancelBlctFee
+//             }
+//         }
+//     );
+
+export const scOntCancelOrderBlct = (data) =>
+    axios(Server.getRestAPIHost() + '/ont/cancelOrderBlctWithDB',
+        {   method:"post",
+            withCredentials: true,
+            credentials: 'same-origin',
+            data: data
         }
     );
 

@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { FormGroup, Button, Modal, ModalHeader, ModalBody } from 'reactstrap'
-import { getAllProducerPayoutList, getProducerPaymentCheck, savePaymentCheck, setProducerPayoutStatus, getAllTempProducerBlctMonth } from '~/lib/adminApi'
+import { getAllProducerPayoutList, getProducerPaymentCheck, savePaymentCheck, setProducerPayoutStatus, getAllTempProducerBlctMonth, getSupportPriceBlct } from '~/lib/adminApi'
 import { getLoginAdminUser } from '~/lib/loginApi'
 import ComUtil from '~/util/ComUtil'
 import { BlockChainSpinner, BlocerySpinner, ExcelDownload, MonthBox } from '~/components/common'
@@ -8,8 +8,8 @@ import PaymentCheck from './PaymentCheck';
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 import {MdRefresh} from "react-icons/md";
 import 'react-month-picker/css/month-picker.css'
@@ -123,6 +123,12 @@ export default class PaymentAll extends Component{
             defaultColDef: {
                 width: 130,
                 resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             frameworkComponents: {
                 checkModifyRenderer: this.checkModifyRenderer,
@@ -203,7 +209,7 @@ export default class PaymentAll extends Component{
         }
 
         const {data:tempProducerNotyetBlct} = await getAllTempProducerBlctMonth(year, month)
-        console.log("tempProducerNotyetBlct : ", tempProducerNotyetBlct);
+        console.slog("tempProducerNotyetBlct : ", tempProducerNotyetBlct);
 
         // paymentCheck 조회 후 data에 붙여야 함..
         const result = data.map(async(producerPayout) => {
@@ -412,16 +418,19 @@ export default class PaymentAll extends Component{
         console.log("manualCompletePayout")
 
         //backend에 year, month만 넘기면 notYet인 데이터 다시 조회 후 complete로 처리
-        const notyetPayoutAmount = this.getTotalCompletePayoutBlctAmount();
+        let notyetPayoutAmount = this.getTotalCompletePayoutBlctAmount();
+        // 소비자 bly구매금액에 supportPrice 금액만큼 더해서 tempProducer계좌와 비교해야 함.
+        const {data:supportPriceAmount} = await getSupportPriceBlct(year, month);
+        notyetPayoutAmount = ComUtil.toNum(notyetPayoutAmount) + ComUtil.toNum(supportPriceAmount); // tempProducer의 금액과 단순 비교용인데 반올림 되어있어서 반올림 처리 안함.
+        // notyetPayoutAmount = parseFloat(ComUtil.doubleAdd(notyetPayoutAmount, supportPriceAmount));
 
-        console.log(year, month, "tempProducerNotyetBlct : ", this.state.tempProducerNotyetBlct,  " notyetPayoutAmount :  ", notyetPayoutAmount);
+        console.slog(year, month, "tempProducerNotyetBlct : ", this.state.tempProducerNotyetBlct,  " notyetPayoutAmount :  ", notyetPayoutAmount);
 
         if(notyetPayoutAmount !== this.state.tempProducerNotyetBlct) {
             let confirmResult = window.confirm('tempProducer계좌와 현재 blct가 맞지 않습니다 그래도 전송하시겠습니까? ');
             if(!confirmResult)
                 return false;
         }
-
 
         this.setState({chainLoading: true})
         const {status, data} = await setProducerPayoutStatus(year, month)
@@ -458,6 +467,11 @@ export default class PaymentAll extends Component{
 
         return totalBlctNotYetPayoutAmount;
     }
+
+    copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
+    }
+
 
     render() {
         const state = this.state
@@ -543,12 +557,12 @@ export default class PaymentAll extends Component{
                         >
                             <br/>
                             <AgGridReact
-                                enableSorting={true}                //정렬 여부
-                                enableFilter={true}                 //필터링 여부
+                                // enableSorting={true}                //정렬 여부
+                                // enableFilter={true}                 //필터링 여부
                                 floatingFilter={false}               //Header 플로팅 필터 여부
                                 columnDefs={state.columnDefs}  //컬럼 세팅
                                 defaultColDef={state.defaultColDef}
-                                enableColResize={true}              //컬럼 크기 조정
+                                // enableColResize={true}              //컬럼 크기 조정
                                 overlayLoadingTemplate={state.overlayLoadingTemplate}
                                 overlayNoRowsTemplate={state.overlayNoRowsTemplate}
                                 onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
@@ -557,6 +571,7 @@ export default class PaymentAll extends Component{
                                 components={state.components}
                                 frameworkComponents={state.frameworkComponents}
                                 suppressMovableColumns={true} //헤더고정시키
+                                onCellDoubleClicked={this.copy}
                             >
                             </AgGridReact>
                         </div>

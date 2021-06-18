@@ -3,23 +3,27 @@ import { Button, Input, Modal, ModalHeader, ModalBody, ModalFooter } from 'react
 import { Cell, ModalConfirm, BlocerySpinner } from '~/components/common'
 import { Server } from "~/components/Properties";
 import ComUtil from "~/util/ComUtil";
-import { getCouponMasterList, deleteCouponMaster, endedCouponMaster } from '~/lib/adminApi'
+import {getCouponMasterList, deleteCouponMaster, endedCouponMaster, getAllBlctToWonCachedLog} from '~/lib/adminApi'
 import { isTokenAdminUser, getLoginAdminUser } from '~/lib/loginApi'
-import {Flex, Span} from '~/styledComponents/shared'
+import {Flex, Span, Div, FilterGroup, Hr} from '~/styledComponents/shared'
 
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 import moment from 'moment-timezone'
 import DatePicker from "react-datepicker";
 import "react-datepicker/src/stylesheets/datepicker.scss";
+import FilterContainer from "~/components/common/gridFilter/FilterContainer";
+import InputFilter from "~/components/common/gridFilter/InputFilter";
+import CheckboxFilter from "~/components/common/gridFilter/CheckboxFilter";
 // import CouponMasterReg from './CouponMasterReg';
-
-
 // import ConsumerList from './../consumerList/ConsumerList'
+
+const SpecialCouponConsumerList = lazy(()=> import('./SpecialCouponConsumerList'))
 const ConsumerList = lazy(()=> import('./../consumerList/ConsumerList'))
 const CouponMasterReg = lazy(()=> import('./CouponMasterReg'))
+const BlySiseList = lazy(()=> import('./BlySiseList'))
 
 export default class CouponMasterList extends Component {
     constructor(props) {
@@ -27,6 +31,8 @@ export default class CouponMasterList extends Component {
         this.state = {
             loading: false,
             isModalOpen: false,
+            isSiseModalOpen: false,
+            selectedFixedWon: 0,
             isSearchConsumerModalOpen: false,
             masterNo:"",
             search: {
@@ -48,10 +54,14 @@ export default class CouponMasterList extends Component {
                         let v_couponTypeName = '';
                         if(params.data.couponType === 'memberJoin'){
                             v_couponTypeName = '회원가입';
+                        } else if(params.data.couponType === 'memberJoinProdGoods'){
+                            v_couponTypeName = '회원가입생산자상품';
                         } else if(params.data.couponType === 'goodsBuyReward'){
                             v_couponTypeName = '구매보상';
                         } else if(params.data.couponType === 'specialCoupon'){
                             v_couponTypeName = '스페셜쿠폰';
+                        } else if(params.data.couponType === 'potenCoupon'){
+                            v_couponTypeName = '포텐타임쿠폰';
                         }
                         return v_couponTypeName;
                     }
@@ -60,6 +70,10 @@ export default class CouponMasterList extends Component {
                     headerName: "쿠폰명", field: "couponTitle", width: 150,
                     cellStyle:this.getCellStyle({cellAlign: 'left'}),
                     cellRenderer: "titleRenderer",
+                },
+                {
+                    headerName: "메모", field: "couponMemo", width: 150,
+                    cellStyle:this.getCellStyle({cellAlign: 'left'}),
                 },
                 {
                     headerName: "발급기간", field: "issuedDate",
@@ -81,12 +95,27 @@ export default class CouponMasterList extends Component {
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
                     width: 200,
                     valueGetter: function(params) {
-                        // console.log("params",params);
-                        if(params.data.targetGoodsNo > 0) {
-                            return params.data.goodsNm;
+                        if(params.data.potenCouponGoodsNo > 0) {
+                            return params.data.potenCouponGoodsNm;
+                        } else if(params.data.targetGoods.length > 0) {
+                            if(params.data.targetGoods.length === 1) {
+                                return params.data.targetGoods[0].goodsNm;
+                            } else {
+                                return params.data.targetGoods[0].goodsNm+`외 `+ ComUtil.toNum(params.data.targetGoods.length-1)+`건`;
+                            }
                         } else {
                             return '-';
                         }
+                    }
+                },
+                {
+                    headerName: "원화금액", field: "fixedWon", width: 120,
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    valueGetter: function(params) {
+                        if(params.data.fixedWon > 0){
+                            return ComUtil.toCurrency(params.data.fixedWon) + ' 원'
+                        }
+                        return '-'
                     }
                 },
                 {
@@ -95,6 +124,16 @@ export default class CouponMasterList extends Component {
                     valueGetter: function(params) {
                         if(params.data.couponBlyAmount > 0){
                             return ComUtil.toCurrency(params.data.couponBlyAmount) + ' BLY'
+                        }
+                        return '-'
+                    }
+                },
+                {
+                    headerName: "포텐할인율(%)", field: "potenCouponDiscount", width: 140,
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    valueGetter: function(params) {
+                        if(params.data.potenCouponDiscount > 0){
+                            return ComUtil.toCurrency(params.data.potenCouponDiscount) + ' %'
                         }
                         return '-'
                     }
@@ -129,9 +168,12 @@ export default class CouponMasterList extends Component {
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
                 },
                 {
-                    headerName: "최소주문금액", field: "minOrderBlyAmount", width: 120,
+                    headerName: "최소주문금액", field: "minAmount", width: 120,
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
                     valueGetter: function(params) {
+                        if(params.data.fixedWon > 0){
+                            return ComUtil.toCurrency(params.data.fixedWon) + ' 원';
+                        }
                         if(params.data.minOrderBlyAmount > 0){
                             return ComUtil.toCurrency(params.data.minOrderBlyAmount) + ' BLY';
                         }
@@ -143,13 +185,19 @@ export default class CouponMasterList extends Component {
                     suppressFilter: true,   //no filter
                     suppressSorting: true,  //no sort
                     cellStyle:this.getCellStyle({cellAlign: 'center'}),
-                    width: 200,
+                    width: 250,
                     cellRenderer: "buttonRenderer"
                 },
             ],
             defaultColDef: {
                 width: 110,
                 resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             frameworkComponents: {
                 titleRenderer: this.titleRenderer,
@@ -210,6 +258,7 @@ export default class CouponMasterList extends Component {
 
         const v_couponType = rowData.couponType;
         const v_deleted = rowData.deleted;
+        const v_fixedWon = rowData.fixedWon;
 
         let isStatus = false;
 
@@ -255,6 +304,10 @@ export default class CouponMasterList extends Component {
                         <Button block size='sm' disabled={true}>{' 종 료 '}</Button>
                 }
                 </div>
+                {
+                    v_fixedWon > 0 &&
+                    <Button className={'ml-2'} size={'sm'} color={'info'} onClick={this.onSearchSise.bind(this, rowData)}>일별시세</Button>
+                }
                 <div className={'ml-2'} style={{textAlign: 'center'}}>
                 {
                     isStatus && v_couponType=='specialCoupon' &&
@@ -309,6 +362,7 @@ export default class CouponMasterList extends Component {
         }
 
         await this.search();
+        //await this.searchSise();
     }
 
     search = async () => {
@@ -331,6 +385,17 @@ export default class CouponMasterList extends Component {
         })
     };
 
+    // 일별 BLY 시세 조회
+    searchSise = async () => {
+        const { status, data } = await getAllBlctToWonCachedLog();
+        if(status !== 200){
+            alert('응답이 실패 하였습니다');
+            return;
+        }
+
+        // console.log(data);
+    }
+
     // onSearchDateChange = async (date) => {
     //     const search = Object.assign({}, this.state.search);
     //     search.year = date.getFullYear();
@@ -339,10 +404,20 @@ export default class CouponMasterList extends Component {
     // };
 
 
-    toggle = () => {
+    toggleSise = () => {
+        this.setState({ isSiseModalOpen: !this.state.isSiseModalOpen })
+    }
+
+    // 일별 시세 조회
+    onSearchSise = (rowData) => {
         this.setState({
-            isModalOpen : !this.state.isModalOpen
+            isSiseModalOpen: true,
+            selectedFixedWon: rowData.fixedWon
         })
+    }
+
+    toggle = () => {
+        this.setState({ isModalOpen : !this.state.isModalOpen })
     };
 
     // 신규 쿠폰 발급
@@ -397,6 +472,13 @@ export default class CouponMasterList extends Component {
         this.toggle();
         this.search();
     };
+    //[이벤트] 그리드 로드 후 callback 이벤트
+    onGridReady(params) {
+        //API init
+        this.gridApi = params.api;
+        this.gridColumnApi = params.columnApi;
+
+    }
 
     render() {
 
@@ -428,7 +510,37 @@ export default class CouponMasterList extends Component {
                         {/*</div>*/}
                     {/*</div>*/}
                 {/*</div>*/}
-
+                {/* filter START */}
+                <FilterContainer gridApi={this.gridApi} excelFileName={'쿠폰마스터 목록'}>
+                    <FilterGroup>
+                        <InputFilter
+                            gridApi={this.gridApi}
+                            columns={[
+                                {field: 'masterNo', name: '쿠폰NO'},
+                                {field: 'couponTitle', name: '쿠폰명'},
+                                {field: 'couponMemo', name: '메모'},
+                                {field: 'goodsNm', name: '상품명'},
+                            ]}
+                            isRealTime={true}
+                        />
+                    </FilterGroup>
+                    <Hr/>
+                    <FilterGroup>
+                        <CheckboxFilter
+                            gridApi={this.gridApi}
+                            field={'couponType'}
+                            name={'발급위치'}
+                            data={[
+                                {value: '회원가입', name: '회원가입'},
+                                {value: '회원가입생산자상품', name: '회원가입생산자상품'},
+                                {value: '구매보상', name: '구매보상'},
+                                {value: '스페셜쿠폰', name: '스페셜쿠폰'},
+                                {value: '포텐타임쿠폰', name: '포텐타임쿠폰'},
+                            ]}
+                        />
+                    </FilterGroup>
+                </FilterContainer>
+                {/* filter END */}
                 <div className="d-flex p-1">
                     <div className="d-flex align-items-center pl-1">
                         총 {this.state.data.length} 건
@@ -441,23 +553,23 @@ export default class CouponMasterList extends Component {
                     id="myGrid"
                     className="ag-theme-balham"
                     style={{
-                        height: '550px'
+                        height: '700px'
                     }}
                 >
                     <AgGridReact
-                        enableSorting={true}                //정렬 여부
-                        enableFilter={true}                 //필터링 여부
+                        // enableSorting={true}                //정렬 여부
+                        // enableFilter={true}                 //필터링 여부
                         floatingFilter={true}               //Header 플로팅 필터 여부
                         columnDefs={this.state.columnDefs}  //컬럼 세팅
                         defaultColDef={this.state.defaultColDef}
                         // components={this.state.components}  //custom renderer 지정, 물론 정해져있는 api도 있음
                         frameworkComponents={this.state.frameworkComponents}
-                        enableColResize={true}              //컬럼 크기 조정
+                        // enableColResize={true}              //컬럼 크기 조정
                         overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                         overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
-                        // onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
+                        onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
                         rowData={this.state.data}
-                        rowHeight={75}
+                        rowHeight={45}
                     >
                     </AgGridReact>
                 </div>
@@ -494,14 +606,32 @@ export default class CouponMasterList extends Component {
                             <ModalHeader toggle={this.consumerToggle}>쿠폰 발급 대상 회원 검색</ModalHeader>
                             <ModalBody>
                                 <Suspense fallback={null}>
-                                <ConsumerList
-                                    isSearch={true}
+                                <SpecialCouponConsumerList
+                                    // isSearch={true}
                                     masterCouponNo={this.state.masterNo}
                                     onClose={this.consumerToggle} />
                                 </Suspense>
                             </ModalBody>
                         </Modal>
                     }
+                {
+                    this.state.isSiseModalOpen &&
+                        <Modal
+                            isOpen={this.state.isSiseModalOpen}
+                            toggle={this.toggleSise}
+                            size="lg"
+                            style={{maxWidth: '800px', width: '80%'}}
+                            centered>
+                            <ModalHeader toggle={this.toggleSise}>BLY 일별 시세 조회</ModalHeader>
+                            <ModalBody>
+                                <Suspense fallback={null}>
+                                    <BlySiseList
+                                        fixedWon={this.state.selectedFixedWon}
+                                    />
+                                </Suspense>
+                            </ModalBody>
+                        </Modal>
+                }
 
 
 

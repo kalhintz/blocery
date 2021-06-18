@@ -15,12 +15,14 @@ class ItemReg extends Component {
                 itemNo: isUpdate ? this.props.itemNo : 0,
                 itemKinds: [],
                 itemName: '',
+                itemFeeRate: 0,
                 enabled: null,
                 image: null
             },
             newKinds: [], //임시저장용
             errors: {
                 itemName:  isUpdate ? '' : '필수입력 입니다',
+                itemFeeRate: isUpdate ? '' : '필수입력 입니다'
             }
 
         }
@@ -67,6 +69,12 @@ class ItemReg extends Component {
             case 'itemName':
                 errors.itemName =
                     value.length <= 0
+                        ? '필수입니다'
+                        : '';
+                break;
+            case 'itemFeeRate':
+                errors.itemFeeRate =
+                    value == 0
                         ? '필수입니다'
                         : '';
                 break;
@@ -219,6 +227,21 @@ class ItemReg extends Component {
                                 isShownMainText={false}
                                 onChange={this.onProfileImageChange} />
                         </FormGroup>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col xs={'1'}>
+                        <Label><h6>커미션(%)</h6></Label>
+                    </Col>
+                    <Col xs={'3'}>
+                        <Input
+                            name='itemFeeRate'
+                            innerRef={input => this.itemFeeRate = input}
+                            onChange={this.onItemChange}
+                            value={item.itemFeeRate}
+                            valid={this.state.errors.itemFeeRate == 0} invalid={!this.state.errors.itemFeeRate == 0}
+                            placeholder='숫자만 입력해주세요'
+                        />
                     </Col>
                 </Row>
                 <Row>

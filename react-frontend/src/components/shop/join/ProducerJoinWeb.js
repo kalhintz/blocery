@@ -62,6 +62,7 @@ export default class ProducerJoinWeb extends Component{
             payoutAccountName: '',  // 판매대금 입금 은행 계좌 예금주 이름
             charger: '',
             chargerPhone: '',
+            memo:'',
             /* producer end */
 
             bankList: [],
@@ -96,6 +97,7 @@ export default class ProducerJoinWeb extends Component{
 
         this.charger = React.createRef()
         this.chargerPhone = React.createRef()
+        this.memo = React.createRef()
 
     }
 
@@ -511,8 +513,13 @@ export default class ProducerJoinWeb extends Component{
                 this.charger.current.focus()
                 return false
             }
-            if(!this.state.chargerPhone){
-                alert('담당자 전화번호는 필수 입니다')
+            if(!this.state.chargerPhone || !this.state.chargerPhone.startsWith('010') ){
+                alert('담당자 휴대폰 번호는 필수이며, 010으로 시작해야합니다.')
+                this.chargerPhone.current.focus()
+                return false
+            }
+            if (this.state.chargerPhone.length < 11 || this.state.chargerPhone.length > 13){
+                alert('담당자 휴대폰 번호가 잘못되었습니다.')
                 this.chargerPhone.current.focus()
                 return false
             }
@@ -867,13 +874,27 @@ export default class ProducerJoinWeb extends Component{
                                         <FormGroup inline>
                                             <Row>
                                                 <Col sm={2}>
-                                                    <Label>담당자 전화번호<Star/></Label>
+                                                    <Label>담당자 휴대폰번호<Star/></Label>
                                                 </Col>
                                                 <Col sm={10}>
                                                     <Input name="chargerPhone"
                                                            value={state.chargerPhone}
                                                            onChange={this.handleChange}
                                                            innerRef={this.chargerPhone}
+                                                    />
+                                                </Col>
+                                            </Row>
+                                        </FormGroup>
+                                        <FormGroup inline>
+                                            <Row>
+                                                <Col sm={2}>
+                                                    <Label>메모</Label>
+                                                </Col>
+                                                <Col sm={10}>
+                                                    <Input name="memo"
+                                                           value={state.memo}
+                                                           onChange={this.handleChange}
+                                                           innerRef={this.memo}
                                                     />
                                                 </Col>
                                             </Row>

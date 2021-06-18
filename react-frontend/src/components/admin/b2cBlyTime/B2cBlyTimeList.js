@@ -8,8 +8,9 @@ import { ModalConfirm,  AdminModalWithNav } from '~/components/common'
 import B2cBlyTimeReg from './B2cBlyTimeReg'
 
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import 'ag-grid-community/dist/styles/ag-theme-balham.min.css';
 import { Cell } from '~/components/common'
 import { Server } from '../../Properties'
 
@@ -199,7 +200,13 @@ export default class B2cBlyTimeList extends Component {
             ],
             defaultColDef: {
                 width: 100,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
             overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
@@ -505,13 +512,13 @@ export default class B2cBlyTimeList extends Component {
                         }}
                     >
                         <AgGridReact
-                            enableSorting={true}                //정렬 여부
-                            enableFilter={true}                 //필터링 여부
+                            // enableSorting={true}                //정렬 여부
+                            // enableFilter={true}                 //필터링 여부
                             floatingFilter={true}               //Header 플로팅 필터 여부
                             columnDefs={this.state.columnDefs}  //컬럼 세팅
                             defaultColDef={this.state.defaultColDef}
                             rowHeight={this.state.rowHeight}
-                            enableColResize={true}              //컬럼 크기 조정
+                            // enableColResize={true}              //컬럼 크기 조정
                             overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                             overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                             // onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)

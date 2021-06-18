@@ -15,11 +15,10 @@ import classNames from 'classnames'
 
 import Style from './AddCart.module.scss'
 
-import { useDispatch, connect } from 'react-redux'
+import {useRecoilState} from "recoil";
+import {cartCountrState} from "~/recoilState";
 
-import * as actions  from '~/reducers/CartReducer'
-
-
+// import * as actions  from '~/reducers/CartReducer'
 
 // const Style = {
 //     wrap: {
@@ -32,7 +31,9 @@ import * as actions  from '~/reducers/CartReducer'
 
 const AddCart = (props) => {
 
-    const dispatch = useDispatch()
+    const [count, setCount] = useRecoilState(cartCountrState)
+
+    // const dispatch = useDispatch()
 
     const [qty, setQty] = useState(props.qty)
     const [remainedCnt, setRemainedCnt] = useState(null)
@@ -72,7 +73,8 @@ const AddCart = (props) => {
         //dispatch({type: 'ACTION_NAME'}) 을 통해 리듀서로 바로 접근해도 무방하나, 통일된 코드를 위해서 아래의 [액션함수] -> [reducer] 순으로 접근하도록 하였음
 
         //리덕스 액션 함수 호출
-        props.addCart()
+        // props.addCart()
+        setCount(count + 1)
 
     }
 
@@ -192,10 +194,11 @@ function mapStateToProps(store) {
 }
 
 //dispatch 할 함수를 props에 넣음 (직접 dispatch() 를 할 경우 필요없음)
-function mapDispatchToProps(dispatch) {
-    return {
-        addCart: () => dispatch(actions.getCartCount())
-    }
-}
+// function mapDispatchToProps(dispatch) {
+//     return {
+//         addCart: () => dispatch(actions.getCartCount())
+//     }
+// }
 
-export default connect(mapStateToProps, mapDispatchToProps)(AddCart)
+// export default connect(mapStateToProps, mapDispatchToProps)(AddCart)
+export default AddCart

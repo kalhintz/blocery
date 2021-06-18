@@ -11,7 +11,7 @@ const B2cHeader = (props) => {
     const {mypage, category, mdPick, underline} = props
     const [isNewNotification, setIsNewNotification] = useState(false);
 
-    console.log('B2cHeader mypage', mypage)
+    //console.log('B2cHeader mypage', mypage)
 
     useEffect(() => {
         getNewNotification();
@@ -19,7 +19,7 @@ const B2cHeader = (props) => {
 
     const getNewNotification = async() => {
         const {data:newNotification} = await isNewNotifiation();
-        console.log("newNotification : ", newNotification);
+        //console.log("newNotification : ", newNotification);
         setIsNewNotification(newNotification);
     }
 
@@ -30,7 +30,7 @@ const B2cHeader = (props) => {
                 {
                     mypage ? <span className={Css.myPage}>마이페이지</span> :
                         category ? <span className={Css.category}>카테고리</span> :
-                            mdPick ? <span className={Css.category}>기획전</span> : (
+                            mdPick ? <span className={Css.category}>기획전</span> :(
                         <Link to={'/'} className={'text-dark f1'} >
                             <MarketBlyMainLogo style={{height: 40}} />
                         </Link>
@@ -38,18 +38,18 @@ const B2cHeader = (props) => {
 
                 }
             </div>
-                <div>
-                    {
-                        (mypage)?  <CartLink white/>
-                                        // <Link to={'/cartList'}><IconShoppingCartWhite /> </Link>
-                                 : <CartLink />
-                    }
+            <div>
+                {
+                    (mypage)?  <CartLink white/>
+                        // <Link to={'/cartList'}><IconShoppingCartWhite /> </Link>
+                        : <CartLink />
+                }
 
                 <div>
                     <Link to={'/search'}>
                         {
                             (mypage)?  <IconSearchWhite />
-                                    :  <IconSearch />
+                                :  <IconSearch />
                         }
 
                     </Link>
@@ -63,6 +63,7 @@ const B2cHeader = (props) => {
                     </Link>
                 </div>
             </div>
+
         </div>
     )
 }

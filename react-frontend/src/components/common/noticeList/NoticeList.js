@@ -30,7 +30,7 @@ const NoticeList = (props) => {
 
         //20200217 - 미션이벤트 2차:
         console.log('missionClear 14')
-        setMissionClear(14).then( (response) => console.log('notificationList SET:missionEvent14:' + response.data )); //기본배송지를 저장
+        //setMissionClear(14).then( (response) => console.log('notificationList SET:missionEvent14:' + response.data )); //기본배송지를 저장
     }
 
     const toggle = (index) => {

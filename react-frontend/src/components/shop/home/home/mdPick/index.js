@@ -60,6 +60,7 @@ const MdPick = (props) => {
                                         // discountRate={Math.round(goods.discountRate)}
                                         remainedCnt={item.remainedCnt}
                                         blyReview={item.blyReviewConfirm}
+                                        buyingRewardFlag={item.buyingRewardFlag}
                                     />
                                     <SlideItemContent
                                         style={{flexGrow: 1}}

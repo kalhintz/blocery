@@ -2,8 +2,16 @@ import React, {Fragment, Component } from 'react'
 import { Modal, ModalHeader, ModalBody, ModalFooter, Input, Collapse, Fade } from 'reactstrap';
 import { Server } from '~/components/Properties'
 import ComUtil from '~/util/ComUtil'
+import {getServerToday, getServerTodayTime} from "~/lib/commonApi";
 import {checkPassPhrase} from '~/lib/loginApi'
-import { getConsumerByConsumerNo, getGoodsRemainedCheck, addOrdersTemp, getNotDeliveryZipNo, checkSuperRewardOrder } from '~/lib/shopApi'
+import {
+    getGoodsRemainedCheck,
+    addOrdersTemp,
+    getNotDeliveryZipNo,
+    checkSuperRewardOrder,
+    getConsumer,
+    getSuperRewardTicket
+} from '~/lib/shopApi'
 import { BLCT_TO_WON, exchangeWon2BLCT } from "~/lib/exchangeApi"
 import { getProducerByProducerNo } from '~/lib/producerApi'
 import AddressModify from '~/components/shop/mypage/infoManagement/AddressModify'
@@ -36,7 +44,7 @@ import Coupon from './Coupon'
 
 import {ItemHeader, ItemDefaultBody, EditRow} from './BuyStyle'
 import {calcBlyToWon} from "~/lib/exchangeApi";
-
+import BigNumber from "bignumber.js";
 
 
 // const ItemHeader = (props) =>
@@ -62,6 +70,61 @@ import {calcBlyToWon} from "~/lib/exchangeApi";
 //         line-height: ${getValue(20)};
 //     }
 // `;
+
+const jejuZipNo = [
+    "63002","63003","63004","63005","63006","63007","63008","63009","63010","63011","63012","63013","63014","63015","63016","63017","63018","63019","63020",
+    "63021","63022","63023","63024","63025","63026","63027","63028","63029","63030","63031","63032","63033","63034","63035","63036","63037","63038","63039",
+    "63040","63041","63042","63043","63044","63045","63046","63047","63048","63049","63050","63051","63052","63053","63054","63055","63056","63057","63058",
+    "63059","63060","63061","63062","63063","63064","63065","63066","63067","63068","63069","63070","63071","63072","63073","63074","63075","63076","63077",
+    "63078","63079","63080","63081","63082","63083","63084","63085","63086","63087","63088","63089","63090","63091","63092","63093","63094","63095","63096",
+    "63097","63098","63099","63100","63101","63102","63103","63104","63105","63106","63107","63108","63109","63110","63111","63112","63113","63114","63115",
+    "63116","63117","63118","63119","63120","63121","63122","63123","63124","63125","63126","63127","63128","63129","63130","63131","63132","63133","63134",
+    "63135","63136","63137","63138","63139","63140","63141","63142","63143","63144","63145","63146","63147","63148","63149","63150","63151","63152","63153",
+    "63154","63155","63156","63157","63158","63159","63160","63161","63162","63163","63164","63165","63166","63167","63168","63169","63170","63171","63172",
+    "63173","63174","63175","63176","63177","63178","63179","63180","63181","63182","63183","63184","63185","63186","63187","63188","63189","63190","63191",
+    "63192","63193","63194","63195","63196","63197","63198","63199","63200","63201","63202","63203","63204","63205","63206","63207","63208","63209","63210",
+    "63211","63212","63213","63214","63215","63216","63217","63218","63219","63220","63221","63222","63223","63224","63225","63226","63227","63228","63229",
+    "63230","63231","63232","63233","63234","63235","63236","63237","63238","63239","63240","63241","63242","63243","63244","63245","63246","63247","63248",
+    "63249","63250","63251","63252","63253","63254","63255","63256","63257","63258","63259","63260","63261","63262","63263","63264","63265","63266","63267",
+    "63268","63269","63270","63271","63272","63273","63274","63275","63276","63277","63278","63279","63280","63281","63282","63283","63284","63285","63286",
+    "63287","63288","63289","63290","63291","63292","63293","63294","63295","63296","63297","63298","63299","63300","63301","63302","63303","63304","63305",
+    "63306","63307","63308","63309","63310","63311","63312","63313","63314","63315","63316","63317","63318","63319","63320","63321","63322","63323","63324",
+    "63325","63326","63327","63328","63329","63330","63331","63332","63333","63334","63335","63336","63337","63338","63339","63340","63341","63342","63343",
+    "63344","63345","63346","63347","63348","63349","63350","63351","63352","63353","63354","63355","63356","63357","63358","63359","63360","63361","63362",
+    "63363","63364","63500","63501","63502","63503","63504","63505","63506","63507","63508","63509","63510","63511","63512","63513","63514","63515","63516",
+    "63517","63518","63519","63520","63521","63522","63523","63524","63525","63526","63527","63528","63529","63530","63531","63532","63533","63534","63535",
+    "63536","63537","63538","63539","63540","63541","63542","63543","63544","63545","63546","63547","63548","63549","63550","63551","63552","63553","63554",
+    "63555","63556","63557","63558","63559","63560","63561","63562","63563","63564","63565","63566","63567","63568","63569","63570","63571","63572","63573",
+    "63574","63575","63576","63577","63578","63579","63580","63581","63582","63583","63584","63585","63586","63587","63588","63589","63590","63591","63592",
+    "63593","63594","63595","63596","63597","63598","63599","63600","63601","63602","63603","63604","63605","63606","63607","63608","63609","63610","63611",
+    "63612","63613","63614","63615","63616","63617","63618","63619","63620","63621","63622","63623","63624","63625","63626","63627","63628","63629","63630",
+    "63631","63632","63633","63634","63635","63636","63637","63638","63639","63640","63641","63642","63643","63644","690-003","690-011","690-012","690-021",
+    "690-022","690-029","690-031","690-032","690-041","690-042","690-043","690-050","690-061","690-062","690-071","690-072","690-073","690-081","690-082",
+    "690-090","690-100","690-110","690-121","690-122","690-130","690-140","690-150","690-161","690-162","690-163","690-170","690-180","690-191","690-192",
+    "690-200","690-210","690-220","690-231","690-232","690-241","690-242","690-600","690-610","690-700","690-701","690-703","690-704","690-705","690-706",
+    "690-707","690-708","690-709","690-710","690-711","690-712","690-714","690-715","690-717","690-718","690-719","690-720","690-721","690-722","690-723",
+    "690-724","690-725","690-726","690-727","690-728","690-729","690-730","690-731","690-732","690-734","690-735","690-736","690-737","690-738","690-739",
+    "690-740","690-741","690-742","690-743","690-744","690-747","690-750","690-751","690-755","690-756","690-760","690-762","690-764","690-765","690-766",
+    "690-767","690-769","690-770","690-771","690-772","690-773","690-774","690-775","690-776","690-777","690-778","690-779","690-780","690-781","690-782",
+    "690-785","690-786","690-787","690-788","690-789","690-790","690-796","690-800","690-801","690-802","690-803","690-804","690-805","690-806","690-807",
+    "690-808","690-809","690-810","690-811","690-812","690-813","690-814","690-815","690-816","690-817","690-818","690-819","690-820","690-821","690-822",
+    "690-823","690-824","690-825","690-826","690-827","690-828","690-829","690-830","690-831","690-832","690-833","690-834","690-835","690-836","690-837",
+    "690-838","690-839","690-840","690-841","690-842","690-843","690-844","690-846","690-847","690-850","690-851","695-789","695-791","695-792","695-793",
+    "695-794","695-795","695-796","695-900","695-901","695-902","695-903","695-904","695-905","695-906","695-907","695-908","695-909","695-910","695-911",
+    "695-912","695-913","695-914","695-915","695-916","695-917","695-918","695-919","695-920","695-921","695-922","695-923","695-924","695-925","695-926",
+    "695-927","695-928","695-929","695-930","695-931","695-932","695-933","695-934","695-940","695-941","695-942","695-943","695-944","695-945","695-946",
+    "695-947","695-948","695-949","695-960","695-961","695-962","695-963","695-964","695-965","695-966","695-967","695-968","695-969","695-970","695-971",
+    "695-972","695-973","695-974","695-975","695-976","695-977","695-978","695-979","695-980","695-981","695-982","695-983","697-010","697-011","697-012",
+    "697-013","697-014","697-020","697-030","697-040","697-050","697-060","697-070","697-080","697-090","697-100","697-110","697-120","697-130","697-301",
+    "697-310","697-320","697-330","697-340","697-350","697-360","697-370","697-380","697-600","697-700","697-701","697-703","697-704","697-705","697-706",
+    "697-707","697-805","697-806","697-807","697-808","697-819","697-820","697-821","697-822","697-823","697-824","697-825","697-826","697-827","697-828",
+    "697-829","697-830","697-831","697-832","697-833","697-834","697-835","697-836","697-837","697-838","697-839","697-840","697-841","697-842","697-843",
+    "697-844","697-845","697-846","697-847","697-848","697-849","697-850","697-851","697-852","697-853","697-854","697-855","697-856","697-857","697-858",
+    "697-859","697-860","697-861","697-862","697-863","697-864","699-701","699-702","699-900","699-901","699-902","699-903","699-904","699-905","699-906",
+    "699-907","699-908","699-910","699-911","699-912","699-913","699-914","699-915","699-916","699-920","699-921","699-922","699-923","699-924","699-925",
+    "699-926","699-930","699-931","699-932","699-933","699-934","699-935","699-936","699-937","699-940","699-941","699-942","699-943","699-944","699-945",
+    "699-946","699-947","699-948","699-949"
+]
 
 export default class Buy extends Component {
 
@@ -148,61 +211,11 @@ export default class Buy extends Component {
 
             notDelivery: false,         // 배송불가한 도서산간지역
             jejuDelivery: false,        // 제주도 배송(true면 배송비 3000원 추가)
-            jejuZipNo: [
-                "63002","63003","63004","63005","63006","63007","63008","63009","63010","63011","63012","63013","63014","63015","63016","63017","63018","63019","63020",
-                "63021","63022","63023","63024","63025","63026","63027","63028","63029","63030","63031","63032","63033","63034","63035","63036","63037","63038","63039",
-                "63040","63041","63042","63043","63044","63045","63046","63047","63048","63049","63050","63051","63052","63053","63054","63055","63056","63057","63058",
-                "63059","63060","63061","63062","63063","63064","63065","63066","63067","63068","63069","63070","63071","63072","63073","63074","63075","63076","63077",
-                "63078","63079","63080","63081","63082","63083","63084","63085","63086","63087","63088","63089","63090","63091","63092","63093","63094","63095","63096",
-                "63097","63098","63099","63100","63101","63102","63103","63104","63105","63106","63107","63108","63109","63110","63111","63112","63113","63114","63115",
-                "63116","63117","63118","63119","63120","63121","63122","63123","63124","63125","63126","63127","63128","63129","63130","63131","63132","63133","63134",
-                "63135","63136","63137","63138","63139","63140","63141","63142","63143","63144","63145","63146","63147","63148","63149","63150","63151","63152","63153",
-                "63154","63155","63156","63157","63158","63159","63160","63161","63162","63163","63164","63165","63166","63167","63168","63169","63170","63171","63172",
-                "63173","63174","63175","63176","63177","63178","63179","63180","63181","63182","63183","63184","63185","63186","63187","63188","63189","63190","63191",
-                "63192","63193","63194","63195","63196","63197","63198","63199","63200","63201","63202","63203","63204","63205","63206","63207","63208","63209","63210",
-                "63211","63212","63213","63214","63215","63216","63217","63218","63219","63220","63221","63222","63223","63224","63225","63226","63227","63228","63229",
-                "63230","63231","63232","63233","63234","63235","63236","63237","63238","63239","63240","63241","63242","63243","63244","63245","63246","63247","63248",
-                "63249","63250","63251","63252","63253","63254","63255","63256","63257","63258","63259","63260","63261","63262","63263","63264","63265","63266","63267",
-                "63268","63269","63270","63271","63272","63273","63274","63275","63276","63277","63278","63279","63280","63281","63282","63283","63284","63285","63286",
-                "63287","63288","63289","63290","63291","63292","63293","63294","63295","63296","63297","63298","63299","63300","63301","63302","63303","63304","63305",
-                "63306","63307","63308","63309","63310","63311","63312","63313","63314","63315","63316","63317","63318","63319","63320","63321","63322","63323","63324",
-                "63325","63326","63327","63328","63329","63330","63331","63332","63333","63334","63335","63336","63337","63338","63339","63340","63341","63342","63343",
-                "63344","63345","63346","63347","63348","63349","63350","63351","63352","63353","63354","63355","63356","63357","63358","63359","63360","63361","63362",
-                "63363","63364","63500","63501","63502","63503","63504","63505","63506","63507","63508","63509","63510","63511","63512","63513","63514","63515","63516",
-                "63517","63518","63519","63520","63521","63522","63523","63524","63525","63526","63527","63528","63529","63530","63531","63532","63533","63534","63535",
-                "63536","63537","63538","63539","63540","63541","63542","63543","63544","63545","63546","63547","63548","63549","63550","63551","63552","63553","63554",
-                "63555","63556","63557","63558","63559","63560","63561","63562","63563","63564","63565","63566","63567","63568","63569","63570","63571","63572","63573",
-                "63574","63575","63576","63577","63578","63579","63580","63581","63582","63583","63584","63585","63586","63587","63588","63589","63590","63591","63592",
-                "63593","63594","63595","63596","63597","63598","63599","63600","63601","63602","63603","63604","63605","63606","63607","63608","63609","63610","63611",
-                "63612","63613","63614","63615","63616","63617","63618","63619","63620","63621","63622","63623","63624","63625","63626","63627","63628","63629","63630",
-                "63631","63632","63633","63634","63635","63636","63637","63638","63639","63640","63641","63642","63643","63644","690-003","690-011","690-012","690-021",
-                "690-022","690-029","690-031","690-032","690-041","690-042","690-043","690-050","690-061","690-062","690-071","690-072","690-073","690-081","690-082",
-                "690-090","690-100","690-110","690-121","690-122","690-130","690-140","690-150","690-161","690-162","690-163","690-170","690-180","690-191","690-192",
-                "690-200","690-210","690-220","690-231","690-232","690-241","690-242","690-600","690-610","690-700","690-701","690-703","690-704","690-705","690-706",
-                "690-707","690-708","690-709","690-710","690-711","690-712","690-714","690-715","690-717","690-718","690-719","690-720","690-721","690-722","690-723",
-                "690-724","690-725","690-726","690-727","690-728","690-729","690-730","690-731","690-732","690-734","690-735","690-736","690-737","690-738","690-739",
-                "690-740","690-741","690-742","690-743","690-744","690-747","690-750","690-751","690-755","690-756","690-760","690-762","690-764","690-765","690-766",
-                "690-767","690-769","690-770","690-771","690-772","690-773","690-774","690-775","690-776","690-777","690-778","690-779","690-780","690-781","690-782",
-                "690-785","690-786","690-787","690-788","690-789","690-790","690-796","690-800","690-801","690-802","690-803","690-804","690-805","690-806","690-807",
-                "690-808","690-809","690-810","690-811","690-812","690-813","690-814","690-815","690-816","690-817","690-818","690-819","690-820","690-821","690-822",
-                "690-823","690-824","690-825","690-826","690-827","690-828","690-829","690-830","690-831","690-832","690-833","690-834","690-835","690-836","690-837",
-                "690-838","690-839","690-840","690-841","690-842","690-843","690-844","690-846","690-847","690-850","690-851","695-789","695-791","695-792","695-793",
-                "695-794","695-795","695-796","695-900","695-901","695-902","695-903","695-904","695-905","695-906","695-907","695-908","695-909","695-910","695-911",
-                "695-912","695-913","695-914","695-915","695-916","695-917","695-918","695-919","695-920","695-921","695-922","695-923","695-924","695-925","695-926",
-                "695-927","695-928","695-929","695-930","695-931","695-932","695-933","695-934","695-940","695-941","695-942","695-943","695-944","695-945","695-946",
-                "695-947","695-948","695-949","695-960","695-961","695-962","695-963","695-964","695-965","695-966","695-967","695-968","695-969","695-970","695-971",
-                "695-972","695-973","695-974","695-975","695-976","695-977","695-978","695-979","695-980","695-981","695-982","695-983","697-010","697-011","697-012",
-                "697-013","697-014","697-020","697-030","697-040","697-050","697-060","697-070","697-080","697-090","697-100","697-110","697-120","697-130","697-301",
-                "697-310","697-320","697-330","697-340","697-350","697-360","697-370","697-380","697-600","697-700","697-701","697-703","697-704","697-705","697-706",
-                "697-707","697-805","697-806","697-807","697-808","697-819","697-820","697-821","697-822","697-823","697-824","697-825","697-826","697-827","697-828",
-                "697-829","697-830","697-831","697-832","697-833","697-834","697-835","697-836","697-837","697-838","697-839","697-840","697-841","697-842","697-843",
-                "697-844","697-845","697-846","697-847","697-848","697-849","697-850","697-851","697-852","697-853","697-854","697-855","697-856","697-857","697-858",
-                "697-859","697-860","697-861","697-862","697-863","697-864","699-701","699-702","699-900","699-901","699-902","699-903","699-904","699-905","699-906",
-                "699-907","699-908","699-910","699-911","699-912","699-913","699-914","699-915","699-916","699-920","699-921","699-922","699-923","699-924","699-925",
-                "699-926","699-930","699-931","699-932","699-933","699-934","699-935","699-936","699-937","699-940","699-941","699-942","699-943","699-944","699-945",
-                "699-946","699-947","699-948","699-949"
-            ]
+            superRewardTicketNo: null   //슈퍼리워드 티켓 번호
         };
+
+        //사용 blct
+        this.useBlct = 0;
     }
 
     modalToggle = () => {
@@ -220,22 +233,32 @@ export default class Buy extends Component {
     };
 
 
-    initContract = async() => {
-        let {data:balance} = await scOntGetBalanceOfBlct(this.state.consumer.account);
+    initContract = async(account, orderGroup, blctToWon) => {
+        let {data:balance} = await scOntGetBalanceOfBlct(account);
 
-        const {totalOrderPrice} = this.state.orderGroup
+        //this.state.consumer.account
+        //this.state.orderGroup
+        //this.state.blctToWon
+
+        const {totalOrderPrice} = orderGroup
 
         // let halfPriceToken = ComUtil.roundDown(this.state.orders[0].orderPrice/(2*this.state.blctToWon), 2);
-        let totalPriceToToken = ComUtil.roundDown(totalOrderPrice / this.state.blctToWon, 2);
+        let totalPriceToToken = parseFloat(new BigNumber(totalOrderPrice).div(blctToWon).toNumber().toFixed(3));
 
         // console.log({balance, priceToToken, orderPrice: this.state.orders[0].orderPrice, blctToWon: this.state.blctToWon, orderGroup:this.state.orderGroup})
 
-        this.setState({
+        return {
             tokenBalance: balance,
             cardBlctUseToken: balance,
             payableBlct: (totalPriceToToken > balance)? balance : totalPriceToToken
+        }
 
-        })
+        // this.setState({
+        //     tokenBalance: balance,
+        //     cardBlctUseToken: balance,
+        //     payableBlct: (totalPriceToToken > balance)? balance : totalPriceToToken
+        //
+        // })
 
         // console.log({orderPrice: this.state.cardBlctOrders[0]})
     };
@@ -272,7 +295,7 @@ export default class Buy extends Component {
             goods.deliveryFee = getDeliveryFee(param)
         })
 
-        console.log({"1. 상품의 배송비 적용":goodsList})
+        //console.log({"1. 상품의 배송비 적용":goodsList})
     }
 
     //2. 상품을 생산자번호로 그룹바이
@@ -286,7 +309,7 @@ export default class Buy extends Component {
          */
         const groupedOrderList = groupBy(goodsList, 'producerNo')
 
-        console.log({"2. 상품을 생산자번호로 그룹바이":groupedOrderList})
+        //console.log({"2. 상품을 생산자번호로 그룹바이":groupedOrderList})
 
         return groupedOrderList
     }
@@ -337,7 +360,7 @@ export default class Buy extends Component {
             })
         })
 
-        console.log({"3. 생산자별 정보 추가 및 배열로 변환하여 반환": groupedList})
+        //console.log({"3. 생산자별 정보 추가 및 배열로 변환하여 반환": groupedList})
         return groupedList
     }
 
@@ -345,6 +368,7 @@ export default class Buy extends Component {
 
     //상품리스트의 총 상품금액, 총 배송비, 총 결제금액을 반환
     getSummary = (producer, orderList) => {
+        console.log({state: this.state})
         const goodsList = this.state.goods
 
         let sumDirectGoodsPrice = 0,        //즉시상품가격 합계(주의! 묶음배송 상품은 즉시상품만 해당 됩니다)
@@ -366,6 +390,8 @@ export default class Buy extends Component {
         // let directGoodsIndex = 0;
 
         let directGoodsCount = 0
+
+        console.log({goodsList})
 
         orderList.map(order => {
 
@@ -416,7 +442,7 @@ export default class Buy extends Component {
                     sumDirectDeliveryFee = producerWrapFee
                 }
             }
-            if(this.state.jejuDelivery) {
+            if(this.jejuDelivery) {
                 sumDirectDeliveryFee += 3000     // 묶음배송 무료라도 제주도면 추가배송비 적용
             }
         }
@@ -480,7 +506,7 @@ export default class Buy extends Component {
 
             //상품 배송비 (배송정책 적용)
             order.deliveryFee = getDeliveryFee({qty: goods.orderCnt, deliveryFee: goods.deliveryFee, deliveryQty: goods.deliveryQty, termsOfDeliveryFee: goods.termsOfDeliveryFee, orderPrice: goods.currentPrice*goods.orderCnt});
-            if(this.state.jejuDelivery) {
+            if(this.jejuDelivery) {
                 order.deliveryFee += 3000
             }
 
@@ -492,8 +518,8 @@ export default class Buy extends Component {
             //order.discountFee = (orderInfo.consumerPrice * orderInfo.orderCnt) - (orderInfo.currentPrice * orderInfo.orderCnt);
 
             //주문가격BLCT
-            order.blctToken = ComUtil.roundDown(order.orderPrice/this.blctToWon, 2)
-
+            order.blctToken = parseFloat(new BigNumber(order.orderPrice).div(this.blctToWon).toNumber().toFixed(3))
+            // alert(':::blctToken is '+order.blctToken + "(didMount 시에 계산될때는 상품가 / 환율)")
             //저장시 포함되지 않는부분
             order.directGoods = goods.directGoods
 
@@ -567,9 +593,9 @@ export default class Buy extends Component {
     }
 
     async componentDidMount() {
-        this.setState({ gift: this.props.gift })
+        // this.setState({ gift: this.props.gift })
 
-        console.log("Buy.js - componentDidMount");
+        //console.log("Buy.js - componentDidMount");
         // 외부 스크립트 (jquery,iamport)
         this.getHeadScript();
 
@@ -580,36 +606,97 @@ export default class Buy extends Component {
         // if (!loginUser) { //미 로그인 시 로그인 창으로 이동.
         //     this.props.history.push('/login');
         // }
-        //console.log({loginUser:loginUser});
+        //
+        //
+        // ({loginUser:loginUser});
 
-        await this.setConsumerInfo();
-        const addressIndex = this.getBasicAddressIndex();
-        if(addressIndex !== null) { //0 일때도 적용필요해서 if(addressIndex)에서 변경. 
-            this.setState({addressIndex: addressIndex});
-            this.searchNotDeliveryZipNo();
+        //사용자, 배송지 리스트 세팅
+        const {consumer, addressList} = await this.getConsumerInfo();
+
+        let address;
+        let addressIndex = 0;
+
+        if(addressList.length > 0) {
+            //기본배송지 조회
+            const basicAddressIndex = addressList.findIndex(address => address.basicAddress === 1)
+
+            //기본배송지가 있을 때
+            if (basicAddressIndex > -1){
+                addressIndex = basicAddressIndex
+            }
+            address = addressList[addressIndex]
         }
-        this.search();
 
+        //배송불가 지역 조회, 도서산간지역 배송비 추가여부 조회
+        // const {notDelivery, jejuDelivery} =
+        if(address)
+            await this.searchNotDeliveryZipNo(address.zipNo);
 
-        setTimeout(() => {
-            console.log({
-                state: this.state
-            })
-        }, 1000)
+        const {
+            //배송지정보 기본세팅
+            // consumer: consumerInfo,
+            goods,
+            orderGroup,
+            orders,             //주문리스트(저장용)
+            blctToWon,
+            orderGroupList,         //생산자별 주문리스트(뷰어용)
+        } = await this.search(consumer, this.props.goods);
 
+        // 소비자 스마트컨트랙트 초기 세팅 (BLCT,account...)
+        const {
+            tokenBalance,
+            cardBlctUseToken,
+            payableBlct
+        } = await this.initContract(consumer.account, orderGroup, blctToWon);
+
+        this.setState({
+            gift: this.props.gift,
+            consumer: consumer,
+            addressList: addressList,
+            addressIndex: addressIndex,
+            // notDelivery: notDelivery,
+            // jejuDelivery: jejuDelivery,
+            receiverName : address ? address.receiverName : '',
+            receiverPhone : address ? address.phone : '',
+            receiverZipNo : address ? address.zipNo : '',
+            receiverAddr : address ? address.addr : '',
+            receiverAddrDetail : address ? address.addrDetail : '',
+
+            tokenBalance,
+            cardBlctUseToken,
+            payableBlct,
+
+            goods: goods,
+            orderGroup,
+            orders,             //주문리스트(저장용)
+            blctToWon,
+            orderGroupList,         //생산자별 주문리스트(뷰어용)
+
+        })
+
+        // const addressIndex = this.getBasicAddressIndex();
+        // if(addressIndex !== null) { //0 일때도 적용필요해서 if(addressIndex)에서 변경.
+        //     this.setState({addressIndex: addressIndex});
+        //     const address = this.state.addressList[addressIndex]
+        //     this.searchNotDeliveryZipNo(address.zipNo);
+        // }
+        // this.search();
     }
 
-    search = async () => {
+    search = async (consumer, goods) => {
 
+        //blct 환율
         let {data:blctToWon} = await BLCT_TO_WON();
 
         this.blctToWon = blctToWon
 
         // 로그인한 사용자의 consumer 정보
-        let consumerInfo = Object.assign({}, this.state.consumer);
+        let consumerInfo = Object.assign({}, consumer);
 
         // 즉시구매, 장바구니구매 구분, 상품 단건 및 멀티
-        let goodsList = Object.assign([], this.state.goods);
+        let goodsList = Object.assign([], goods);
+
+        console.log("search good", goods, goodsList)
 
         //1. producerNo 로 그룹바이된 오브젝트
         const producerGroupObj = groupBy(goodsList, 'producerNo')
@@ -617,8 +704,12 @@ export default class Buy extends Component {
         //2. 생산자별 정보, summary를 추가하여 배열로 반환
         const orderGroupList = await this.getGroupedListByProducerGroupObj(producerGroupObj)
 
+        console.log({orderGroupList})
+
         //저장용 주문리스트 생성
         const orderListForSaving = this.createOrderList(orderGroupList)
+
+        console.log({orderListForSaving})
 
         let g_orderGoodsNm = '';
         let g_totalCurrentPrice = 0;
@@ -743,13 +834,30 @@ export default class Buy extends Component {
         orderGroup.totalBlctToken = g_totalBlctToken;       //총 주문 결제 BCLT Token
         orderGroup.orgTotalOrderPrice = g_orgTotalOrderPrice;     //총 주문 결제 금액
 
+        // console.log({
+        //     orderGroup: orderGroup,
+        //     // orders: orderList,
+        //     orders: orderListForSaving,             //주문리스트(저장용)
+        //     blctToWon: blctToWon,
+        //     orderGroupList: orderGroupList,         //생산자별 주문리스트(뷰어용)
+        // })
+
         console.log({
+            consumer: consumerInfo,
             orderGroup: orderGroup,
-            // orders: orderList,
+            orders: orderListForSaving,
+            orderGroupList: orderGroupList
+        })
+
+        return {
+            //배송지정보 기본세팅
+            // consumer: consumerInfo,
+            goods: goodsList,
+            orderGroup: orderGroup,
             orders: orderListForSaving,             //주문리스트(저장용)
             blctToWon: blctToWon,
             orderGroupList: orderGroupList,         //생산자별 주문리스트(뷰어용)
-        })
+        }
 
         this.setState({
             //배송지정보 기본세팅
@@ -763,11 +871,10 @@ export default class Buy extends Component {
             //addressIndex: addressIndex,  //기본 배송지
 
             orderGroupList: orderGroupList,         //생산자별 주문리스트(뷰어용)
-
             // groupedList: groupedList
         }, ()=>{
-            // 소비자 스마트컨트랙트 초기 세팅 (BLCT,account...)
-            this.initContract();
+            // // 소비자 스마트컨트랙트 초기 세팅 (BLCT,account...)
+            // this.initContract();
         });
     }
 
@@ -822,40 +929,50 @@ export default class Buy extends Component {
         return null;
     }
 
-    setConsumerInfo = async () => {
-        let {data:consumer} = await getConsumerByConsumerNo(this.state.consumer.consumerNo);
+    getConsumerInfo = async () => {
+        let {data:consumer} = await getConsumer();
 
-        if(consumer.consumerAddresses === null) {
-            this.setState({
-                consumer: consumer,
-                addressList: []
-            })
-        } else {
-            // let basicAddress;
-            // for (var i = 0; i < consumer.consumerAddresses.length; i++) {      // 소비자 주소록을 모두 조회해서 기본배송지 나오면 화면에 세팅
-            //     if (consumer.consumerAddresses[i].basicAddress === 1) {//기본 배송지
-            //         basicAddress = consumer.consumerAddresses[i]
-            //         this.setState({addressIndex: i})
-            //         break;
-            //     }
-            // }
-            //
-            // if (basicAddress) {
-            //     this.setState({
-            //         receiverName: basicAddress.receiverName,
-            //         receiverPhone: basicAddress.phone,
-            //         receiverZipNo: basicAddress.zipNo,
-            //         receiverAddr: basicAddress.addr,
-            //         receiverAddrDetail: basicAddress.addrDetail
-            //     })
-            // }
-
-            this.setState({
-                consumer: consumer,
-                addressList: consumer.consumerAddresses
-            })
-
+        return {
+            consumer: consumer,
+            addressList: consumer.consumerAddresses ? consumer.consumerAddresses : []
         }
+
+        // this.setState({
+        //     consumer: consumer,
+        //     addressList: consumer.consumerAddresses ? consumer.consumerAddresses : []
+        // })
+
+        // if(consumer.consumerAddresses === null) {
+        //     this.setState({
+        //         consumer: consumer,
+        //         addressList: []
+        //     })
+        // } else {
+        //     // let basicAddress;
+        //     // for (var i = 0; i < consumer.consumerAddresses.length; i++) {      // 소비자 주소록을 모두 조회해서 기본배송지 나오면 화면에 세팅
+        //     //     if (consumer.consumerAddresses[i].basicAddress === 1) {//기본 배송지
+        //     //         basicAddress = consumer.consumerAddresses[i]
+        //     //         this.setState({addressIndex: i})
+        //     //         break;
+        //     //     }
+        //     // }
+        //     //
+        //     // if (basicAddress) {
+        //     //     this.setState({
+        //     //         receiverName: basicAddress.receiverName,
+        //     //         receiverPhone: basicAddress.phone,
+        //     //         receiverZipNo: basicAddress.zipNo,
+        //     //         receiverAddr: basicAddress.addr,
+        //     //         receiverAddrDetail: basicAddress.addrDetail
+        //     //     })
+        //     // }
+        //
+        //     this.setState({
+        //         consumer: consumer,
+        //         addressList: consumer.consumerAddresses
+        //     })
+        //
+        // }
     }
 
     //array의 첫번째 이미지 썸네일 url 리턴
@@ -875,7 +992,7 @@ export default class Buy extends Component {
     cardBlctPriceSetting = (cardBlctUseToken, targetOrderGroup, targetOrderList) => {
 
         //orderPrice를 카드결제금액으로만 세팅.(1건임)
-        console.log({targetOrderGroup, targetOrderList})
+        //console.log({targetOrderGroup, targetOrderList})
 
         //targetOrderList[0].orderPrice = ComUtil.roundDown(this.state.orderGroup.totalOrderPrice - this.state.blctToWon * this.state.cardBlctUseToken, 0);
         targetOrderList[0].cardPrice = ComUtil.roundDown(targetOrderList[0].orderPrice - this.state.blctToWon * cardBlctUseToken, 0);
@@ -887,14 +1004,14 @@ export default class Buy extends Component {
         targetOrderList[0].blctToken = cardBlctUseToken; //BLCT setting 20200316 추가.
         targetOrderGroup.totalBlctToken = cardBlctUseToken; //미사용이지만 일단 세팅
 
-        console.log('orderPrice==============', targetOrderList[0].orderPrice )
-        console.log('cardBlctUseToken', cardBlctUseToken )
-        console.log('cardPrice', targetOrderList[0].cardPrice )
+        //console.log('orderPrice==============', targetOrderList[0].orderPrice )
+        //console.log('cardBlctUseToken', cardBlctUseToken )
+        //console.log('cardPrice', targetOrderList[0].cardPrice )
 
-        console.log('blctToken', targetOrderList[0].blctToken )
+        //console.log('blctToken', targetOrderList[0].blctToken )
 
-        console.log('CARD 실제 결제 금액 ', targetOrderGroup.totalOrderPrice )
-        console.log('GROUP totalBlctToken ', targetOrderGroup.totalBlctToken )
+        //console.log('CARD 실제 결제 금액 ', targetOrderGroup.totalOrderPrice )
+        //console.log('GROUP totalBlctToken ', targetOrderGroup.totalBlctToken )
 
     }
 
@@ -1006,16 +1123,25 @@ export default class Buy extends Component {
 
             const exchangedWon = blctToken * blctToWon      //bly * 환율
             const cardPriceRate = 1 - ((exchangedWon) / order.orderPrice)
+
+            //소수점 절삭
             const cardPrice = ComUtil.roundDown(order.orderPrice * cardPriceRate, 0)
 
 
+            console.log(":::orderPrice "+order.orderPrice)
+            console.log(":::cardPriceRate "+cardPriceRate)
+            console.log(":::cardPrice "+ order.orderPrice * cardPriceRate)
+            console.log(":::cardPrice roundDown "+ComUtil.roundDown(order.orderPrice * cardPriceRate, 0))
+
             order.blctToken = blctToken + this.state.couponBlyAmount //tokenHistory에 쿠폰 사용 금액까지 bly사용 금액으로 표시됨
+
             if(order.blctToken === 0 && totalCouponBly > 0) {
                 order.blctToken = totalCouponBly
             }
+            //exchangedWon = order.blctToken * blctToWon      //20210401
+
             order.cardPrice = cardPrice
             order.payMethod = payMethod
-
 
             //오차를 구하기 위해 주문상세의 결제금액을 합산
             sumCardPrice += cardPrice
@@ -1023,14 +1149,17 @@ export default class Buy extends Component {
             //마지막 상품에 오차금액을 넣어 줍니다(총 카드결제금액과 상품별 결제금액 합이 일치하도록)
             if (lastIndex === index) {
                 const errorWon = totalOrderPrice - sumCardPrice
-                order.cardPrice = order.cardPrice + errorWon
+                console.log(":::errorWon "+errorWon)
+                //Jaden 20.4.16 roundDown 추가
+                order.cardPrice = ComUtil.roundDown(order.cardPrice + errorWon, 0)
             }
 
             // const payingBlctWon = blctToken * blctToWon
 
 
             //bly 를 사용해 결제되는 금액이 상품가(배송비포함)보다 50%를 초과하면
-            if (ComUtil.roundDown(exchangedWon, 0) > (order.orderPrice / 2)){
+            //if (ComUtil.roundDown(exchangedWon, 0) > (order.orderPrice / 2)){
+            if (ComUtil.roundDown( order.blctToken * blctToWon  , 0) > (order.orderPrice / 2)){ //20210401
                 order.cardBlctTokenMore = true
             }else{
                 order.cardBlctTokenMore = false
@@ -1044,6 +1173,8 @@ export default class Buy extends Component {
 
         //에러 검증 (총 카드결제금액인 totalOrerPrice 와 orderrDetail 의 카드결제금액이 일치해야 부분취소가 됩니다)
         // console.log(`총 카드결제금액은 ${totalOrderPrice} 이고 주문상세의 총 결제금액은 ${testNum} 이므로 ${totalOrderPrice === sumCardPrice ? '정상' : '"에러"'} 입니다`)
+
+        console.log({":::orders":orders})
 
         this.setState({
             orders: orders
@@ -1067,7 +1198,9 @@ export default class Buy extends Component {
 
     calcTotalOrderPrice = (totalBlctToken) => {
 
-        console.log("====couponBlyAmount::", this.state.couponBlyAmount)
+
+
+        //console.log("====couponBlyAmount::", this.state.couponBlyAmount)
 
         const {
             // totalBlctToken,
@@ -1091,10 +1224,12 @@ export default class Buy extends Component {
         const newOrderGroup = Object.assign({}, this.state.orderGroup)
 
         newOrderGroup.payMethod = payMethod
-        newOrderGroup.totalBlctToken = totalBlctToken
-        newOrderGroup.totalOrderPrice = ComUtil.roundDown(totalOrderPrice, 0)
+        newOrderGroup.totalBlctToken = totalBlctToken   //= ComUtil.roundDown(totalBlctToken, 2)
+        newOrderGroup.totalOrderPrice = totalOrderPrice //ComUtil.roundDown(totalOrderPrice, 0)
 
-        console.log({orderGroup:newOrderGroup})
+        //console.log({orderGroup:newOrderGroup})
+
+        console.log({blctToWon: this.state.blctToWon, orgTotalOrderPrice, totalBlctToken, totalOrderPrice, newOrderGroup, totalCouponPrice})
 
         this.setState({
             orderGroup: newOrderGroup
@@ -1107,7 +1242,7 @@ export default class Buy extends Component {
     //cardBlct결제시 cardBlctUseToken텍스트 입력값..
     onCardBlctUseTokenChange = ({value, error}) => {
 
-        console.log({value, error})
+        //console.log({value, error})
 
         // const newOrderGroup = Object.assign({}, this.state.orderGroup)
         //
@@ -1117,8 +1252,13 @@ export default class Buy extends Component {
         //     orderGroup: newOrderGroup
         // })
 
+        //사용한 bly 기록
 
-        const totalBlctToken = ComUtil.roundDown(value, 2)
+        console.log({value})
+
+        const totalBlctToken = ComUtil.roundDown(new BigNumber(value || 0).toNumber(), 3);
+
+        this.useBlct = totalBlctToken
 
         this.calcTotalOrderPrice(totalBlctToken)
     }
@@ -1135,7 +1275,7 @@ export default class Buy extends Component {
     stdDeliveryCallback = (data, type) => {
 
 
-        this.setConsumerInfo()
+        this.getConsumerInfo()
 
 
 
@@ -1172,25 +1312,91 @@ export default class Buy extends Component {
     deliveryAddressChange = async (e) => {
         const index = e.target.value
         const receiverInfo = this.state.addressList[index];
+        await this.searchNotDeliveryZipNo(receiverInfo.zipNo);
+
+        console.log({consumer: this.state.consumer, goods: this.state.goods})
+
+        const {
+            goods,
+            orderGroup,
+            orders,             //주문리스트(저장용)
+            blctToWon,
+            orderGroupList      //생산자별 주문리스트(뷰어용)
+        } = await this.search(this.state.consumer, this.state.goods);
+
+        let payableBlct = this.state.payableBlct
+
+        // //사용 가능한 bly 업데이트
+        // // if(this.jejuDelivery) {
+        let totalPriceToToken = parseFloat(new BigNumber(orderGroup.totalOrderPrice).div(blctToWon).toNumber().toFixed(3));
+        // // }
+        //
+        //
+        payableBlct = totalPriceToToken > this.state.blctBalance ? this.state.blctBalance : totalPriceToToken
+        //
+        // console.log({
+        //     orderGroup,
+        //     blctToWon,
+        // })
+        //
+        // this.calcTotalOrderPrice(payableBlct)
+
+
+
+        // console.log({balance, priceToToken, orderPrice: this.state.orders[0].orderPrice, blctToWon: this.state.blctToWon, orderGroup:this.state.orderGroup})
+
+        // return {
+        //     tokenBalance: balance,
+        //     cardBlctUseToken: balance,
+        //     payableBlct: (totalPriceToToken > balance)? balance : totalPriceToToken
+        // }
+        // console.log({orderGroup})
+
+        //사용한 bly 기억(위에서 search 했을때 0으로 초기화 되기 때문)
+        const totalBlctToken =  this.state.orderGroup.totalBlctToken;
+
         this.setState({
             addressIndex: index,
             receiverName: receiverInfo.receiverName,
             receiverAddr: receiverInfo.addr,
             receiverAddrDetail: receiverInfo.addrDetail,
             receiverZipNo: receiverInfo.zipNo,
-            receiverPhone: receiverInfo.phone
+            receiverPhone: receiverInfo.phone,
+
+            payableBlct,
+
+            goods,
+            orderGroup,
+            orders,             //주문리스트(저장용)
+            blctToWon,
+            orderGroupList      //생산자별 주문리스트(뷰어용)
+            // notDelivery: notDelivery,
+            // jejuDelivery: jejuDelivery
+        }, () => {
+            //setState 가 반영되고 난 뒤 쿠폰 이벤트를 한번더 실행하여 payableBlct , useBlct 를 다시 계산 하도록 함.
+            if(goods.length === 1) {
+                this.onCouponChange(this.state.couponInfo)
+            }else {
+                //사용가능 bly 업데이트
+                // let totalPriceToToken = parseFloat(new BigNumber(orderGroup.totalOrderPrice).div(blctToWon).toNumber().toFixed(3));
+                // const payableBlct = totalPriceToToken > this.state.blctBalance ? this.state.blctBalance : totalPriceToToken
+                // console.log({state: orderGroup})
+
+                this.calcTotalOrderPrice(totalBlctToken) //사용한 bly로 card, cardBlct, blct 인지 계산
+            }
         })
 
-        const {data: res} = await getNotDeliveryZipNo(receiverInfo.zipNo)
+        // const {data: res} = await getNotDeliveryZipNo(receiverInfo.zipNo)
+        //
+        // if(res !== 100) {
+        //     alert("해당 배송지는 도서산간지역으로 배송 서비스를 하지 않습니다.");
+        //     this.setState({ notDelivery: true })
+        // } else {
+        //     this.setState({ notDelivery: false })
+        // }
 
-        if(res !== 100) {
-            alert("해당 배송지는 도서산간지역으로 배송 서비스를 하지 않습니다.");
-            this.setState({ notDelivery: true })
-        } else {
-            this.setState({ notDelivery: false })
-        }
 
-        this.searchNotDeliveryZipNo();
+        // console.log({notDelivery, jejuDelivery})
 
         // const goodsList = Object.assign([], this.state.goods)
         // //1. producerNo 로 그룹바이된 오브젝트
@@ -1201,7 +1407,6 @@ export default class Buy extends Component {
         //
         // this.setState({ orderGroupList: orderGroupList })
 
-        this.search();
     }
 
     //배송 메세지 변경 [전체]
@@ -1293,8 +1498,10 @@ export default class Buy extends Component {
 
         const dbGoodsList = await Promise.all(promises)
 
-        console.log(dbGoodsList)
+        //console.log(dbGoodsList)
 
+        //슈퍼리워드 상품
+        const superRewardGoodsList = []
 
         //슈퍼리워드 기간상품
         const overCntSuperRewardGoodsList = []
@@ -1302,13 +1509,16 @@ export default class Buy extends Component {
         //슈퍼리워드 예정상품
         const befSuperRewardGoodsList = []
 
-        dbGoodsList.map(dbGoods => {
+        dbGoodsList.map(async dbGoods => {
 
 
             arrGoods.push({goodsNo: dbGoods.goodsNo})
 
             //슈퍼리워드 기간인 상품인지
             if (dbGoods.superReward && dbGoods.inSuperRewardPeriod) {
+
+                //슈퍼리워드 상품 담기
+                superRewardGoodsList.push(dbGoods)
 
                 //구매수량 한건이상인 상품찾아서
                 const goods = this.props.goods.find(goods => goods.goodsNo === dbGoods.goodsNo && goods.orderCnt > 1)
@@ -1330,6 +1540,7 @@ export default class Buy extends Component {
             alert(`[${overCntSuperRewardGoodsList[0].goodsNm}] 슈퍼리워드 상품은 1개 수량만 구입가능 합니다. 장바구니에서 수량 조정후 다시 결제를 진행해 주세요.`)
             return false
         }
+
 
         // 같은 슈퍼리워드 상품을 이미 주문했는지 체크
         const params = {
@@ -1382,10 +1593,13 @@ export default class Buy extends Component {
         if (totalOrderPrice > 0 && !this.state.selectedPayMethod) {
             alert('결제방법을 선택해 주세요')
             return false;
-        }else if (totalOrderPrice > 0 && totalOrderPrice < 100) {
+        }
+        //2021.03.24 Jaden 100원 이상 밸리데이션 체크 하지 않도록 변경
+        else if (totalOrderPrice > 0 && totalOrderPrice < 100) {
             alert('최소 결제금액은 100원 이상이어야 합니다')
             return false;
-        }else if(this.state.notDelivery){
+        }
+        else if(this.notDelivery){
             alert('해당 배송지는 도서산간지역으로 배송 서비스를 하지 않습니다. 다른 배송지를 선택해주세요.')
             return false;
         }
@@ -1414,6 +1628,38 @@ export default class Buy extends Component {
                 }
             }
         }
+
+        if(superRewardGoodsList.length > 0) {
+
+            let superRewardTicketNo = this.state.superRewardTicketNo
+
+            let dbSuperRewardGoods = superRewardGoodsList[0]
+
+            if(superRewardTicketNo === null) {
+
+                //내 티켓번호 확인
+                const {data:myTicketNo} = await getSuperRewardTicket(dbSuperRewardGoods.goodsNo)
+
+                //0 은 티켓번호가 아니라 슈퍼리워드 기간 전 후에 해당하는 것이라서 무조건 사져야 함
+                if(myTicketNo > 0) {
+
+                    superRewardTicketNo = myTicketNo
+
+                    this.setState({
+                        superRewardTicketNo: superRewardTicketNo
+                    })
+                }
+            }
+
+            console.log('내 티켓번호 '+superRewardTicketNo)
+            //alert('내 티켓번호:'+ myTicketNo); //TODO delete alert
+            if(superRewardTicketNo !== null) {
+                if (superRewardTicketNo > dbSuperRewardGoods.superRewardTotalCount) { //////여유 5개 줌.. => 0으로, 여유는 백엔드에서
+                    alert(`준비된 수량이 모두 결제진행 중입니다. 잠시 후 다시 진행해 주세요.`)
+                    return
+                }
+            }
+        }
         return true;
     };
 
@@ -1428,7 +1674,7 @@ export default class Buy extends Component {
 
         await Promise.all(promises)
 
-        console.log({noRemainedGoodsList, orderList})
+        //console.log({noRemainedGoodsList, orderList})
 
         if (noRemainedGoodsList.length > 0){
             alert(`죄송합니다. [${noRemainedGoodsList[0].goodsNm}] 상품이 품절 되었습니다.`)
@@ -1450,7 +1696,8 @@ export default class Buy extends Component {
                 if (goods.saleEnd < order.orderDate) {
                     endGoodsList.push(goods)
                 }
-                console.log({goods})
+
+                //console.log({goods})
             }
         })
 
@@ -1544,7 +1791,8 @@ export default class Buy extends Component {
 
             //cardPayAmount A1.
             let cardPayAmount = this.state.orders[0].cardPrice //cardBlctOrders[0].cardPrice; // - this.state.blctToWon * this.state.cardBlctUseToken;
-            console.log('cardPayAmount A1 cardPayAmount', cardPayAmount );
+
+            //console.log('cardPayAmount A1 cardPayAmount', cardPayAmount );
 
             if (cardPayAmount <= 0) {
 
@@ -1568,6 +1816,18 @@ export default class Buy extends Component {
 
     //결제버튼 클릭시
     onBuyClick = async () => {
+        // const {data:loginUser} = await getConsumer();
+
+        // 어뷰저 체크
+        if (await ComUtil.isBlockedAbuser()) {
+            return
+        }
+
+        //마이너스, 1블리 이상 체크
+        if(this.useBlct < 0 || (this.useBlct > 0 && this.useBlct < 1)) {
+            alert('최소 1BLY 이상 사용 가능합니다.')
+            return
+        }
 
         //배송지정보 받는사람, 연락처, 주소, 주소상세 미입력시 중단
         if (!await this.checkValidation()) {
@@ -1575,10 +1835,13 @@ export default class Buy extends Component {
         }
 
         let goodsList = Object.assign([], this.state.goods);
-        let orderDate = ComUtil.getNow();    //주문일자생성
+
+        // 서버시간 가져오기
+        let { data:serverTodayTime } = await getServerTodayTime();
+        let orderDate = ComUtil.getNow(serverTodayTime);    //주문일자생성
         let couponInfo = Object.assign({}, this.state.couponInfo);
 
-        console.log(couponInfo)
+        //console.log(couponInfo)
 
         //orderGroup과 orderList 세팅..
         // let orderGroup = Object.assign({}, (this.state.selectedPayMethod==='cardBlct')? this.state.cardBlctOrderGroup : this.state.orderGroup);
@@ -1645,11 +1908,11 @@ export default class Buy extends Component {
             orderDetail.giftMsg = this.state.giftMsg
 
             // 쿠폰 사용시 쿠폰정보 저장
-            orderDetail.usedCouponNo = couponInfo.couponNo
+            orderDetail.usedCouponNo = couponInfo.value
             orderDetail.usedCouponBlyAmount = couponInfo.blyAmount
         });
 
-        console.log(orderList)
+        //console.log(orderList)
 
         // let ordersParams = {
         //     orderGroup : orderGroup,
@@ -1661,6 +1924,14 @@ export default class Buy extends Component {
         let validate = await this.orderValidate(orderGroup, orderList);
         if (!validate) return;
 
+        //TODO ::: 테스트 후 삭제 요망 ==================================
+        console.log(":::저장 전 마지막 값",{
+            blctToken: orderList[0].blctToken,
+            cardPrice: orderList[0].cardPrice,
+            usedCouponBlyAmount: orderList[0].usedCouponBlyAmount,
+        })
+        //TODO ::: 여기까지 ==================================
+
         let payMethod = orderGroup.payMethod;
 
         // PG - 신용카드 구매일경우 결제비번 없이 구매
@@ -1671,7 +1942,8 @@ export default class Buy extends Component {
                 buyingOrders: orderList
             }, () => {
 
-                console.log({orderList: JSON.stringify(orderList)})
+
+                //console.log({orderList: JSON.stringify(orderList)})
                 this.modalToggleOk();
             });
         }
@@ -1707,9 +1979,9 @@ export default class Buy extends Component {
         let buyingOrderGroup = Object.assign({}, this.state.buyingOrderGroup);
         let buyingOrderList = Object.assign([], this.state.buyingOrders);
 
-        console.log({buyingOrderList: JSON.stringify(buyingOrderList)})
+        //console.log({buyingOrderList: JSON.stringify(buyingOrderList)})
 
-        console.log(buyingOrderList)
+        //console.log(buyingOrderList)
 
         let { payMethod } = buyingOrderGroup;
         // if ( this.state.selectedPayMethod != buyingOrderGroup.payMethod){
@@ -1784,8 +2056,18 @@ export default class Buy extends Component {
                 //주문가격BLCT 최종 설정- cardBlct는 항상 1건임. 202003
                 // buyingOrderList[0].blctToken = this.state.cardBlctUseToken; ///////////BLCT 금액 수정. backEnd로 전달되는지 확인필요
                 // buyingOrderList[0].payMethod = payMethod;
-
+                //if(buyingOrderGroup.totalBlctToken > 0) {
+                    buyingOrderGroup.totalBlctToken = parseFloat(ComUtil.roundDown(new BigNumber(buyingOrderGroup.totalBlctToken).toNumber(),2));
+                    buyingOrderList.map( (order) => {
+                        if(order.blctToken > 0) {
+                            order.blctToken = parseFloat(ComUtil.roundDown(new BigNumber(order.blctToken).toNumber(),2));
+                        }
+                    });
+                //}
                 //카드먼저 처리하고 잘되면, Blct처리하기.
+
+                //console.log(buyingOrderGroup)
+                //console.log(buyingOrderList)
                 this.payPgOpen(buyingOrderGroup, buyingOrderList, true);
             }
 
@@ -1804,10 +2086,11 @@ export default class Buy extends Component {
             if(payMethod === "blct"){
 
                 buyingOrderGroup.payStatus = "ready";             //주문정보 미결제상태 세팅
+                buyingOrderGroup.totalBlctToken = parseFloat(new BigNumber(buyingOrderGroup.totalBlctToken).toNumber().toFixed(2));
                 buyingOrderList.map( (order) => {
                     // order.payMethod = buyingOrderGroup.payMethod; //주문정보 결제방법 세팅
                     order.payStatus = "ready";              //주문정보 미결제상태 세팅
-
+                    order.blctToken = parseFloat(new BigNumber(order.blctToken).toNumber().toFixed(2));
                     // order.cardPrice = 0; //202003 주문가격 최종설정..
                 });
 
@@ -1817,9 +2100,12 @@ export default class Buy extends Component {
                     orderDetailList: buyingOrderList
                 };
 
+                console.log({ordersParams})
+
 
 
                 let {data:returnedOrders} = await addOrdersTemp(ordersParams);
+                console.log({returnedOrders})
                 let {orderGroup:tmp_OrderGroup, orderDetailList:tmp_OrderList} = returnedOrders;
 
                 //console.log("tmp_OrderGroup",tmp_OrderGroup);
@@ -1853,8 +2139,8 @@ export default class Buy extends Component {
                 //}
             }
 
-            console.log('최종 orderList');
-            console.log(buyingOrderList);
+            //console.log('최종 orderList');
+            //console.log(buyingOrderList);
         }
     };
 
@@ -1887,7 +2173,7 @@ export default class Buy extends Component {
 
         let {data : result} = await scOntOrderGoodsBlct(orderGroupNo, orderListBlct, orderListPrice, ordersParams);
 
-        console.log('buy result : ', result);
+        //console.log('buy result : ', result);
         //스플래시 닫기
         this.setState({chainLoading: false});
 
@@ -1911,7 +2197,7 @@ export default class Buy extends Component {
         //파라미터로 변경, const orderList = Object.assign([], this.state.orders);
 
         // 주문자정보
-        const consumer = await getConsumerByConsumerNo(orderGroup.consumerNo);
+        const consumer = await getConsumer();
 
         // 주문정보(주문그룹정보,주문정보리스트) 임시저장 후 주문번호 가져오기
         orderGroup.payStatus = "ready";             //주문그룹정보 결제상태로 변경
@@ -1926,6 +2212,12 @@ export default class Buy extends Component {
         };
 
         let {data:returnedOrders} = await addOrdersTemp(ordersParams);
+        if(!returnedOrders) {
+            alert("주문을 다시 시도해주세요.")
+            this.props.history.goBack();
+            return;
+        }
+
         let {orderGroup:tmp_OrderGroup, orderDetailList:tmp_OrderList} = returnedOrders;
         const v_orderGroupNo = tmp_OrderGroup.orderGroupNo;
         const v_payMethod = tmp_OrderGroup.payMethod;
@@ -1947,7 +2239,10 @@ export default class Buy extends Component {
             buyer_addr: (consumer.data.addr+" "+consumer.data.addrDetail),    //주문자 주소
             buyer_postcode: consumer.data.zipNo,        //주문자 우편번호(5자리)
             m_redirect_url: Server.getFrontURL()+'/buyFinish',   //모바일일경우 리다이렉트 페이지 처리
-            app_scheme: 'blocery'   //모바일 웹앱 스키마명
+            app_scheme: 'blocery',   //모바일 웹앱 스키마명
+            display:{
+                card_quota:[0,2,3]  //할부개월수 비자카드 문제로 2개월 3개월 까지
+            }
         }
 
 
@@ -2008,7 +2303,7 @@ export default class Buy extends Component {
     };
 
     moveToAddressManagement = () =>  {
-        this.props.history.push('/mypage/addressManagement?consumerNo='+this.state.consumer.consumerNo);
+        this.props.history.push(`/mypage/addressManagement`);
     }
 
     // 선물하기
@@ -2057,27 +2352,25 @@ export default class Buy extends Component {
     };
 
     // 입력된 우편번호가 도서산간인지
-    searchNotDeliveryZipNo = async () => {
-        if(this.state.addressList && this.state.addressList.length > 0) {
-            const selectedAddress = this.state.addressList[this.state.addressIndex] || null
-            if(selectedAddress) {
-                const {data: res} = await getNotDeliveryZipNo(selectedAddress.zipNo);
-                if (res !== 100) {
-                    this.setState({notDelivery: true})
-                } else {
-                    this.setState({notDelivery: false})
-                }
-                if (this.state.jejuZipNo.includes(selectedAddress.zipNo) === true) {
-                    this.setState({jejuDelivery: true})
-                } else {
-                    this.setState({jejuDelivery: false})
-                }
-            }
+    searchNotDeliveryZipNo = async (zipNo) => {
+
+        const {data: res} = await getNotDeliveryZipNo(zipNo);
+
+        if (res !== 100) {
+            this.notDelivery = true
+        } else {
+            this.notDelivery = false
+        }
+        if (jejuZipNo.includes(zipNo) === true) {
+            this.jejuDelivery = true
+        } else {
+            this.jejuDelivery = false
         }
     }
 
     hopeDeliveryDateChange = ({goodsNo, hopeDeliveryDate}) => {
-        console.log({goodsNo, hopeDeliveryDate, group: this.state.orderGroupList})
+
+        //console.log({goodsNo, hopeDeliveryDate, group: this.state.orderGroupList})
 
         //그룹별 바인딩용 세팅
         const orderGroupList = Object.assign([], this.state.orderGroupList)
@@ -2096,8 +2389,15 @@ export default class Buy extends Component {
     }
     onCouponChange = (coupon) => {
 
+        console.log({coupon})
+
+        let couponBlyAmount = 0;
         //쿠폰 BLY
-        const {blyAmount: couponBlyAmount} = coupon
+        if(coupon){
+            const {blyAmount: couponBlyAmount1} = coupon
+            couponBlyAmount = couponBlyAmount1;
+        }
+
 
         const {
             blctToWon,              // 환율 BLY
@@ -2125,17 +2425,19 @@ export default class Buy extends Component {
         const totalOrderPrice = orgTotalOrderPrice - newState.orderGroup.totalCouponPrice
 
         // 쿠폰으로 할인받은 후 지급 해야할 BLY 356 / 46.43 = 7.66 BLY
-        const remainedTotalPriceToToken = ComUtil.roundDown(totalOrderPrice / blctToWon, 2);
+        //const remainedTotalPriceToToken = ComUtil.roundDown(totalOrderPrice / blctToWon, 2);
+        // const remainedTotalPriceToToken = parseFloat(new BigNumber(totalOrderPrice).div(blctToWon).toNumber().toFixed(3));
+        const remainedTotalPriceToToken = new BigNumber(totalOrderPrice).div(blctToWon).toNumber()
 
         //쿠폰으로 BLY를 지원 받았다면, payableBlct가 쿠폰 BLY 만큼 줄어들어야 한다
         newState.payableBlct = (remainedTotalPriceToToken > tokenBalance)? tokenBalance : remainedTotalPriceToToken
         newState.couponInfo = coupon
 
         this.setState(newState, () => {
-            this.calcTotalOrderPrice(this.state.orderGroup.totalBlctToken)
+            //사용한 bly
+            this.calcTotalOrderPrice(this.useBlct || 0)
         })
     }
-
 
     render() {
         if(!this.state.orders || !this.state.goods || !this.state.blctToWon) return null;
@@ -2218,7 +2520,7 @@ export default class Buy extends Component {
                 <ItemHeader>
                     <div>배송지 정보</div>
                     <Right>
-                        <Link to={'/mypage/addressManagement?consumerNo='+this.state.consumer.consumerNo}><u>배송지 수정/추가</u></Link>
+                        <Link to={'/mypage/addressManagement'}><u>배송지 수정/추가</u></Link>
                     </Right>
                 </ItemHeader>
                 <ItemDefaultBody>
@@ -2259,7 +2561,7 @@ export default class Buy extends Component {
                                     )
                                 }
                                 <div>
-                                    <Fade in={selectedAddress && this.state.jejuZipNo.includes(selectedAddress.zipNo) ? true : false} className="text-danger small">제주도는 추가 배송비(3,000원)가 부과됩니다.</Fade>
+                                    <Fade in={selectedAddress && jejuZipNo.includes(selectedAddress.zipNo) ? true : false} className="text-danger small">제주도는 추가 배송비(3,000원)가 부과됩니다.</Fade>
                                 </div>
                             </Div>
                         </Div>
@@ -2358,7 +2660,7 @@ export default class Buy extends Component {
                                 producer={producer}
                                 summary={summary}
                                 orderList={orderList}
-                                plusDeliveryFee={selectedAddress && this.state.jejuZipNo.includes(selectedAddress.zipNo)?true:false}   // true이면 배송비 3000원 추가
+                                plusDeliveryFee={selectedAddress && jejuZipNo.includes(selectedAddress.zipNo)?true:false}   // true이면 배송비 3000원 추가
                                 hopeDeliveryDateChange={this.hopeDeliveryDateChange}
                                 blctToWon={this.state.blctToWon}
                             />
@@ -2382,12 +2684,14 @@ export default class Buy extends Component {
                             <Flex mb={16} >
                                 <Div fw={500}>쿠폰 사용</Div>
                                 <Right fg={'adjust'} fontSize={12}>{ this.state.couponBlyAmount > 0 && `${ComUtil.addCommas(calcBlyToWon(this.state.couponBlyAmount, this.state.blctToWon))}원`}</Right>
-                                </Flex>
+                            </Flex>
                             {/*<Div mb={16} fg={'secondary'} fontSize={12}>* 주문금액을 초과하여 사용할 수 없습니다</Div>*/}
                             <Coupon
                                 // payableBlct={this.state.payableBlct}                            // 사용가능 BLY
                                 // blctToWon={this.state.blctToWon}                                // BLY 환율
                                 //orgTotalOrderPrice={this.state.orderGroup.orgTotalOrderPrice}   // 원래 총 결제금액
+                                goods={this.state.goods[0]}
+                                blctToWon={this.state.blctToWon}
                                 onChange={this.onCouponChange}
                                 goodsBlyAmount={this.state.orderGroup.totalCurrentPrice / this.state.blctToWon}
                                 totalBlyAmount={this.state.orders[0].blctToken}
@@ -2396,7 +2700,7 @@ export default class Buy extends Component {
                     }
 
                     <ShadowBox relative>
-                        <Div mb={16} fw={500}>BLY 토큰 사용</Div>
+                        <Div mb={16} fw={500}>BLY 사용</Div>
                         <Flex justifyContent={'center'} absolute top={0} right={0} style={{borderTopRightRadius: 6}} width={45} height={45} bg={'backgroundDark'} p={10}><img src={Bly} style={{width: '100%'}} /></Flex>
 
                         <BlctPayableCard
@@ -2442,7 +2746,7 @@ export default class Buy extends Component {
                                         <Div>쿠폰 사용</Div>
                                         <Right>
                                             {
-                                                `${ComUtil.addCommas(this.state.couponBlyAmount)} BLY ( - ${ComUtil.addCommas(ComUtil.roundDown(this.state.couponBlyAmount * this.state.blctToWon, 0))} 원)`
+                                                `${ComUtil.addCommas(this.state.couponBlyAmount.toFixed(2))} BLY ( - ${ComUtil.addCommas(ComUtil.roundDown(this.state.couponBlyAmount * this.state.blctToWon, 0))} 원)`
                                             }
                                         </Right>
                                     </Flex>
@@ -2455,7 +2759,7 @@ export default class Buy extends Component {
                                         <Right textAlign={'right'}>
                                             <Div>
                                                 {
-                                                    `${ComUtil.addCommas(this.state.orderGroup.totalBlctToken)} BLY ( - ${ComUtil.addCommas(ComUtil.roundDown(this.state.orderGroup.totalBlctToken * this.state.blctToWon, 0))} 원)`
+                                                    `${ComUtil.addCommas(ComUtil.roundDown(this.state.orderGroup.totalBlctToken, 2))} BLY ( - ${ComUtil.addCommas(ComUtil.roundDown(this.state.orderGroup.totalBlctToken * this.state.blctToWon, 0))} 원)`
                                                 }
                                             </Div>
                                         </Right>
@@ -2476,7 +2780,7 @@ export default class Buy extends Component {
                             {/*</Right>*/}
                             {/*}*/}
                             <Right>
-                                {ComUtil.addCommas(this.state.orderGroup.totalOrderPrice)}원
+                                {ComUtil.addCommas(ComUtil.roundDown(this.state.orderGroup.totalOrderPrice, 0))}원
                             </Right>
 
                         </Flex>
@@ -2490,7 +2794,7 @@ export default class Buy extends Component {
                         py={15}
                         block
                         fontSize={18.5}
-                        onClick={this.onBuyClick}> {ComUtil.addCommas(this.state.orderGroup.totalOrderPrice)} 원 결제</Button>
+                        onClick={this.onBuyClick}> {ComUtil.addCommas(ComUtil.roundDown(this.state.orderGroup.totalOrderPrice, 0))} 원 결제</Button>
 
 
                 <ToastContainer/>

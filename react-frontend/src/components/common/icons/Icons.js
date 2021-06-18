@@ -33,6 +33,7 @@ import CateMeat from '~/images/icons/category/ic_category_meat.svg'
 import CateProcFood from '~/images/icons/category/ic_category_procFood.svg'
 import CateRice from '~/images/icons/category/ic_category_rice.svg'
 import CateVeggies from '~/images/icons/category/ic_category_veggies.svg'
+import CateGift from '~/images/icons/category/ic_category_gift.png'
 
 import BackArrow from '~/images/icons/ic_back_arrow.svg'
 import BackClose from '~/images/icons/ic_back_close.svg'
@@ -107,7 +108,8 @@ const IconCateFruit = ({...rest}) => <img src={CateFruit} {...rest} alt={'과일
 const IconCateMeat = ({...rest}) => <img src={CateMeat} {...rest} alt={'축산'}/>
 const IconCateProcFood = ({...rest}) => <img src={CateProcFood} {...rest} alt={'가공식품'}/>
 const IconCateRice = ({...rest}) => <img src={CateRice} {...rest} alt={'쌀/잡곡'}/>
-const IconCateVeggies = ({...rest}) => <img src={CateVeggies}  {...rest} alt={'쌀/잡곡'}/>
+const IconCateVeggies = ({...rest}) => <img src={CateVeggies}  {...rest} alt={'채소'}/>
+const IconCateGift = ({...rest}) => <img src={CateGift}  {...rest} alt={'선물세트'}/>
 
 
 const IconBackArrow = ({...rest}) => <img src={BackArrow} {...rest} alt={'뒤로가기'}/>
@@ -279,6 +281,7 @@ IconCateMeat.defaultProps = {style: Style}
 IconCateProcFood.defaultProps = {style: Style}
 IconCateRice.defaultProps = {style: Style}
 IconCateVeggies.defaultProps = {style: Style}
+IconCateGift.defaultProps = {styele: Style}
 
 IconBackArrow.defaultProps = {}
 IconBackClose.defaultProps = {}
@@ -316,6 +319,7 @@ export {
     IconCateProcFood,
     IconCateRice,
     IconCateVeggies,
+    IconCateGift,
 
 
     IconBackArrow,

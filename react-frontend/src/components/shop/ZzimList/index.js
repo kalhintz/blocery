@@ -39,7 +39,7 @@ export default class ZzimList extends Component {
 
     render() {
         const data = this.state.zzimGoodsList
-        console.log(data)
+        //console.log(data)
         return (
             <Fragment>
                 <ShopXButtonNav underline historyBack>찜한 상품</ShopXButtonNav>
@@ -62,6 +62,7 @@ export default class ZzimList extends Component {
                                         discountRate={Math.round(goods.discountRate)}
                                         remainedCnt={goods.remainedCnt}
                                         blyReview={goods.blyReviewConfirm}
+                                        buyingRewardFlag={goods.buyingRewardFlag}
                                     />
 
                                     <Div

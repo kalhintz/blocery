@@ -2,7 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react'
 import { SpinnerBox } from '~/components/common'
 
 import { GrandTitle } from '~/components/common/texts'
-import { getConsumerGoodsJustSorted } from '~/lib/goodsApi'
+import { getConsumerGoodsJustCached } from '~/lib/goodsApi'
 import {HalfGoodsList} from '~/components/common/lists'
 import Footer from '../footer'
 
@@ -18,8 +18,9 @@ const NewestGoods = (props) => {
 
     async function search() {
 
-        const sorter = {direction: 'DESC', property: 'timestamp'}
-        const { data } = await getConsumerGoodsJustSorted(sorter)
+        // const sorter = {direction: 'DESC', property: 'timestamp'}
+        // const { data } = await getConsumerGoodsJustSorted(sorter)
+        const { data } = await getConsumerGoodsJustCached()
 
         if(data.length > limitCount){
             data.splice(limitCount, data.length);

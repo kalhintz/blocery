@@ -1,22 +1,40 @@
-import React, {Component} from "react";
+import React, {Component, useState, useEffect} from "react";
 import ComUtil from "~/util/ComUtil";
-import {getConsumerCouponList} from "~/lib/adminApi";
+import {getAllConsumers, getConsumerCouponList} from "~/lib/adminApi";
 import {BlocerySpinner, ExcelDownload} from "~/components/common";
-import { Div, Span, Flex, Right } from '~/styledComponents/shared/Layouts'
+import {Div, Span, Flex, Right, Hr} from '~/styledComponents/shared/Layouts'
 import {AgGridReact} from "ag-grid-react";
 import {Button, ButtonGroup, Table} from "reactstrap";
 import {SingleDatePicker} from "react-dates";
 import moment from "moment";
 import {getLoginAdminUser} from "~/lib/loginApi";
+import SearchDates from '~/components/common/search/SearchDates'
+import {getCouponMaster} from "~/lib/adminApi";
+import {FilterGroup} from "~/styledComponents/shared";
+import InputFilter from "~/components/common/gridFilter/InputFilter";
+import CheckboxFilter from "~/components/common/gridFilter/CheckboxFilter";
+import FilterContainer from "~/components/common/gridFilter/FilterContainer";
+
+const CouponMemoRenderer = (props) => {
+    const [couponMemo, setCouponMemo] = useState()
+    useEffect(() => {
+
+        getCouponMaster({masterNo:props.data.masterNo}).then(res => {
+            setCouponMemo(res.data.couponMemo)
+        })
+
+    }, [])
+    return <div>{couponMemo === undefined ? '...' : couponMemo}</div>
+}
 
 export default class ConsumerCouponList extends Component {
     constructor(props) {
         super(props);
         this.state = {
             loading: false,
-            selectedGubun: 'all',
-            startDate: null,
-            endDate: null,
+            selectedGubun: 'day', //'week': 최초화면을 오늘(day)또는 1주일(week)로 설정.
+            startDate: moment(moment().toDate()),
+            endDate: moment(moment().toDate()),
             data: [],
             excelData: null,
             columnDefs: [
@@ -25,6 +43,7 @@ export default class ConsumerCouponList extends Component {
                 {headerName: "연락처", field: "phone", width: 130, cellStyle:this.getCellStyle({cellAlign: 'center'})},
                 {headerName: "Email", field: "email", width: 160, cellStyle:this.getCellStyle({cellAlign: 'center'})},
                 {headerName: "쿠폰명", field: "couponTitle", width: 200, cellStyle:this.getCellStyle({cellAlign: 'center'})},
+                {headerName: "쿠폰메모", field: "couponMemo", width: 200, cellRenderer: "couponMemoRenderer", filter: false},
                 {headerName: "일련번호", field: "hexCouponNo", width: 130, cellStyle:this.getCellStyle({cellAlign: 'center'})},
                 {headerName: "발급일", field: "issuedDate", width: 130, cellStyle:this.getCellStyle({cellAlign: 'center'}), cellRenderer: 'formatDateTimeRenderer'},
                 {headerName: "지급처", field: "manualIssueFlag", width: 130, cellStyle:this.getCellStyle({cellAlign: 'center'}),
@@ -60,11 +79,18 @@ export default class ConsumerCouponList extends Component {
             defaultColDef: {
                 width: 110,
                 resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             frameworkComponents: {
                 formatCurrencyRenderer: this.formatCurrencyRenderer,
                 formatDateRenderer: this.formatDateRenderer,
-                formatDateTimeRenderer: this.formatDateTimeRenderer
+                formatDateTimeRenderer: this.formatDateTimeRenderer,
+                couponMemoRenderer: CouponMemoRenderer
             },
             overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
             overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
@@ -111,6 +137,14 @@ export default class ConsumerCouponList extends Component {
         await this.search();
     }
 
+    //[이벤트] 그리드 로드 후 callback 이벤트
+    onGridReady(params) {
+        //API init
+        this.gridApi = params.api
+        //this.gridColumnApi = params.columnApi
+        // console.log("onGridReady");
+    }
+
     search = async (searchButtonClicked) => {
 
         if (searchButtonClicked) {
@@ -120,26 +154,32 @@ export default class ConsumerCouponList extends Component {
             }
         }
 
-        this.setState({loading: true});
-
-        const { status, data } = (searchButtonClicked)? await getConsumerCouponList( moment(this.state.startDate).format('YYYYMMDD'), //날짜검색
-            moment(this.state.endDate).format('YYYYMMDD'),
-            null)
-            : await getConsumerCouponList( null, null, this.state.selectedGubun ); //구분검색
+        if(this.gridApi) {
+            //ag-grid 레이지로딩중 보이기
+            this.gridApi.showLoadingOverlay();
+        }
+        const params = {
+            startDate:this.state.startDate ? moment(this.state.startDate).format('YYYYMMDD'):null,
+            endDate:this.state.endDate ? moment(this.state.endDate).format('YYYYMMDD'):null
+        };
+        const { status, data } = await getConsumerCouponList(params);
 
         if (status !== 200) {
             alert('응답이 실패 하였습니다');
             return;
         }
 
-        // console.log(data);
-
         this.setState({
-            data: data,
-            loading: false
+            data: data
         })
 
         this.setExcelData();
+
+        //ag-grid api
+        if(this.gridApi) {
+            //ag-grid 레이지로딩중 감추기
+            this.gridApi.hideOverlay()
+        }
     };
 
     setExcelData = () => {
@@ -174,93 +214,75 @@ export default class ConsumerCouponList extends Component {
         }]
     }
 
-
-    //검색 조건들 설정..//////////////
-    selectCondition = async (gubun) => {
-        console.log('selectCondition', gubun);
-
-        await this.setState({ //gubun이 변경될 때까지 대기필요.
-            selectedGubun: gubun
+    onDatesChange = async (data) => {
+        await this.setState({
+            startDate: data.startDate,
+            endDate: data.endDate,
+            selectedGubun: data.gubun
         });
-
-        await this.search();
-    }
-
-    onStartDateChange = async (date) => {
-        console.log('onStartDateChange', moment(date).format('YYYY-MM-DD'));
-
-        await this.setState({
-            startDate: moment(date)
-        })
-
-    }
-    onEndDateChange = async (date) => {
-        console.log('onEndDateChange', moment(date).format('YYYY-MM-DD'));
-
-        await this.setState({
-            endDate: moment(date)
-        })
+        if(data.isSearch) {
+            await this.search();
+        }
     }
 
     render() {
         return (
             <div>
-                {
-                    this.state.loading && <BlocerySpinner/>
-                }
-
-                <div className="p-1">
-                    조회
-                </div>
-
                 <div>
                     <Flex bc={'secondary'} m={3} p={7}>
-                        <Div pl={10} pr={20} py={1}> 기 간 </Div>
+                        <Div pl={10} pr={20} py={1}> 기 간 (발급일) </Div>
                         <Div ml={10} >
-                            <div className="d-flex">
-                                <ButtonGroup>
-                                    <Button color="secondary" onClick={() => this.selectCondition('day')} active={this.state.selectedGubun === 'day'}> 오늘 </Button>
-                                    <Button color="secondary" onClick={() => this.selectCondition('week')} active={this.state.selectedGubun === 'week'}> 1주일 </Button>
-                                    <Button color="secondary" onClick={() => this.selectCondition('month')} active={this.state.selectedGubun === 'month'}> 1개월 </Button>
-                                    <Button color="secondary" onClick={() => this.selectCondition('3month')} active={this.state.selectedGubun === '3month'}> 3개월 </Button>
-                                    <Button color="secondary" onClick={() => this.selectCondition('6month')} active={this.state.selectedGubun === '6month'}> 6개월 </Button>
-                                    <Button color="secondary" onClick={() => this.selectCondition('all')} active={this.state.selectedGubun === 'all'}> 전체 </Button>
-                                </ButtonGroup>
-
-                                <div className="ml-3">
-                                    <SingleDatePicker
-                                          placeholder="검색시작일"
-                                          date={ this.state.startDate}
-                                          onDateChange={this.onStartDateChange}
-                                          focused={this.state[`focused`]} // PropTypes.bool
-                                          onFocusChange={({ focused }) => this.setState({ [`focused`]:focused })} // PropTypes.func.isRequired
-                                          id={"startDate"} // PropTypes.string.isRequired,
-                                          numberOfMonths={1}
-                                          withPortal={false}
-                                          isOutsideRange={() => false}
-                                          small
-                                          readOnly
-                                    /> ~
-                                    <SingleDatePicker
-                                          placeholder="검색종료일"
-                                          date={ this.state.endDate}
-                                          onDateChange={this.onEndDateChange}
-                                          focused={this.state[`focused2`]} // PropTypes.bool
-                                          onFocusChange={({ focused }) => this.setState({ [`focused2`]:focused })} // PropTypes.func.isRequired
-                                          id={"endDate"} // PropTypes.string.isRequired,
-                                          numberOfMonths={1}
-                                          withPortal={false}
-                                          isOutsideRange={() => false}
-                                          small
-                                          readOnly
-                                    />
-                                </div>
+                            <Flex>
+                                <SearchDates
+                                    gubun={this.state.selectedGubun}
+                                    startDate={this.state.startDate}
+                                    endDate={this.state.endDate}
+                                    onChange={this.onDatesChange}
+                                />
 
                                 <Button className="ml-3" color="primary" onClick={() => this.search(true)}> 검 색 </Button>
-                            </div>
+                            </Flex>
                         </Div>
                     </Flex>
                 </div>
+                <FilterContainer gridApi={this.gridApi} excelFileName={'쿠폰 지급목록'}>
+                    <FilterGroup>
+                        <InputFilter
+                            gridApi={this.gridApi}
+                            columns={[
+                                {field: 'couponNo', name: '쿠폰NO', width: 80},
+                                {field: 'name', name: '이름'},
+                                {field: 'phone', name: '연락처'},
+                                {field: 'email', name: 'Email'},
+                                {field: 'couponTitle', name: '쿠폰명'},
+                                {field: 'hexCouponNo', name: '일련번호'},
+                                {field: 'issuedDate', name: '발급일'},
+                            ]}
+                            isRealTime={true}
+                        />
+                    </FilterGroup>
+                    <Hr/>
+                    <FilterGroup>
+                        <CheckboxFilter
+                            gridApi={this.gridApi}
+                            field={'manualIssueFlag'}
+                            name={'지급처'}
+                            data={[
+                                {value: '수동(관리자)', name: '수동(관리자)'},
+                                {value: '자동', name: '자동'},
+                            ]}
+                        />
+                        <CheckboxFilter
+                            gridApi={this.gridApi}
+                            field={'usedFlag'}
+                            name={'사용여부'}
+                            data={[
+                                {value: '사용', name: '사용'},
+                                {value: '미사용', name: '미사용'},
+                            ]}
+                        />
+                    </FilterGroup>
+                </FilterContainer>
                 <div className="d-flex align-items-baseline p-1">
                     <ExcelDownload data={this.state.excelData}
                                    fileName="소비자 쿠폰지급내역"
@@ -276,23 +298,23 @@ export default class ConsumerCouponList extends Component {
                         id="myGrid"
                         className="ag-theme-balham"
                         style={{
-                            height: '550px'
+                            height: '600px'
                         }}
                     >
                         <AgGridReact
-                            enableSorting={true}                //정렬 여부
-                            enableFilter={true}                 //필터링 여부
+                            // enableSorting={true}                //정렬 여부
+                            // enableFilter={true}                 //필터링 여부
                             floatingFilter={true}               //Header 플로팅 필터 여부
                             columnDefs={this.state.columnDefs}  //컬럼 세팅
                             defaultColDef={this.state.defaultColDef}
                             // components={this.state.components}  //custom renderer 지정, 물론 정해져있는 api도 있음
                             frameworkComponents={this.state.frameworkComponents}
-                            enableColResize={true}              //컬럼 크기 조정
+                            // enableColResize={true}              //컬럼 크기 조정
                             overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                             overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
-                            // onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
+                            onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
                             rowData={this.state.data}
-                            rowHeight={75}
+                            rowHeight={35}
                         >
                         </AgGridReact>
                     </div>

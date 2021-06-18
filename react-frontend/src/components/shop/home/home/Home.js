@@ -31,13 +31,13 @@ const Home = (props) => {
         sessionStorage.setItem('blctToWon', blctToWon);
     }
 
-    function setScroll(){
-        window.scrollTo(0, 0)
-    }
-
-    useEffect(()=>{
-        setScroll()
-    })
+    // function setScroll(){
+    //     window.scrollTo(0, 0)
+    // }
+    //
+    // useEffect(()=>{
+    //     setScroll()
+    // })
 
 
     return (
@@ -54,7 +54,7 @@ const Home = (props) => {
                         <Route exact path="/" component={TodaysDeal} />
                         <Route path="/home/1" component={TodaysDeal} />
 
-                        <Route path="/home/2" component={BlyTime} />
+                        {/*<Route path="/home/2" component={BlyTime} />*/}
                         <Route path="/home/3" component={TimeSale} />
 
                         <Route path="/home/superReward" component={SuperReward} />

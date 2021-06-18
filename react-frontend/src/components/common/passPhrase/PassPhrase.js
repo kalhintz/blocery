@@ -71,6 +71,23 @@ class PassPhrase extends React.Component {
     passPhraseDoClick = (e) => {
         let curUpw='',i=1;
         let pincode = e.currentTarget.textContent;
+        //console.log("pincode",pincode);
+        if(
+            !(
+                String(pincode) === "0" ||
+                String(pincode) === "1" ||
+                String(pincode) === "2" ||
+                String(pincode) === "3" ||
+                String(pincode) === "4" ||
+                String(pincode) === "5" ||
+                String(pincode) === "6" ||
+                String(pincode) === "7" ||
+                String(pincode) === "8" ||
+                String(pincode) === "9"
+            )
+        ){
+            return false;
+        }
         //console.log(e.currentTarget.textContent);
         //return;
         curUpw = String(this.passPhraseAuthNo);

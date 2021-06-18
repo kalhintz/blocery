@@ -10,9 +10,10 @@ import Select from 'react-select'
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import GoodsQnaAnswer from "./WebGoodsQnaAnswer";
+import {Div, Flex} from "~/styledComponents/shared";
 
 export default class WebGoodsQnaList extends Component {
     constructor(props) {
@@ -24,15 +25,20 @@ export default class WebGoodsQnaList extends Component {
             columnDefs: this.getColumnDefs(),
             defaultColDef: {
                 width: 100,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             components: {
                 formatCurrencyRenderer: this.formatCurrencyRenderer,
                 formatDateRenderer: this.formatDateRenderer
             },
             frameworkComponents: {
-                goodsQnaStatRenderer: this.goodsQnaStatRenderer,
-                directGoodsRenderer: this.directGoodsRenderer
+                goodsQnaStatRenderer: this.goodsQnaStatRenderer
             },
             rowSelection: 'single',
             overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
@@ -49,22 +55,11 @@ export default class WebGoodsQnaList extends Component {
 
             searchFilter: {
                 itemName: '',
-                status: 'all'
+                status: 'ready'
             },
         }
 
         this.titleOpenAnswerPopup = "상품답변하기";
-    }
-
-    //주문상태 명칭 가져오기
-    getPayStatusNm = (payStatus) => {
-        let payStatusNm = "";
-        if(payStatus === "paid"){
-            payStatusNm = '결제완료';
-        } else if(payStatus === "cancelled"){
-            payStatusNm = '주문취소';
-        }
-        return payStatusNm;
     }
 
     //[이벤트] 그리드 로드 후 callback 이벤트
@@ -87,15 +82,14 @@ export default class WebGoodsQnaList extends Component {
             cellStyle:this.getCellStyle({cellAlign: 'center'}),
             filterParams: {
                 clearButton: true
-            },
-            sort:"desc"
+            }
         };
 
         let goodsQueColumn = {
             headerName: "상품문의", field: "goodsQue",
             suppressFilter: true, //no filter
             suppressSizeToFit: true,
-            width: 350,
+            width: 300,
             autoHeight:true,
             cellStyle:this.getCellStyle({whiteSpace:"pre-line"}),
             filterParams: {
@@ -117,48 +111,17 @@ export default class WebGoodsQnaList extends Component {
                 //기공된 필터링 데이터로 필터링 되게 적용
                 let goodsQnaStat = params.data.goodsQnaStat;
                 let goodsQnaStatNm = "";
-                if(goodsQnaStat === "ready") goodsQnaStatNm = "답변대기";
-                else if(goodsQnaStat === "success") goodsQnaStatNm = "답변완료";
+                if(goodsQnaStat === "ready") goodsQnaStatNm = "미응답";
+                else if(goodsQnaStat === "success") goodsQnaStatNm = "응답";
 
                 return goodsQnaStatNm;
             }
         };
 
-        // 예약 즉시 구분
-
-        let directGoodsColumn = {
-            headerName: "구분", field: "directGoods",
-            suppressSizeToFit: true,
-            width: 80,
-            cellStyle:this.getCellStyle({cellAlign: 'center'}),
-            cellRenderer: "directGoodsRenderer",
-            filterParams: {
-                clearButton: true //클리어버튼
-            }
-        };
-
         let columnDefs = [
             goodsQnaNoColumn,
-            directGoodsColumn,
             {
-                headerName: "상품번호", field: "goodsNo",
-                width: 100,
-                cellStyle:this.getCellStyle({cellAlign: 'center'}),
-                filterParams: {
-                    clearButton: true //클리어버튼
-                }
-            },
-            {
-                headerName: "상품명", field: "goodsName",
-                width: 350,
-                cellStyle:this.getCellStyle,
-                filterParams: {
-                    clearButton: true //클리어버튼
-                }
-            },
-            goodsQueColumn,
-            {
-                headerName: "작성일", field: "goodsQueDate",
+                headerName: "문의일시", field: "goodsQueDate",
                 suppressSizeToFit: true,
                 width: 150,
                 cellStyle:this.getCellStyle,
@@ -171,17 +134,42 @@ export default class WebGoodsQnaList extends Component {
                     return ComUtil.utcToString(params.data.goodsQueDate,'YYYY-MM-DD HH:MM');
                 }
             },
+            goodsQnaStatColumn,
             {
-                headerName: "작성자", field: "consumerName",
-                suppressSizeToFit: true,
+                headerName: "상품번호", field: "goodsNo",
                 width: 100,
                 cellStyle:this.getCellStyle({cellAlign: 'center'}),
                 filterParams: {
                     clearButton: true //클리어버튼
                 }
             },
-            goodsQnaStatColumn
-
+            {
+                headerName: "상품명", field: "goodsName",
+                width: 300,
+                cellStyle:this.getCellStyle,
+                filterParams: {
+                    clearButton: true //클리어버튼
+                }
+            },
+            {
+                headerName: "판매가", field: "currentPrice",
+                width: 100,
+                cellStyle:this.getCellStyle({cellAlign: 'right'}),
+                cellRenderer: 'formatCurrencyRenderer',
+                filterParams: {
+                    clearButton: true //클리어버튼
+                }
+            },
+            goodsQueColumn,
+            {
+                headerName: "소비자", field: "consumerName",
+                suppressSizeToFit: true,
+                width: 100,
+                cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                filterParams: {
+                    clearButton: true //클리어버튼
+                }
+            }
         ];
 
         return columnDefs
@@ -216,12 +204,11 @@ export default class WebGoodsQnaList extends Component {
     //Ag-Grid Cell 상품문의상태 렌더러
     goodsQnaStatRenderer = ({value, data:rowData}) => {
         let txtColor = rowData.goodsQnaStat === 'ready' ? 'text-info' : null;
-        // let goodsQnaStatBtnVal = rowData.goodsQnaStat === 'success' ? '답변보기':'답변하기';
         let v_goodsQnaStatNm = value;
         return (
             <Cell height={this.rowHeight}>
-                <div style={{textAlign:'center'}}>
-                    <span className={txtColor}>({v_goodsQnaStatNm})</span><br/>
+                <Flex justifyContent={'center'}>
+                    <Div fg={'green'} mr={10}>({v_goodsQnaStatNm})</Div>
                     {
                         rowData.goodsQnaStat === 'success' ?
                             <Button size={'sm'} color={'secondary'}
@@ -231,15 +218,9 @@ export default class WebGoodsQnaList extends Component {
                                     onClick={this.openAnswerPopup.bind(this, rowData)}>답변하기</Button>
                     }
 
-                </div>
+                </Flex>
             </Cell>
         );
-    }
-
-    //즉시 예약상품 랜더
-    directGoodsRenderer = ({value, data:rowData}) => {
-        let directGoodsText = rowData.directGoods ? "즉시" : "예약";
-        return (<span>{directGoodsText}</span>)
     }
 
     //Ag-Grid 주문상태 필터링용 온체인지 이벤트 (데이터 동기화)
@@ -258,7 +239,6 @@ export default class WebGoodsQnaList extends Component {
     async componentDidMount(){
         //로그인 체크
         const loginInfo = await getLoginProducerUser();
-        //console.log('userType',this.props.history)
         if(!loginInfo) {
             this.props.history.push('/producer/webLogin')
         }
@@ -281,7 +261,7 @@ export default class WebGoodsQnaList extends Component {
         let { data:serverToday } = await getServerToday();
         this.serverToday = serverToday;
 
-        const { status, data } = await getGoodsQnaListByProducerNo(this.state.searchFilter.itemName, this.state.searchFilter.status);
+        const { status, data } = await getGoodsQnaListByProducerNo(this.state.searchFilter.status);
         if(status !== 200){
             alert('응답이 실패 하였습니다');
             return
@@ -309,20 +289,6 @@ export default class WebGoodsQnaList extends Component {
 
     setFilter = async() => {
         const filterItems = Object.assign({}, this.state.filterItems);
-
-        const { data } = await getItems(true);
-        let items = data.map(item => {
-            return{
-                value: item.itemName,
-                label: item.itemName
-            }
-        })
-
-        items.splice(0,0,{
-            value: '',
-            label: '대분류 선택'
-        })
-
         let statusItems = [
             {
                 value:'all',
@@ -330,15 +296,13 @@ export default class WebGoodsQnaList extends Component {
             },
             {
                 value:'ready',
-                label:'답변대기'
+                label:'미응답'
             },
             {
                 value:'success',
-                label:'답변완료'
+                label:'응답'
             }
         ];
-
-        filterItems.items = items;
         filterItems.statusItems = statusItems;
 
         this.setState({
@@ -350,34 +314,6 @@ export default class WebGoodsQnaList extends Component {
     onFilterSearchClick = async () => {
         // filter값 적용해서 검색하기
         await this.search();
-    }
-
-    // 초기화 버튼
-    onInitClick= async() => {
-        const filter = Object.assign({}, this.state.searchFilter)
-
-        filter.itemName = '';
-        filter.status = 'all';
-
-        this.setState({
-            searchFilter: filter
-        });
-
-        await this.search();
-    }
-
-    onItemChange = (data) => {
-        const filter = Object.assign({}, this.state.searchFilter)
-
-        if(data.label==='대분류 선택') {
-            filter.itemName = ''
-        } else {
-            filter.itemName = data.label
-        }
-
-        this.setState({
-            searchFilter: filter
-        })
     }
 
     onStatusChange = (e) => {
@@ -413,6 +349,10 @@ export default class WebGoodsQnaList extends Component {
         }
     }
 
+    copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
+    }
+
     render() {
         const state = this.state
         return(
@@ -421,15 +361,7 @@ export default class WebGoodsQnaList extends Component {
                     <div className='border p-3'>
                         <div className='pt-1 pb-1 d-flex'>
                             <div className='d-flex'>
-                                <div className='d-flex justify-content-center align-items-center textBoldLarge' fontSize={'small'}>상품분류</div>
-                                <div className='pl-3' style={{width:200}}>
-                                    <Select
-                                        options={state.filterItems.items}
-                                        value={state.filterItems.items.find(item => item.value === state.searchFilter.itemName)}
-                                        onChange={this.onItemChange}
-                                    />
-                                </div>
-                                <div className='d-flex align-items-center ml-5'>
+                                <div className='d-flex align-items-center'>
                                     <div className='textBoldLarge' fontSize={'small'}>상태 &nbsp;&nbsp; | </div>
                                     <div className='pl-3 align-items-center'>
                                         {
@@ -447,13 +379,6 @@ export default class WebGoodsQnaList extends Component {
                                     <span fontSize={'small'}>검색</span>
                                     {/*</div>*/}
                                 </Button>
-
-                                <Button color={'secondary'} size={'sm'} className='ml-2' onClick={this.onInitClick}>
-                                    {/*<div className="d-flex">*/}
-                                    <span fontSize={'small'}>초기화 </span>
-                                    {/*</div>*/}
-                                </Button>
-
                             </div>
                         </div>
                     </div>
@@ -463,7 +388,6 @@ export default class WebGoodsQnaList extends Component {
                     <div className="">
                         총 {this.state.totalListCnt} 개
                     </div>
-
                 </div>
                 <div
                     id="myGrid"
@@ -474,8 +398,8 @@ export default class WebGoodsQnaList extends Component {
                 >
 
                     <AgGridReact
-                        enableSorting={true}                //정렬 여부
-                        enableFilter={true}                 //필터링 여부
+                        // enableSorting={true}                //정렬 여부
+                        // enableFilter={true}                 //필터링 여부
                         floatingFilter={true}               //Header 플로팅 필터 여부
                         columnDefs={this.state.columnDefs}  //컬럼 세팅
                         defaultColDef={this.state.defaultColDef}
@@ -483,7 +407,7 @@ export default class WebGoodsQnaList extends Component {
                         rowHeight={this.rowHeight}
                         //gridAutoHeight={true}
                         //domLayout={'autoHeight'}
-                        enableColResize={true}              //컬럼 크기 조정
+                        // enableColResize={true}              //컬럼 크기 조정
                         overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                         overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                         onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
@@ -496,6 +420,7 @@ export default class WebGoodsQnaList extends Component {
                         // onRowSelected={this.onRowSelected.bind(this)}
                         // onSelectionChanged={this.onSelectionChanged.bind(this)}
                         // suppressRowClickSelection={true}    //true : 셀 클릭시 체크박스 체크 안됨, false : 셀 클릭시 로우 단위로 선택되어 체크박스도 자동 체크됨 [default 값은 false]
+                        onCellDoubleClicked={this.copy}
                     >
                     </AgGridReact>
                 </div>

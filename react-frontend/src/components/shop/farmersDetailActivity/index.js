@@ -228,6 +228,7 @@ const FarmersDetailActivity = (props) => {
                                             discountRate={Math.round(goods.discountRate)}
                                             remainedCnt={goods.remainedCnt}
                                             blyReview={goods.blyReviewConfirm}
+                                            buyingRewardFlag={goods.buyingRewardFlag}
                                         />
                                         <SlideItemContent
                                             className={'p-2'}

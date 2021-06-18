@@ -20,8 +20,6 @@ import styled, {css} from 'styled-components'
 import {Icon} from '~/components/common/icons'
 
 import { IoMdHeart, IoMdHeartEmpty } from "react-icons/io";
-import { connect } from 'react-redux'
-import * as actions  from '~/reducers/CartReducer'
 import { addCart } from '~/lib/cartApi'
 import { getGoodsByGoodsNo } from '~/lib/goodsApi'
 import { getDeliveryFee } from '~/util/bzLogic'
@@ -29,7 +27,9 @@ import {getZzim, deleteZzim, addZzim, getConsumer} from '~/lib/shopApi'
 import {getLoginUserType} from '~/lib/loginApi'
 import { ToastContainer, toast } from 'react-toastify'
 import {getValue} from "~/styledComponents/Util";
-import {color} from "~/styledComponents/Properties";                              //토스트
+import {color} from "~/styledComponents/Properties";
+import {useRecoilState} from "recoil";
+import {cartCountrState} from "~/recoilState";                              //토스트
 
 
 const StyledHeart = styled(IoMdHeart)`
@@ -49,6 +49,9 @@ const StyledHeart = styled(IoMdHeart)`
 
 //animation: ${aniKey.scaleUp} 0.3s ease-in-out;
 const BuyFooter = (props) => {
+
+    const [count, setCounter] = useRecoilState(cartCountrState)
+
     const {goods} = props
 
     //구매하기 펼치기 여부
@@ -191,10 +194,25 @@ const BuyFooter = (props) => {
             return false
         }
 
+        let vChk = 0;
+        //포텐타임 기간을 앞둔 상품인지 - 사전에 한번 더 체크.
+        if (goods.timeSaleStart && moment().isBefore(goods.timeSaleStart)){
+            vChk = vChk + 1;
+        }
+
         //슈퍼리워드 기간을 앞둔 상품인지 - 사전에 한번 더 체크.
         if (goods.superRewardStart && moment().isBefore(goods.superRewardStart)){
-            if (!window.confirm('해당 상품은 슈퍼리워드 시작 전입니다. 슈퍼리워드 혜택 없이 바로 구매하시겠습니까?')){
-                return false
+            vChk = vChk + 1;
+        }
+
+        if (vChk === 2){
+            if (!window.confirm('포텐타임 및 슈퍼리워드 상품 시간을 꼭 확인해 주세요. 계속 하시겠습니까?')) return false;
+        }else if (vChk === 1){
+            if (goods.timeSaleStart && moment().isBefore(goods.timeSaleStart)) {
+                if (!window.confirm('해당 상품은 포텐타임 시작 전입니다. 포텐타임 혜택 없이 바로 구매하시겠습니까?')) return false;
+            }
+            if (goods.superRewardStart && moment().isBefore(goods.superRewardStart)){
+                if (!window.confirm('해당 상품은 슈퍼리워드 시작 전입니다. 슈퍼리워드 혜택 없이 바로 구매하시겠습니까?')) return false;
             }
         }
 
@@ -263,8 +281,11 @@ const BuyFooter = (props) => {
 
         //dispatch({type: 'ACTION_NAME'}) 을 통해 리듀서로 바로 접근해도 무방하나, 통일된 코드를 위해서 아래의 [액션함수] -> [reducer] 순으로 접근하도록 하였음
 
+        //리코일 변수 세팅
+        setCounter(count + 1)
+
         //리덕스 액션 함수 호출
-        props.addCart()
+        // props.addCart()
 
         notify('장바구니에 담았습니다', toast.success)
     }
@@ -491,18 +512,4 @@ const BuyFooter = (props) => {
 
     )
 }
-
-//dispatch 를 통해 반환된 값을 props에 넣음 (직접 dispatch() 를 할 경우 필요없음)
-function mapStateToProps(store) {
-    return { counter: store.cart.counter }
-}
-
-//dispatch 할 함수를 props에 넣음 (직접 dispatch() 를 할 경우 필요없음)
-function mapDispatchToProps(dispatch) {
-    return {
-        addCart: () => dispatch(actions.getCartCount())
-    }
-}
-
-
-export default connect(mapStateToProps, mapDispatchToProps)(BuyFooter)
+export default BuyFooter

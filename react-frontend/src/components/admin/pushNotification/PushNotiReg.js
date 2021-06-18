@@ -11,6 +11,7 @@ const PushNotiReg = (props) => { // props에 수정할 공지사항 key를 넘�
     const {pushNotiData} = props;
     const [pushNotiNo, setPushNotiNo] = useState(pushNotiData.pushNotiNo || null);
     const [title, setTitle] = useState(pushNotiData.title || '');
+    const [content, setContent] = useState(pushNotiData.content || '');
     const [url, setUrl] = useState(pushNotiData.url || '');
     const [userType, setUserType] = useState(pushNotiData.userType || 'consumer');
     const [reserved, setReserved] = useState(pushNotiData.reserved || 0);
@@ -19,6 +20,7 @@ const PushNotiReg = (props) => { // props에 수정할 공지사항 key를 넘�
     const [reservedMin, setReservedMin] = useState('00');
     const [reservedDateFocused, setReservedDateFocused] = useState(false);
     const [pushSent, setPushSent] = useState(pushNotiData.pushSent || false);
+    const [adPush, setAdPush] = useState(pushNotiData.adPush || false);
 
     const [refUrl, setRefUrl] = useState('');
 
@@ -26,7 +28,6 @@ const PushNotiReg = (props) => { // props에 수정할 공지사항 key를 넘�
         urlOptions: [
             {value:'',label:'푸시알림 참조 URL 선택'},
             {value:'goods?goodsNo=상품번호',label:'상품 - 상품번호 입력 필요'},
-            {value:'home/2',label:'블리타임'},
             {value:'home/3',label:'포텐타임'},
             {value:'home/superReward',label:'슈퍼리워드'},
             {value:'home/4',label:'예약할인'},
@@ -90,11 +91,13 @@ const PushNotiReg = (props) => { // props에 수정할 공지사항 key를 넘�
         const pushNoti = {
             pushNotiNo: pushNotiNo,
             title: title,
+            content: content,
             url: url,
             userType: userType,
             reserved: reservedValue,
             reservedDateHHmm: reservedDateHHmm,
-            pushSent: pushSent
+            pushSent: pushSent,
+            adPush: adPush
         }
 
         const { status, data } = await regPushNoti(pushNoti);
@@ -114,6 +117,10 @@ const PushNotiReg = (props) => { // props에 수정할 공지사항 key를 넘�
         setTitle(e.target.value);
     }
 
+    const onChangeContent = (e) => {
+        setContent(e.target.value);
+    }
+
     const onChangeUrl = (e) => {
         setUrl(e.target.value);
     }
@@ -124,6 +131,10 @@ const PushNotiReg = (props) => { // props에 수정할 공지사항 key를 넘�
         } else {
             setReserved(true);
         }
+    }
+
+    const onAdPush = (e) => {
+        setAdPush(e.target.checked);
     }
 
     //블리타임 일자 달력
@@ -166,6 +177,8 @@ const PushNotiReg = (props) => { // props에 수정할 공지사항 key를 넘�
                     <label for="now" className='pl-1 mr-3'>즉시</label>
                     <input checked={reserved} type="radio" id="reserve" name="time" onChange={onSelectReserved} value={1} disabled={pushNotiNo > 0 ? true:false} />
                     <label for="reserve" className='pl-1'>예약</label>
+                    <input id={'adPush'} type="checkbox" className={'ml-5'} color={'default'} checked={adPush} onChange={onAdPush} />
+                    <label for="adPush" className='pl-1'>광고성 여부</label>
                 </span>
                 {
                     (reserved == 1) && (
@@ -213,9 +226,11 @@ const PushNotiReg = (props) => { // props에 수정할 공지사항 key를 넘�
             </div>
 
             <br/>
-            <Label className={'text-secondary'}><b>푸시알림 문구</b></Label>
+            <Label className={'text-secondary'}><b>푸시알림 타이틀</b></Label>
             <Input type='text' value={title} onChange={onChangeTitle}/>
-
+            <br/>
+            <Label className={'text-secondary'}><b>푸시알림 문구</b></Label>
+            <Input type='text' value={content} onChange={onChangeContent}/>
             <br/>
             <Label className={'text-secondary'}><b>푸시알림 URL</b></Label>
             <Select

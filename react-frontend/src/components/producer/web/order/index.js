@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from 'react'
-import { updateOrderTrackingInfo, producerCancelOrder, partialRefundOrder, getProducerByProducerNo } from '~/lib/producerApi'
-import { getConsumerByConsumerNo, getOrderDetailByOrderSeq } from '~/lib/shopApi'
+import { updateOrderTrackingInfo, producerCancelOrder, partialRefundOrder, getProducerByProducerNo, getOrderDetailByOrderSeq, getTransportCompany, reqProducerOrderCancel } from '~/lib/producerApi'
 import { getGoodsByGoodsNo } from '~/lib/goodsApi'
-import { getTransportCompany } from '~/lib/adminApi'
-import { Container, ListGroup, ListGroupItem, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
+import { getLoginAdminUser } from '~/lib/loginApi'
+import { Container, ListGroup, ListGroupItem, FormGroup, Label, Input, Button, Alert, Modal, ModalBody, ModalHeader, ModalFooter } from 'reactstrap';
 import Style from './Order.module.scss'
 import ComUtil from '../../../../util/ComUtil'
 
@@ -14,17 +13,6 @@ import Select from 'react-select'
 import 'react-dates/initialize';
 import { Flex } from "~/styledComponents/shared/Layouts";
 
-// const transportationCompanies = [
-//     {value:'', name:'선택하세요'},
-//     {value:'우체국택배', name:'우체국택배'},
-//     {value:'CJ대한통운', name:'CJ대한통운'},
-//     {value:'한진택배', name:'한진택배'},
-//     {value:'현대택배', name:'현대택배'},
-//     {value:'로젠택배', name:'로젠택배'},
-//     {value:'KG로지스', name:'KG로지스'},
-//     {value:'KGB택배', name:'KGB택배'},
-//     {value:'경동택배', name:'경동택배'},
-// ]
 export default class Order extends Component{
     constructor(props){
         super(props)
@@ -32,10 +20,12 @@ export default class Order extends Component{
             transportationCompanies: [],
             trackingUrl: '',    //배송조회용 운송장번호와 조합된 url
             order: null,
-            consumer: null,
+            //consumer: null,
             goods: null,
             isOpen: false,
-            isTrackingUrl: false   //택배사 링크 존재여부
+            isTrackingUrl: false,   //택배사 링크 존재여부
+            tempProducerAdmin: false,
+            orderCancelModal: false,
         }
 
         //택배사 리스트
@@ -46,6 +36,14 @@ export default class Order extends Component{
     async componentDidMount(){
 
         await this.initData()
+        let adminUser = await getLoginAdminUser();
+        let tempProducerAdmin = false;
+        if (adminUser && adminUser.email === 'tempProducer@ezfarm.co.kr') {
+            tempProducerAdmin = true;
+        }
+        this.setState({
+            tempProducerAdmin: tempProducerAdmin
+        })
 
         this.search()
     }
@@ -61,7 +59,7 @@ export default class Order extends Component{
     }
     search = async () => {
         const { data: order } = await getOrderDetailByOrderSeq(this.props.orderSeq)
-        const { data: consumer } = await getConsumerByConsumerNo(order.consumerNo)
+        //const { data: consumer } = await getConsumerByConsumerNo(order.consumerNo)
         const { data: goods } = await getGoodsByGoodsNo(order.goodsNo)
         const { data: producer} = await getProducerByProducerNo(order.producerNo)
 
@@ -69,7 +67,7 @@ export default class Order extends Component{
 
         this.setState({
             order,
-            consumer,
+            //consumer,
             goods,
             trackingUrl: this.getTraceUrl(order),
             originalTrackingNumber: order.trackingNumber,
@@ -79,7 +77,8 @@ export default class Order extends Component{
     onChange = (e) => {
         const { name, value } = e.target
         const order = Object.assign({}, this.state.order)
-        order[name] = value
+        let vVal = value;
+        order[name] = vVal
 
         this.setState({
             order
@@ -87,21 +86,25 @@ export default class Order extends Component{
     }
 
     onSave = async () => {
-        console.log(this.state.order)
+        //console.log(this.state.order)
+        const orderInfo = Object.assign({}, this.state.order)
 
-        if(!this.state.order.transportCompanyCode){
+        if(!orderInfo.transportCompanyCode){
             this.notify('택배사를 선택해 주십시오!', toast.warn)
             return
         }
 
-        if(!this.state.order.trackingNumber){
+        if(!orderInfo.trackingNumber){
             this.notify('송장번호를 입력해 주십시오!', toast.warn)
             return
         }
 
-        if(!window.confirm('송장번호 ' + this.state.order.trackingNumber + '로 저장하시겠습니까?')) return
+        if(!window.confirm('송장번호 ' + orderInfo.trackingNumber + '로 저장하시겠습니까? (-제거해야합니다!)')) return
 
-        const { status, result } = await updateOrderTrackingInfo(this.state.order)
+        if(orderInfo.trackingNumber) {
+            orderInfo.trackingNumber = orderInfo.trackingNumber.replace(/\-/g, '');
+        }
+        const { status, result } = await updateOrderTrackingInfo(orderInfo)
 
         if(status !== 200){
             this.notify('저장중 에러가 발생하였습니다.', toast.error)
@@ -128,9 +131,11 @@ export default class Order extends Component{
     }
 
     toggle = () => {
-        this.setState({
-            isOpen: !this.state.isOpen
-        })
+        if(this.state.isOpen) {
+            this.setState({isOpen: !this.state.isOpen})
+        } else if(this.state.orderCancelModal) {
+            this.setState({orderCancelModal: !this.state.orderCancelModal})
+        }
     }
     onClose = () => {
         this.toggle()
@@ -141,6 +146,7 @@ export default class Order extends Component{
         order.transportCompanyCode = item.value
         order.transportCompanyName = item.label
 
+
         this.setState({
             order: order,
             trackingUrl: this.getTraceUrl(order)
@@ -149,31 +155,65 @@ export default class Order extends Component{
     getTraceUrl = (order) => {
         try{
             const transportCompany = this.transportCompanies.find( item => item.value === order.transportCompanyCode)
-            return transportCompany.url.replace('[number]', order.trackingNumber)
+
+            let trackingUrl = transportCompany.url.replace('[number]', order.trackingNumber);
+            let track_id = order.trackingNumber;
+            let carrier_id = "";
+            const v_TransportCompanyCd = order.transportCompanyCode;
+            if(v_TransportCompanyCd === '01') carrier_id = 'kr.logen';
+            else if(v_TransportCompanyCd === '02') carrier_id = 'kr.cjlogistics';
+            else if(v_TransportCompanyCd === '03') carrier_id = 'kr.epost';
+            else if(v_TransportCompanyCd === '04') carrier_id = 'kr.lotte';
+            else if(v_TransportCompanyCd === '05') carrier_id = 'kr.cupost';
+            else if(v_TransportCompanyCd === '07') carrier_id = 'kr.hanjin';
+            // carrier_id = "kr.cjlogistics";
+            // track_id = "639823384653";
+            if(
+                v_TransportCompanyCd !== '06' ||
+                v_TransportCompanyCd !== '99') {
+                trackingUrl = `https://tracker.delivery/#/${carrier_id}/${track_id}`;
+            }
+
+            return trackingUrl;
         }catch(e){
             return ''
         }
     }
 
+    onCancelModal = () => {
+        this.setState({orderCancelModal: !this.state.orderCancelModal})
+    }
+
     onCancel = async () => {
         // 배송 전 주문취소
-        if(!window.confirm('해당 주문을 취소하시겠습니까?')) return
-
         const orderDetail = Object.assign({},this.state.order);
 
-        this.setState({chainLoading: true});
-        this.notify('주문취소중.', toast.info);
+        if(!this.state.tempProducerAdmin) {
+            if(orderDetail.producerCancelReason === '' || orderDetail.producerCancelReason === null) {
+                alert('주문취소 사유를 입력해주세요.')
+                return
+            }
 
-        let {data} = await producerCancelOrder(orderDetail);
+            orderDetail.reqProducerCancel = 1;
+            reqProducerOrderCancel(orderDetail);
 
-        // console.log('producerCancelOrder', data);
-        this.notify('주문취소가 완료되었습니다.', toast.info);
+            this.toggle();
+            this.notify('주문취소요청이 완료되었습니다.', toast.info);
+        } else {
+            if(!window.confirm('해당 주문을 취소하시겠습니까?')) return
+            this.setState({chainLoading: true});
+            this.toggle();
+            this.notify('주문취소중.', toast.info);
+            let {data} = await producerCancelOrder(orderDetail);
 
-        this.setState({
-            order: data,
-            chainLoading: false  //블록체인스피너 chainLoading=false
-        });
+            // console.log('producerCancelOrder', data);
+            this.notify('주문취소가 완료되었습니다.', toast.info);
 
+            this.setState({
+                order: data,
+                chainLoading: false  //블록체인스피너 chainLoading=false
+            });
+        }
     }
 
 
@@ -188,21 +228,26 @@ export default class Order extends Component{
             if (!window.confirm('슈퍼리워드 상품입니다. 슈퍼리워드 보상은 개발/운영팀에 알려서 환수바랍니다.')) return
         }
 
-        orderDetail.refundFlag = true;
+        if(!this.state.tempProducerAdmin) {
+            orderDetail.reqProducerCancel = 2;
+            reqProducerOrderCancel(orderDetail);
+            this.notify('주문환불요청이 완료되었습니다.', toast.info);
 
-        this.setState({chainLoading: true});
-        this.notify('환불중.', toast.info);
+        } else {
+            orderDetail.refundFlag = true;
+            this.setState({chainLoading: true});
+            this.notify('환불중.', toast.info);
 
-        let {data} = await producerCancelOrder(orderDetail);
+            let {data} = await producerCancelOrder(orderDetail);
 
-        // console.log('producerCancelOrder', data);
-        this.notify('환불이 완료되었습니다.', toast.info);
+            // console.log('producerCancelOrder', data);
+            this.notify('환불이 완료되었습니다.', toast.info);
 
-        this.setState({
-            order: data,
-            chainLoading: false  //블록체인스피너 chainLoading=false
-        });
-
+            this.setState({
+                order: data,
+                chainLoading: false  //블록체인스피너 chainLoading=false
+            });
+        }
     }
 
     onPartialRefund = async() => {
@@ -291,20 +336,29 @@ export default class Order extends Component{
                             <div>
                                 <Flex>
                                     {
-                                        order.directGoods && !this.state.originalTrackingNumber ?  //즉시상품만 주문취소 있음. (예약상품은 위약금+취소로 => (개발을 할필요 존재)현재는 미배송을 통해 미배송배치로 처리됨..  )
+                                        //order.directGoods && !this.state.originalTrackingNumber ?  //즉시상품만 주문취소 있음. (예약상품은 위약금+취소로 => (개발을 할필요 존재)현재는 미배송을 통해 미배송배치로 처리됨..  )
+                                        !this.state.originalTrackingNumber ?  //예약상품도 취소 노출. (20200203 - 상추동결 문제로 노출)
+                                            this.state.tempProducerAdmin ?
+                                                <div className="mb-2">
+                                                    <Button color={'info'} onClick={this.onCancelModal}>배송 전 주문취소</Button>
+                                                </div>
+                                                :
                                             <div className="mb-2">
-                                                <Button color={'info'} onClick={this.onCancel}>배송 전 주문취소</Button>
-                                            </div> : null
+                                                <Button color={'info'} onClick={this.onCancelModal}>{!order.producerCancelReason?'배송 전 주문취소요청':'취소요청 처리중'}</Button>
+                                            </div>
+                                            : null
                                     }
                                     {
-                                        //(order.directGoods && this.state.originalTrackingNumber) &&
-                                        (!this.state.producerPayoutBlctFlag && this.state.originalTrackingNumber) &&  //예약상품도 환불 가능하도록 수정 20200902, payoutBlct인 생산자(팜토리)는 제외
+                                        ( this.state.originalTrackingNumber &&  //예약상품도 환불 가능하도록 수정 20200902, payoutBlct인 생산자(팜토리)는 제외
+                                          (!this.state.producerPayoutBlctFlag || !order.consumerOkDate))   && //20210203 구매확정 전이면 추가로 노출해봄 (팜토리 예약상품 상추동결 때문에)
+
                                         <div className="mb-2">
                                             <Button color={'danger'} onClick={this.onRefund}>환불</Button>
                                         </div>
                                     }
                                     {
-                                        (!this.state.producerPayoutBlctFlag && order.orderCnt > 1 && this.state.originalTrackingNumber) &&  // payoutBlct인 생산자(팜토리)는 일단 제외
+                                        (order.orderCnt > 1 &&
+                                            (!this.state.producerPayoutBlctFlag || !order.consumerOkDate )) &&  // payoutBlct인 생산자(팜토리)는 일단 제외 //20210203 구매확정 전이면 추가로 노출해봄 (팜토리 예약상품 상추동결 때문에)
                                         <div className="mb-2 ml-2">
                                             <Button color={'warning'} onClick={this.onPartialRefund}>1건 부분환불</Button>
                                         </div>
@@ -321,7 +375,7 @@ export default class Order extends Component{
                                     </FormGroup>
                                     <FormGroup>
                                         <Label><h6>송장번호</h6></Label>
-                                        <Input type="number" name='trackingNumber' onChange={this.onChange} value={order.trackingNumber}/>
+                                        <Input type="text" name='trackingNumber' onChange={this.onChange} value={order.trackingNumber}/>
                                         <div className='text-secondary'>송장번호 등록 시 '-'를 제외한 <span className='text-danger'>숫자만 입력</span>해주세요('-'입력 시 조회 불가)</div>
                                     </FormGroup>
 
@@ -479,15 +533,15 @@ export default class Order extends Component{
                         </ListGroupItem>
                         <ListGroupItem action>
                             <div><small>보내는사람</small></div>
-                            <b>{consumer.name}</b>
+                            <b>{order.consumerNm}</b>
                         </ListGroupItem>
                         <ListGroupItem action>
                             <div><small>연락처</small></div>
-                            <b>{consumer.phone}</b>
+                            <b>{order.consumerPhone}</b>
                         </ListGroupItem>
                         <ListGroupItem action>
                             <div><small>이메일</small></div>
-                            <b>{consumer.email}</b>
+                            <b>{order.consumerEmail}</b>
                         </ListGroupItem>
                     </ListGroup>
                 </Container>
@@ -499,6 +553,45 @@ export default class Order extends Component{
                                 <iframe src={this.state.trackingUrl} width={'100%'} style={{minHeight:'350px', border: '0'}}></iframe>
                             </div>
                         </ModalWithNav>
+                    )
+                }
+                {/* 배송전 주문취소요청 모달 */}
+                {
+                    this.state.orderCancelModal && (
+                        <Modal
+                            isOpen={this.state.orderCancelModal}
+                            toggle={this.toggle}
+                            size="lg"
+                            style={{maxWidth: '800px', width: '80%'}}
+                            centered
+                        >
+                            <ModalHeader toggle={this.toggle}>주문취소요청</ModalHeader>
+                            <ModalBody>
+                                <FormGroup>
+                                    <Label className={'font-weight-bold text-secondary small'}>
+                                        취소사유
+                                        {
+                                            !this.state.tempProducerAdmin && <span className='text-danger'>*</span>
+                                        }
+                                    </Label>
+                                    <div>
+                                        <Input
+                                            type="text"
+                                            name={"producerCancelReason"}
+                                            style={{width:'80%'}}
+                                            value={order.producerCancelReason}
+                                            onChange={this.onChange}
+                                        />
+                                    </div>
+                                </FormGroup>
+                            </ModalBody>
+                            <ModalFooter>
+                                {
+                                    !order.reqProducerCancel && <Button color="info" onClick={this.onCancel}>취소요청</Button>
+                                }
+                                <Button color="secondary" onClick={this.toggle}>닫기</Button>
+                            </ModalFooter>
+                        </Modal>
                     )
                 }
                 <ToastContainer />  {/* toast 가 그려질 컨테이너 */}

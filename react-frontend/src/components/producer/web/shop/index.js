@@ -1,22 +1,36 @@
 import React, { Component, Fragment } from 'react';
-import { Container, Row, Col, Button, FormGroup, Label, Input, Fade } from 'reactstrap'
-import { getBankInfoList, getProducer, setProducerShopModify } from "~/lib/producerApi"
+import {
+    Container,
+    Row,
+    Col,
+    Button,
+    FormGroup,
+    Label,
+    Input,
+    Fade,
+    ModalHeader, ModalBody, ModalFooter, Modal
+} from 'reactstrap'
+import {doProducerLogout} from "~/lib/loginApi"
+import {getBankInfoList, getProducer, setProducerShopModify, updValword, getProducerValword} from "~/lib/producerApi"
 import { ToastContainer, toast } from 'react-toastify'                              //토스트
 import 'react-toastify/dist/ReactToastify.css'
 import ComUtil from '~/util/ComUtil'
-import { SingleImageUploader, BlocerySpinner, ModalWithNav, ProducerProfileCard } from '~/components/common'
+import { SingleImageUploader, BlocerySpinner, ModalWithNav, ProducerProfileCard, ModalPopup } from '~/components/common'
 import { AddressCard } from '~/components/common/cards'
 import Select from 'react-select'
 import Textarea from 'react-textarea-autosize'
+import {updateValword} from "~/lib/shopApi";
+import axios from "axios";
+import {Server} from "~/components/Properties";
 const Star = () => <span className='text-danger'>*</span>
 export default class WebShop extends Component{
 
     constructor(props) {
         super(props);
         this.state = {
-
             /* producer */
             producerNo: null,
+            email: '',
             name: '',
             passPhrase: '',
             passPhraseCheck: '',
@@ -42,6 +56,7 @@ export default class WebShop extends Component{
             payoutAccountName: '',  // 판매대금 입금 은행 계좌 예금주 이름
             charger: '',
             chargerPhone: '',
+            memo:'',
             /* producer end */
 
             bankList: [],
@@ -50,7 +65,14 @@ export default class WebShop extends Component{
             previewOpen: false,
             producerWrapDeliver: false,
             producerWrapLimitPrice: '-',
-            producerWrapFee: '-'
+            producerWrapFee: '-',
+
+            valword: '',
+            newValword: '',
+            modalValword: false,
+            fadeValwordCheck: false,            // 현재비번 일치 체크
+            fadeNewValwordCheck: false,          // 새비번 유효성 체크
+            compareNewValword: false            // 새비번 일치 확인
         }
 
         //필수체크 포커스 이동을 위한 ref 적용
@@ -67,16 +89,20 @@ export default class WebShop extends Component{
 
         this.charger = React.createRef()
         this.chargerPhone = React.createRef()
+        this.memo = React.createRef()
+
+
         this.producerWrapLimitPrice = React.createRef()
         this.producerWrapFee = React.createRef()
+
+        this.valword = React.createFactory()
+        this.newValword = React.createFactory()
 
     }
 
     async componentDidMount() {
         await this.bindBankData()
         const {status, data: producer} = await getProducer()
-
-        console.log('producerShop : ', producer);
 
         //조회된 데이터가 있을 경우(수정모드)
         if(producer){
@@ -94,7 +120,7 @@ export default class WebShop extends Component{
 
             this.setState(state)
 
-            console.log(state)
+            // console.log(state)
         } else {
         }
 
@@ -137,7 +163,6 @@ export default class WebShop extends Component{
     }
 
     onAddressChange = (address) => {
-        console.log('producerJoinWeb value ',address)
         this.setState({
             shopZipNo: address.zipNo,
             shopAddress: address.address,
@@ -172,7 +197,6 @@ export default class WebShop extends Component{
             return
         }
 
-        console.log(this.state);
         const response = await setProducerShopModify(this.state)
         this.notify('저장되었습니다', toast.success);
 
@@ -216,7 +240,6 @@ export default class WebShop extends Component{
 
     checkVerify = () => {
         try{
-
             //공통 체크
             if(!this.state.name){
                 alert('대표자명(농가명)은 필수입니다.')
@@ -278,8 +301,13 @@ export default class WebShop extends Component{
                 this.charger.current.focus()
                 return false
             }
-            if(!this.state.chargerPhone){
-                alert('담당자 전화번호는 필수 입니다')
+            if(!this.state.chargerPhone || !this.state.chargerPhone.startsWith('010') ){
+                alert('담당자 휴대폰 번호는 필수이며, 010으로 시작해야합니다.')
+                this.chargerPhone.current.focus()
+                return false
+            }
+            if (this.state.chargerPhone.length < 11 || this.state.chargerPhone.length > 13){
+                alert('담당자 휴대폰 번호가 잘못되었습니다.')
                 this.chargerPhone.current.focus()
                 return false
             }
@@ -300,6 +328,68 @@ export default class WebShop extends Component{
             return false
         }
         return true
+    }
+
+    onClickModifyValword = () => {
+        this.setState({ modalValword: true })
+    }
+
+    onBlurCurrentValword = async () => {
+        const data = Object.assign({}, this.state)
+
+        const {data: res} = await getProducerValword(data.valword)
+
+        if(!res) {
+            this.setState({fadeValwordCheck:true})
+        } else {
+            this.setState({fadeValwordCheck:false})
+        }
+
+    }
+
+    onClickOk = async () => {
+        if(!ComUtil.valwordRegex(this.state.newValword)) {
+            alert('8~16자 영문자, 숫자, 특수문자를 필수 조합해서 사용하세요.')
+            return;
+        }
+
+        let data = {};
+        data.valword = this.state.newValword;
+        data.producerNo = this.state.producerNo;
+
+        let modified = await updValword(data);
+
+        if(modified.data === 1) {
+            alert('비밀번호 변경이 완료되었습니다. 다시 로그인해주세요.')
+            await doProducerLogout();
+            this.props.history.push('/producer/webLogin')
+        } else {
+            alert('회원정보 수정 실패. 다시 시도해주세요.')
+            return false;
+        }
+    }
+
+    toggle = () => {
+        this.setState(prevState => ({
+            modalValword: !prevState.modalValword
+        }));
+    }
+
+    // 새비번 유효성체크
+    valwordRegexCheck = (e) => {
+        if(!ComUtil.valwordRegex(e.target.value)) {
+            this.setState({fadeNewValwordCheck: true})
+        } else {
+            this.setState({ fadeNewValwordCheck: false })
+        }
+    }
+
+    compareValwordCheck = (e) => {
+        if (e.target.value !== this.state.newValword) {
+            this.setState({ compareNewValword: true })
+        } else {
+            this.setState({ compareNewValword: false })
+        }
     }
 
     render(){
@@ -327,7 +417,10 @@ export default class WebShop extends Component{
 
                                 {/* 기본정보 */}
                                 <div className='m-4 pt-3'>
-                                    <h5>기본정보</h5>
+                                    <div className='d-flex mb-3'>
+                                        <h5>기본정보</h5>
+                                        <div className='ml-auto'><Button onClick={this.onClickModifyValword}>비밀번호 변경</Button></div>
+                                    </div>
                                     <FormGroup inline>
                                         <Row>
                                             <Col sm={2}>
@@ -393,51 +486,51 @@ export default class WebShop extends Component{
                                         </Row>
                                     </FormGroup>
 
-                                    <FormGroup inline>
-                                        <Row>
-                                            <Col sm={2}>
-                                                <div className='d-flex align-items-center mt-2'>
-                                                    <input
-                                                        type="checkbox"
-                                                        id='producerWrapDeliver'
-                                                        className='mr-2'
-                                                        checked={state.producerWrapDeliver}
-                                                        onChange={this.onProducerWrapDeliverCheck}
-                                                    />
-                                                    <label for='producerWrapDeliver' className='m-0'>
-                                                        생산자 묶음 배송
-                                                    </label>
-                                                </div>
-                                            </Col>
-                                            <Col sm={5}>
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="flex-shrink-0 mr-2"> 무료배송 조건 금액 </span>
-                                                    <Input
-                                                        //className={'mt-2'}
-                                                        name="producerWrapLimitPrice"
-                                                        innerRef={this.producerWrapLimitPrice}
-                                                        value={state.producerWrapLimitPrice}
-                                                        readOnly={!state.producerWrapDeliver}
-                                                        onChange={this.onInputProducerWrapLimit}
-                                                    />
-                                                </div>
-                                            </Col>
-                                            <Col sm={5}>
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="flex-shrink-0 mr-2"> 배송비 </span>
-                                                    <Input
-                                                        // className={'mt-2'}
-                                                        name="producerWrapFee"
-                                                        innerRef={this.producerWrapFee}
-                                                        value={state.producerWrapFee}
-                                                        readOnly={!state.producerWrapDeliver}
-                                                        onChange={this.onInputProducerWrapFee}
-                                                    />
-                                                </div>
-                                            </Col>
-                                        </Row>
+                                    {/*<FormGroup inline>*/}
+                                    {/*    <Row>*/}
+                                    {/*        <Col sm={2}>*/}
+                                    {/*            <div className='d-flex align-items-center mt-2'>*/}
+                                    {/*                <input*/}
+                                    {/*                    type="checkbox"*/}
+                                    {/*                    id='producerWrapDeliver'*/}
+                                    {/*                    className='mr-2'*/}
+                                    {/*                    checked={state.producerWrapDeliver}*/}
+                                    {/*                    onChange={this.onProducerWrapDeliverCheck}*/}
+                                    {/*                />*/}
+                                    {/*                <label for='producerWrapDeliver' className='m-0'>*/}
+                                    {/*                    생산자 묶음 배송*/}
+                                    {/*                </label>*/}
+                                    {/*            </div>*/}
+                                    {/*        </Col>*/}
+                                    {/*        <Col sm={5}>*/}
+                                    {/*            <div className='d-flex align-items-center'>*/}
+                                    {/*                <span className="flex-shrink-0 mr-2"> 무료배송 조건 금액 </span>*/}
+                                    {/*                <Input*/}
+                                    {/*                    //className={'mt-2'}*/}
+                                    {/*                    name="producerWrapLimitPrice"*/}
+                                    {/*                    innerRef={this.producerWrapLimitPrice}*/}
+                                    {/*                    value={state.producerWrapLimitPrice}*/}
+                                    {/*                    readOnly={!state.producerWrapDeliver}*/}
+                                    {/*                    onChange={this.onInputProducerWrapLimit}*/}
+                                    {/*                />*/}
+                                    {/*            </div>*/}
+                                    {/*        </Col>*/}
+                                    {/*        <Col sm={5}>*/}
+                                    {/*            <div className='d-flex align-items-center'>*/}
+                                    {/*                <span className="flex-shrink-0 mr-2"> 배송비 </span>*/}
+                                    {/*                <Input*/}
+                                    {/*                    // className={'mt-2'}*/}
+                                    {/*                    name="producerWrapFee"*/}
+                                    {/*                    innerRef={this.producerWrapFee}*/}
+                                    {/*                    value={state.producerWrapFee}*/}
+                                    {/*                    readOnly={!state.producerWrapDeliver}*/}
+                                    {/*                    onChange={this.onInputProducerWrapFee}*/}
+                                    {/*                />*/}
+                                    {/*            </div>*/}
+                                    {/*        </Col>*/}
+                                    {/*    </Row>*/}
 
-                                    </FormGroup>
+                                    {/*</FormGroup>*/}
                                 </div>
 
                                 <hr/>
@@ -585,13 +678,27 @@ export default class WebShop extends Component{
                                     <FormGroup inline>
                                         <Row>
                                             <Col sm={2}>
-                                                <Label>담당자 전화번호<Star/></Label>
+                                                <Label>담당자 휴대폰번호<Star/></Label>
                                             </Col>
                                             <Col sm={10}>
                                                 <Input name="chargerPhone"
                                                        value={state.chargerPhone}
                                                        onChange={this.handleChange}
                                                        innerRef={this.chargerPhone}
+                                                />
+                                            </Col>
+                                        </Row>
+                                    </FormGroup>
+                                    <FormGroup inline>
+                                        <Row>
+                                            <Col sm={2}>
+                                                <Label>메모</Label>
+                                            </Col>
+                                            <Col sm={10}>
+                                                <Input name="memo"
+                                                       value={state.memo}
+                                                       onChange={this.handleChange}
+                                                       innerRef={this.memo}
                                                 />
                                             </Col>
                                         </Row>
@@ -629,6 +736,43 @@ export default class WebShop extends Component{
                         <div className='m-3 p-3'/>
                     </div>
                 </ModalWithNav>
+                {
+                    this.state.modalValword &&
+                    <Modal isOpen={true} centered>
+                        <ModalHeader>비밀번호 변경</ModalHeader>
+                        <ModalBody>
+                            <Input type="password" placeholder="현재 비밀번호를 입력해주세요" name="valword"
+                                   className='mb-2'
+                                   innerRef ={this.valword}
+                                   onChange={this.handleChange}
+                                   onBlur={this.onBlurCurrentValword}
+                            />
+                            {
+                                this.state.fadeValwordCheck && <Fade in className={'text-danger small'}>비밀번호를 확인해주세요</Fade>
+                            }
+                            <Input type="password" placeholder="새로운 비밀번호를 입력해주세요" name="newValword"
+                                   className={'mb-2'}
+                                   innerRef={this.newValword}
+                                   onChange={this.handleChange}
+                                   onBlur={this.valwordRegexCheck}
+                            />
+                            {
+                                this.state.fadeNewValwordCheck && <Fade in className={'text-danger small'}>8~16자 영문자, 숫자, 특수문자를 필수 조합해서 사용하세요</Fade>
+                            }
+                            <Input type="password" placeholder="비밀번호 확인" name="newValwordCheck"
+                                   onChange={this.handleChange}
+                                   onBlur={this.compareValwordCheck}
+                            />
+                            {
+                                this.state.compareNewValword && <Fade in className={'text-danger small'}>비밀번호가 일치하지 않습니다.</Fade>
+                            }
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color="info" onClick={this.onClickOk} disabled={this.state.fadeValwordCheck || this.state.fadeNewValwordCheck || this.state.compareNewValword}>확인</Button>
+                            <Button color="secondary" onClick={this.toggle}>취소</Button>
+                        </ModalFooter>
+                    </Modal>
+                }
 
                 <ToastContainer/>
 

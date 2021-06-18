@@ -8,8 +8,8 @@ import { ExcelDownload } from '~/components/common'
 
 
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-balham.css';
+// import 'ag-grid-community/dist/styles/ag-grid.css';
+// import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 import ComUtil from "~/util/ComUtil";
 
 
@@ -51,7 +51,13 @@ export default class BlctToWon extends Component {
             ],
             defaultColDef: {
                 width: 110,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
 
             overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
@@ -129,6 +135,9 @@ export default class BlctToWon extends Component {
             data: excelData
         }]
     }
+    copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
+    }
 
 
     render() {
@@ -157,17 +166,18 @@ export default class BlctToWon extends Component {
                     }}
                 >
                     <AgGridReact
-                        enableSorting={true}                //정렬 여부
-                        enableFilter={true}                 //필터링 여부
+                        // enableSorting={true}                //정렬 여부
+                        // enableFilter={true}                 //필터링 여부
                         columnDefs={this.state.columnDefs}  //컬럼 세팅
                         defaultColDef={this.state.defaultColDef}
                         // components={this.state.components}  //custom renderer 지정, 물론 정해져있는 api도 있음
                         //frameworkComponents={this.state.frameworkComponents}
-                        enableColResize={true}              //컬럼 크기 조정
+                        // enableColResize={true}              //컬럼 크기 조정
                         overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                         overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                         // onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
                         rowData={this.state.data}
+                        onCellDoubleClicked={this.copy}
                     >
                     </AgGridReact>
                 </div>

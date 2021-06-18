@@ -50,14 +50,15 @@ export default function B2cLastSeenGoodsList(props){
                 data.map((goods, index) =>
                     <div key={`item_${index}`} className={Css.item} onClick={props.onClick.bind(this, goods)}>
                         <SlideItemHeaderImage
-                            imageWidth={70}
-                            imageHeight={70}
+                            imageWidth={90}
+                            imageHeight={90}
                             // saleEnd={goods.saleEnd}
                             imageUrl={Server.getImageURL() + goods.goodsImages[0].imageUrl}
                             //imageUrl={'https://image.chosun.com/sitedata/image/201911/18/2019111802277_0.png'}
                             discountRate={Math.round(goods.discountRate)}
                             remainedCnt={goods.remainedCnt}
                             blyReview={goods.blyReviewConfirm}
+                            buyingRewardFlag={goods.buyingRewardFlag}
                         />
 
                         <SlideItemContent

@@ -24,14 +24,15 @@ export default class JoinComplete extends Component {
             // 생산자만
             farmName: '',
             coRegistrationNo: '',
-            issuedCoupon: {}        // 발급된 쿠폰 정보
+            issuedCoupon: {},        // 발급된 쿠폰 정보
+            issuedCouponExtraCount: 0
         }
     }
 
     componentDidMount() {
         this.notify('블록체인 계정이 생성되었습니다.', toast.success)
         const param = ComUtil.getParams(this.props)
-        console.log(param)
+        //console.log(param)
         this.setState({
             name: param.name,
             email: param.email,
@@ -46,7 +47,8 @@ export default class JoinComplete extends Component {
     issuedCoupon = async () => {
         const {data: res} = await getUsableCouponList();
         this.setState({
-            issuedCoupon: res[0]
+            issuedCoupon: res[0],
+            issuedCouponExtraCount: res.length-1  //외 1건 추가.(코박 AAAAA용 스페셜쿠폰 추가)
         })
     }
 
@@ -64,6 +66,7 @@ export default class JoinComplete extends Component {
     }
 
     render() {
+
         return (
             <Fragment>
                 <ShopXButtonNav isVisibleXButton underline >회원가입 완료</ShopXButtonNav>
@@ -113,9 +116,14 @@ export default class JoinComplete extends Component {
                         this.state.issuedCoupon &&
                             <Div textAlign={'center'} my={20}>
                                 <hr/>
-                                <Div fontSize={18} my={10}><u>{this.state.issuedCoupon.couponTitle}</u> 쿠폰 발급 완료</Div>
+                                <Div fontSize={18} my={10}><u>{this.state.issuedCoupon.couponTitle} {(this.state.issuedCouponExtraCount>0)? '외 1건':''}</u> 쿠폰 발급 완료</Div>
                                 <Div relative>
-                                    <Div absolute center fg={'white'}>{this.state.issuedCoupon.couponBlyAmount} BLY</Div>
+                                    {/*<Div absolute center fg={'white'}>{this.state.issuedCoupon.couponBlyAmount} BLY</Div>*/}
+                                    {
+                                        this.state.issuedCoupon.couponBlyAmount === 0 ?
+                                            <Div absolute center fg={'white'}>무료쿠폰</Div> :
+                                            <Div absolute center fg={'white'}>{this.state.issuedCoupon.couponBlyAmount} BLY</Div>
+                                    }
                                     <Div>
                                         <FaTicketAlt className={'ml-auto text-secondary'} size={130}/>
                                     </Div>

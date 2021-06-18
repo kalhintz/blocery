@@ -36,21 +36,24 @@ const MdPick = (props) => {
 
         do {
             index = Math.floor(Math.random() * len)
-            console.log('homeMdPick:' + index + '/' + len + ',' + tryCount);
+            //console.log('homeMdPick:' + index + '/' + len + ',' + tryCount);
             mdPick = data[index]
             tryCount++;
 
-            if( mdPick.hideFromHome === false) //출력가능한 mdPick
-                break; //당첨.
+            if(mdPick) {
+                if (mdPick.hideFromHome === false) //출력가능한 mdPick
+                    break; //당첨.
+            }
 
         } while (tryCount <= 10)
 
 
         //상품조회
-        const pr = mdPick.mdPickGoodsList.map(goodsNo => getGoodsByGoodsNo(goodsNo).then(res => res.data))
-        const goodsList = await Promise.all(pr)
-
-        mdPick.goodsList = goodsList
+        if(mdPick) {
+            const pr = mdPick.mdPickGoodsList.map(goodsNo => getGoodsByGoodsNo(goodsNo).then(res => res.data))
+            const goodsList = await Promise.all(pr)
+            mdPick.goodsList = goodsList
+        }
         setData(mdPick)
     }
 
@@ -88,6 +91,7 @@ const MdPick = (props) => {
                                         // discountRate={Math.round(goods.discountRate)}
                                         remainedCnt={item.remainedCnt}
                                         blyReview={item.blyReviewConfirm}
+                                        buyingRewardFlag={item.buyingRewardFlag}
                                     />
                                     <SlideItemContent
                                         style={{flexGrow: 1}}

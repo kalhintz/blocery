@@ -8,9 +8,9 @@ export default class TermsOfUse extends Component {
         super(props)
 
     }
-    componentDidMount(){
-        window.scrollTo(0,0)
-    }
+    // componentDidMount(){
+    //     window.scrollTo(0,0)
+    // }
     render() {
         return (
             <Fragment>

@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { ExcelDownload } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
 import { getReservedOrderByBlctPaid } from "~/lib/adminApi";
+import FilterContainer from "~/components/common/gridFilter/FilterContainer";
+import {FilterGroup, Hr} from "~/styledComponents/shared";
+import InputFilter from "~/components/common/gridFilter/InputFilter";
+import CheckboxFilter from "~/components/common/gridFilter/CheckboxFilter";
 
 const TokenSiseCorrection = (props) => {
 
@@ -16,6 +20,7 @@ const TokenSiseCorrection = (props) => {
             {headerName: "주문번호", width: 120, field: "orderSeq"},
             {headerName: "생산자 ", width: 150, field: "farmName"},
             {headerName: "상품명 ", width: 200, field: "goodsNm"},
+            {headerName: "상품번호 ", width: 200, field: "goodsNo", hide: true},
             {headerName: "총금액 ", width: 100, field: "orderPrice", cellRenderer: 'formatCurrencyRenderer'},
             {headerName: "결제수단 ", width: 100, field: "payMethod"},
             {headerName: "blct구매금액 ", width: 130, field: "blctToken", cellRenderer: 'formatCurrencyRenderer'},
@@ -30,7 +35,13 @@ const TokenSiseCorrection = (props) => {
 
         defaultColDef: {
             width: 170,
-            resizable: true
+            resizable: true,
+            filter: true,
+            sortable: true,
+            floatingFilter: false,
+            filterParams: {
+                newRowsAction: 'keep'
+            }
         },
         frameworkComponents: {
             formatCurrencyRenderer: formatCurrencyRenderer,
@@ -43,6 +54,7 @@ const TokenSiseCorrection = (props) => {
     const [data, setData] = useState([]);
     const [excelData, setExcelData] = useState();
     const [totalCorrectionBlct, setTotalCorrectionBlct] = useState();
+    const [gridApi, setGridApi] = useState(null)
 
     useEffect(() => {
         getData();
@@ -58,6 +70,7 @@ const TokenSiseCorrection = (props) => {
             totalCorrectionBlct = totalCorrectionBlct + orderDetail.siseCorrectionAmountBlct;
         })
 
+        console.log({data})
         setData(data);
         setExcelDataFunc(data);
         setTotalCorrectionBlct(totalCorrectionBlct.toFixed(2));
@@ -106,9 +119,47 @@ const TokenSiseCorrection = (props) => {
             return '-';
         }
     }
-
+    const copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
+    }
+    //[이벤트] 그리드 로드 후 callback 이벤트
+    const onGridReady = (params) => {
+        //API init
+        setGridApi(params.api)
+    }
     return (
         <div className="m-2">
+
+            {/* filter START */}
+            <FilterContainer gridApi={gridApi} excelFileName={'예약상품토큰보정 목록'}>
+                <FilterGroup>
+                    <InputFilter
+                        gridApi={gridApi}
+                        columns={[
+                            {field: 'orderSeq', name: '주문번호'},
+                            {field: 'farmName', name: '생산자'},
+                            {field: 'goodsNm', name: '상품명'},
+                        ]}
+                        isRealTime={true}
+                    />
+                </FilterGroup>
+                <Hr/>
+                <FilterGroup>
+                    <CheckboxFilter
+                        gridApi={gridApi}
+                        field={'payMethod'}
+                        name={'결제방법'}
+                        data={[
+                            {value: 'blct', name: 'blct'},
+                            {value: 'cardBlct', name: 'cardBlct'},
+                            {value: 'card', name: 'card'},
+                            {value: 'supportPrice', name: 'supportPrice'},
+                        ]}
+                    />
+                </FilterGroup>
+            </FilterContainer>
+            {/* filter END */}
+
 
             <div className="d-flex p-1">
 
@@ -124,6 +175,7 @@ const TokenSiseCorrection = (props) => {
                 </div>
             </div>
 
+
             <div
                 className="ag-theme-balham mt-3"
                 style={{
@@ -131,17 +183,19 @@ const TokenSiseCorrection = (props) => {
                 }}
             >
                 <AgGridReact
-                    enableSorting={true}
-                    enableFilter={true}
+                    // enableSorting={true}
+                    // enableFilter={true}
                     columnDefs={agGrid.columnBlyToDefs}
                     defaultColDef={agGrid.defaultColDef}
                     rowSelection={'single'}  //멀티체크 가능 여부
-                    enableColResize={true}
+                    // enableColResize={true}
                     overlayLoadingTemplate={agGrid.overlayLoadingTemplate}
                     overlayNoRowsTempalte={agGrid.overlayNoRowsTemplate}
                     frameworkComponents={agGrid.frameworkComponents}
                     rowData={data}
                     //onRowClicked={selectRow}
+                    onCellDoubleClicked={copy}
+                    onGridReady={onGridReady.bind(this)}   //그리드 init(최초한번실행)
                 />
             </div>
         </div>

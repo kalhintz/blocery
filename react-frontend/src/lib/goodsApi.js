@@ -8,12 +8,13 @@ export const getConsumerGoodsByItemKindCode = (itemKindCode) => axios(Server.get
 export const getConsumerGoodsByKeyword = (keyword) => axios(Server.getRestAPIHost() + '/goods/keyword', { method: "get", params: {keyword: keyword}, withCredentials: true, credentials: 'same-origin' })
 
 //상품 조회 - 'ASC'가 디폴트임.  정렬조건으로 조회 : (마감일자 이전것, 판매중인 것만 조회)
-// param_ex)  getConsumerGoodsSorted({direction: 'ASC', property: 'saleEnd'}, true or false or undefined or null or '')
-export const getConsumerGoodsSorted = (sorter, directGoods=false) => axios(Server.getRestAPIHost() + '/goods/sorted', { method: "post", data:sorter, params: {directGoods}, withCredentials: true, credentials: 'same-origin'})
+//20210209 미사용:아래 cache로 대체  export const getConsumerGoodsSorted = (sorter, directGoods=false) => axios(Server.getRestAPIHost() + '/goods/sorted', { method: "post", data:sorter, params: {directGoods}, withCredentials: true, credentials: 'same-origin'})
+export const getConsumerReserveGoodsCached = () => axios(Server.getRestAPIHost() + '/goods/reserveCached', { method: "post", withCredentials: true, credentials: 'same-origin'})
+
 
 //상품 조회 - 'ASC'가 디폴트임.  정렬조건으로 조회 : (마감일자 이전것, 판매중인 것만 조회)
-// param_ex)  getConsumerGoodsJustSorted({direction: 'ASC', property: 'saleEnd'})
-export const getConsumerGoodsJustSorted = (sorter) => axios(Server.getRestAPIHost() + '/goods/justSorted', { method: "post", data:sorter, withCredentials: true, credentials: 'same-origin'})
+//20210209 미사용:아래 cache로 대체 export const getConsumerGoodsJustSorted = (sorter) => axios(Server.getRestAPIHost() + '/goods/justSorted', { method: "post", data:sorter, withCredentials: true, credentials: 'same-origin'})
+export const getConsumerGoodsJustCached = (sorter) => axios(Server.getRestAPIHost() + '/goods/justCached', { method: "post", withCredentials: true, credentials: 'same-origin'})
 
 //상품 조회 - defined value로 조회 : (마감일자 이전것, 판매중인 것만 조회)
 // param_ex) 'bloceryPick'  'bestSelling':많이 팔린거, 'regularShop':단골샵 상품..
@@ -75,3 +76,15 @@ export const getProducerFilterGoods = (itemNo, directGoods, confirm, saleStopped
 //판매 일시중지/판매재개
 export const updateSalePaused = (goodsNo, salePaused) => axios(Server.getRestAPIHost() + '/goods/salePaused', { method:"put", params:{ goodsNo: goodsNo, salePaused: salePaused}, withCredentials: true, credentials: 'same-origin' })
 
+//선물세트 등록/제외
+export const updateGiftSet = (goodsNo, specialTag) => axios(Server.getRestAPIHost() + '/goods/giftSet', { method:"put", params:{ goodsNo: goodsNo, specialTag: specialTag}, withCredentials:true, credentials: 'same-origin' })
+
+//선물세트 상품 조회
+export const getGiftSet = (itemNo) => axios(Server.getRestAPIHost() + '/goods/giftSet', { method:"get", params:{itemNo: itemNo}, withCredentials: true, credentials: 'same-origin' })
+
+// 원매가 수정(미사용)
+// export const updatePrimeCost = (goodsNo, primeCost) => axios(Server.getRestAPIHost() + '/goods/primeCost', { method: "put", params:{goodsNo: goodsNo, primeCost:primeCost}, withCredentials: true, credentials: 'same-origin'})
+// 커미션 수정
+export const updateFeeRate = (goodsNo, feeRate) => axios(Server.getRestAPIHost() + '/goods/feeRate', { method: "put", params:{goodsNo: goodsNo, feeRate:feeRate}, withCredentials: true, credentials: 'same-origin'})
+// 상품가격 변경시 관리자에 메일 발송
+export const sendPriceUpdateMail = (goodsNo) => axios(Server.getRestAPIHost() + '/goods/sendPriceUpdateMail', { method: "get", params:{goodsNo: goodsNo}, withCredentials: true, credentials:'same-origin'})

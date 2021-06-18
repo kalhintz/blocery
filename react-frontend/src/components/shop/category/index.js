@@ -1,1 +1,7 @@
-export { default as Category } from './Category'
+import Category from "./Category";
+import GiftSet from "./GiftSet";
+
+export {
+    Category, GiftSet
+}
+

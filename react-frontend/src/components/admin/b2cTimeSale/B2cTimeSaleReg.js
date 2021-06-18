@@ -8,7 +8,7 @@ import { SingleDatePicker } from 'react-dates';
 import {FaSearchPlus} from 'react-icons/fa'
 import {BlocerySpinner, B2cGoodsSelSearch} from '~/components/common'
 import ComUtil from '~/util/ComUtil'
-import { getTimeSaleAdmin, setTimeSaleRegist, setTimeSaleUpdate } from '~/lib/adminApi'
+import {getPotenCouponMaster, getTimeSaleAdmin, setTimeSaleRegist, setTimeSaleUpdate} from '~/lib/adminApi'
 import Style from './B2cTimeSaleReg.module.scss'
 
 export default class B2cTimeSaleReg extends Component{
@@ -65,7 +65,10 @@ export default class B2cTimeSaleReg extends Component{
                 timeSalePrice:0,            //타임세일가
                 timeSaleDiscountRate:0,     //타임세일가 할인율
                 timeSaleFeeRate:5,          //타임세일 수수료 최소 5%
-                timeSaleSupportPrice: 0,        //판매지원금
+                timeSaleSupportPrice: 0,        //판매지원금  (사용안함)
+                timeSalePayoutAmount:0,      //정산가 (timeSaleFeeRate 계산용)
+
+                timeSalePriority:0,         //202104추가, 동일시간대에서 낮은값일수록 우선노출
             },
 
             goodsSearchModal:false,
@@ -87,6 +90,7 @@ export default class B2cTimeSaleReg extends Component{
         timeSaleGoods.currentPrice = obj.currentPrice;
         timeSaleGoods.discountRate = obj.discountRate;
         timeSaleGoods.timeSaleFeeRate = obj.feeRate;
+        timeSaleGoods.potenCouponDiscount = obj.potenCouponDiscount;
 
         if(timeSaleGoods.timeSalePrice) {
             let v_disCountRate = (100 - (100 * (ComUtil.toNum(timeSaleGoods.timeSalePrice) / ComUtil.toNum(timeSaleGoods.consumerPrice)))) || 0;
@@ -141,15 +145,15 @@ export default class B2cTimeSaleReg extends Component{
             return false;
         }
 
-        if(!timeSaleGoods.timeSalePrice) {
-            alert("포텐타임가는 필수 입니다.");
-            return false;
-        }
-
-        if(ComUtil.toNum(timeSaleGoods.timeSalePrice) <= 0) {
-            alert("포텐타임가는 필수 입니다.");
-            return false;
-        }
+        // if(!timeSaleGoods.timeSalePrice) {
+        //     alert("포텐타임가는 필수 입니다.");
+        //     return false;
+        // }
+        //
+        // if(ComUtil.toNum(timeSaleGoods.timeSalePrice) <= 0) {
+        //     alert("포텐타임가는 필수 입니다.");
+        //     return false;
+        // }
 
         if(ComUtil.toNum(timeSaleGoods.currentPrice) < ComUtil.toNum(timeSaleGoods.timeSalePrice)) {
             alert("판매가보다 포텐타임가 금액큽니다.");
@@ -172,11 +176,15 @@ export default class B2cTimeSaleReg extends Component{
             let timeSaleGoods = Object.assign({}, this.state.timeSaleGoods);
             let goodsNo = timeSaleGoods.goodsNo;
             const { status, data } = await getTimeSaleAdmin(goodsNo);
-            //console.log("getTimeSaleAdmin==",data);
+            console.log("getTimeSaleAdmin==",data);
             if(status !== 200){
                 alert('응답이 실패 하였습니다');
                 return
             }
+
+            const {data:potenCouponInfo} = await getPotenCouponMaster(goodsNo);
+
+            console.log(potenCouponInfo);
 
             timeSaleGoods.producerNo = data.producerNo;
             timeSaleGoods.producerFarmNm = data.producerFarmNm;
@@ -190,6 +198,10 @@ export default class B2cTimeSaleReg extends Component{
             timeSaleGoods.timeSaleDiscountRate = data.timeSaleDiscountRate;
             timeSaleGoods.timeSaleFeeRate = data.timeSaleFeeRate;
             timeSaleGoods.timeSaleSupportPrice = data.timeSaleSupportPrice;
+            timeSaleGoods.potenCouponDiscount = potenCouponInfo.potenCouponDiscount;
+            timeSaleGoods.timeSalePayoutAmount = potenCouponInfo.potenCouponGoodsPrice * (1 - data.timeSaleFeeRate/100);
+
+            timeSaleGoods.timeSalePriority = data.timeSalePriority; //202104 추가
 
             let v_startDateTime =  moment(data.timeSaleStart);
             let v_endDateTime = moment(data.timeSaleEnd);
@@ -282,24 +294,29 @@ export default class B2cTimeSaleReg extends Component{
     onInputChange = (e) => {
         let {name, value} = e.target;
 
-        if(name === 'timeSaleSupportPrice' && value < 0){
+        if(value < 0){
             alert('해당 값은 0보다 작을 수 없습니다.');
             return;
         }
 
-        if(name !== 'timeSaleSupportPrice' && value <= 0) {
-            alert('해당 값은 0보다 커야합니다.');
-            return;
-        }
+        // if(name !== 'timeSaleSupportPrice' && value <= 0) {
+        //     alert('해당 값은 0보다 커야합니다.');
+        //     return;
+        // }
 
         let timeSaleGoods = Object.assign({}, this.state.timeSaleGoods);
 
         let obj_state = {};
         timeSaleGoods[name] = value;
-        if(name == "timeSalePrice"){
-           let v_disCountRate = (100 -  (100 * (ComUtil.toNum(value)/ComUtil.toNum(timeSaleGoods.consumerPrice)))) || 0;
-            timeSaleGoods.timeSaleDiscountRate = Math.round(v_disCountRate,0);
+
+        if(name === "timeSalePayoutAmount") {
+            timeSaleGoods.timeSaleFeeRate = (1 - (ComUtil.toNum(value) / timeSaleGoods.currentPrice)) * 100;
         }
+
+        // if(name == "timeSalePrice"){
+        //     let v_disCountRate = (100 -  (100 * (ComUtil.toNum(value)/ComUtil.toNum(timeSaleGoods.consumerPrice)))) || 0;
+        //     timeSaleGoods.timeSaleDiscountRate = Math.round(v_disCountRate,0);
+        // }
         obj_state.timeSaleGoods = timeSaleGoods;
         this.setState(obj_state);
     };
@@ -353,8 +370,11 @@ export default class B2cTimeSaleReg extends Component{
         timeSaleGoods.timeSaleStart = startDate;
         timeSaleGoods.timeSaleEnd = endDate;
         timeSaleGoods.timeSale = true;
-        timeSaleGoods.timeSalePrice = ComUtil.toNum(timeSaleGoods.timeSalePrice);
-        timeSaleGoods.timeSaleFeeRate = ComUtil.toNum(timeSaleGoods.timeSaleFeeRate);
+        timeSaleGoods.timeSalePrice = ComUtil.toNum(timeSaleGoods.currentPrice)
+        //202104 노출우선순위 추가
+        timeSaleGoods.timeSalePriority = ComUtil.toNum(timeSaleGoods.timeSalePriority)
+        // timeSaleGoods.timeSalePrice = ComUtil.toNum(timeSaleGoods.currentPrice*(1-(timeSaleGoods.potenCouponDiscount/100)))
+        // timeSaleGoods.timeSaleFeeRate = ComUtil.toNum(timeSaleGoods.potenCouponDiscount);
 
         let params = timeSaleGoods;
 
@@ -538,6 +558,17 @@ export default class B2cTimeSaleReg extends Component{
                         {
                             (timeSaleGoods.goodsNo) && (
                                 <div>
+                                    <div className="mt-1">우선순위 :
+                                        <input type="number"
+                                               name={'timeSalePriority'}
+                                               className="ml-1"
+                                               style={{width:'100px'}}
+                                               //value={timeSaleGoods.timeSalePriority}
+                                               value={timeSaleGoods.timeSalePriority||"0"}
+                                               //placeholder={'우선순위 낮은값일수록 우선노출'}
+                                               onChange={this.onInputChange}
+                                        /> (동일시간 시작시, 우선순위 낮은값일수록 우선노출)
+                                    </div>
                                     <div className="mt-1">소비자가 : {ComUtil.addCommas(timeSaleGoods.consumerPrice)} 원</div>
                                     <div className="mt-1">판매가 : {ComUtil.addCommas(timeSaleGoods.currentPrice)} 원 ({ComUtil.addCommas(Math.round(timeSaleGoods.discountRate,0))}%)</div>
                                     <div className="mt-1">
@@ -545,33 +576,46 @@ export default class B2cTimeSaleReg extends Component{
                                                        name={'timeSalePrice'}
                                                        className="ml-1"
                                                        style={{width:'100px'}}
-                                                       value={timeSaleGoods.timeSalePrice||""}
+                                                       // value={timeSaleGoods.currentPrice}
+                                                       value={timeSaleGoods.currentPrice*(1-(timeSaleGoods.potenCouponDiscount/100))}
+                                                       // value={timeSaleGoods.timeSalePrice||""}
                                                        placeholder={'포텐타임가'}
-                                                       onChange={this.onInputChange} /> 원
-                                        ({ComUtil.addCommas(Math.round(timeSaleGoods.timeSaleDiscountRate,0))}%)
+                                                       // onChange={this.onInputChange}
+                                                        disabled={true}
+                                                    /> 원
+                                        ({timeSaleGoods.potenCouponDiscount}% 할인 적용시)
+                                        {/*({ComUtil.addCommas(Math.round(timeSaleGoods.timeSaleDiscountRate,0))}%)*/}
                                     </div>
                                     <div className="mt-1">
                                         <span className="mr-5">
-                                        수수료 : <input type="number"
-                                                     name={'timeSaleFeeRate'}
-                                                     className="ml-1"
-                                                     style={{width:'100px'}}
-                                                     value={timeSaleGoods.timeSaleFeeRate||""}
-                                                     placeholder={'타임세일수수료(5% 이상 입력)'}
-                                                     onChange={this.onInputChange} /> %
+                                            정산가 :
+                                            <input type="number"
+                                                   name={'timeSalePayoutAmount'}
+                                                   className="ml-1"
+                                                   style={{width:'100px'}}
+                                                   value={timeSaleGoods.timeSalePayoutAmount||""}
+                                                   placeholder={'정산가'}
+                                                   onChange={this.onInputChange} />
+                                       {/*<input type="number"*/}
+                                       {/*              name={'timeSaleFeeRate'}*/}
+                                       {/*              className="ml-1"*/}
+                                       {/*              style={{width:'100px'}}*/}
+                                       {/*              value={timeSaleGoods.timeSaleFeeRate||""}*/}
+                                       {/*              placeholder={'타임세일수수료(5% 이상 입력)'}*/}
+                                       {/*              onChange={this.onInputChange} /> %*/}
                                         </span>
-                                        <span className="ml-4 mr-5">
-                                            판매지원금 : <input type="number"
-                                                         name={'timeSaleSupportPrice'}
-                                                         className="ml-1"
-                                                         style={{width:'100px'}}
-                                                         value={timeSaleGoods.timeSaleSupportPrice||""}
-                                                         placeholder={'판매지원금'}
-                                                         onChange={this.onInputChange} /> 원
-                                        </span>
+                                        {/*<span className="ml-4 mr-5">*/}
+                                        {/*    판매지원금 : <input type="number"*/}
+                                        {/*                 name={'timeSaleSupportPrice'}*/}
+                                        {/*                 className="ml-1"*/}
+                                        {/*                 style={{width:'100px'}}*/}
+                                        {/*                 value={timeSaleGoods.timeSaleSupportPrice||""}*/}
+                                        {/*                 placeholder={'판매지원금'}*/}
+                                        {/*                 onChange={this.onInputChange} /> 원*/}
+                                        {/*</span>*/}
                                         <span className="ml-4">
-                                            정산가 : {timeSaleGoods.timeSalePrice * ((100 - timeSaleGoods.timeSaleFeeRate) / 100) + ComUtil.toNum(timeSaleGoods.timeSaleSupportPrice)}원
-
+                                            {/*정산가 : {timeSaleGoods.timeSalePrice * ((100 - timeSaleGoods.timeSaleFeeRate) / 100) + ComUtil.toNum(timeSaleGoods.timeSaleSupportPrice)}원*/}
+                                            수수료 : {timeSaleGoods.timeSaleFeeRate||""}%
                                         </span>
                                     </div>
                                 </div>

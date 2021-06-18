@@ -7,8 +7,6 @@ import Style from './StarButton.module.scss'
 
 const StarButton = (props) => {
 
-    console.log({size: props.size})
-
     function onClick(){
         props.onClick({score: props.score})
     }

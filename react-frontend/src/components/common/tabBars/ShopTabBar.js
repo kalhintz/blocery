@@ -92,7 +92,7 @@ class ShopTabBar extends Component{
 
 
     render(){
-        console.log({desc: 'ShopTabBar', props: this.props})
+        //console.log({desc: 'ShopTabBar', props: this.props})
 
         // if(ComUtil.isMobileApp()) return null
         if(this.state.tabBarItems === null) return null

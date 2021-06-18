@@ -7,10 +7,14 @@ import { getLoginAdminUser } from '~/lib/loginApi'
 import ComUtil from '~/util/ComUtil'
 
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { Cell } from '~/components/common'
 import NoticeReg from '../noticeReg/NoticeReg'
+import FilterContainer from "~/components/common/gridFilter/FilterContainer";
+import {FilterGroup, Hr} from "~/styledComponents/shared";
+import InputFilter from "~/components/common/gridFilter/InputFilter";
+import CheckboxFilter from "~/components/common/gridFilter/CheckboxFilter";
 
 const NoticeList = (props) => {
 
@@ -19,7 +23,7 @@ const NoticeList = (props) => {
             {headerName: "번호", field: "noticeNo", sort:"desc", width: 60},
             {headerName: "예약여부", field: "reserved", width: 90,
                 valueGetter: function(params) {
-                    return (params.data.reserved === 1 ? '예약' : '')
+                    return (params.data.reserved === 1 ? '예약' : '미예약')
                 }},
             {headerName: "날짜", field: "regDate", width: 200,
                 valueGetter: function(params) {
@@ -33,7 +37,13 @@ const NoticeList = (props) => {
         ],
         defaultColDef: {
             width: 100,
-            resizable: true
+            resizable: true,
+            filter: true,
+            sortable: true,
+            floatingFilter: false,
+            filterParams: {
+                newRowsAction: 'keep'
+            }
         },
         overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
         overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
@@ -46,6 +56,7 @@ const NoticeList = (props) => {
     const [noticeList, setNoticeList] = useState([]);
     const [isOpen, setIsOpen] = useState(false)
     const [noticeData, setNoticeData] = useState(null)
+    const [gridApi, setGridApi] = useState(null)
 
     useEffect(() => {
         async function fetch(){
@@ -129,7 +140,11 @@ const NoticeList = (props) => {
     function toggle(){
         setIsOpen(!isOpen)
     }
-
+    //[이벤트] 그리드 로드 후 callback 이벤트
+    const onGridReady = (params) => {
+        //API init
+        setGridApi(params.api)
+    }
     return (
         <div
             className="ag-theme-balham"
@@ -137,6 +152,44 @@ const NoticeList = (props) => {
                 height: '700px'
             }}
         >
+            {/* filter START */}
+            <FilterContainer gridApi={gridApi} excelFileName={'공지사항 목록'}>
+                <FilterGroup>
+                    <InputFilter
+                        gridApi={gridApi}
+                        columns={[
+                            {field: 'title', name: '제목'},
+                            {field: 'content', name: '내용'},
+                        ]}
+                        isRealTime={true}
+                    />
+                </FilterGroup>
+                <Hr/>
+                <FilterGroup>
+                    <CheckboxFilter
+                        gridApi={gridApi}
+                        field={'reserved'}
+                        name={'예약여부'}
+                        data={[
+                            {value: '예약', name: '예약'},
+                            {value: '미예약', name: '미예약'},
+                        ]}
+                    />
+                    <CheckboxFilter
+                        gridApi={gridApi}
+                        field={'userType'}
+                        name={'사용자구분'}
+                        data={[
+                            {value: 'consumer', name: 'consumer'},
+                            {value: 'buyer', name: 'buyer'},
+                            {value: 'producer', name: 'producer'},
+                            {value: 'seller', name: 'seller'},
+                        ]}
+                    />
+                </FilterGroup>
+            </FilterContainer>
+            {/* filter END */}
+
             <Button outline size='sm' color={'info'} onClick={regNotice} className='m-2'>공지사항 등록</Button>
 
             <AgGridReact
@@ -151,6 +204,7 @@ const NoticeList = (props) => {
                 rowData={noticeList}
                 // onRowClicked={selectNotice}
                 frameworkComponents={agGrid.frameworkComponents}
+                onGridReady={onGridReady.bind(this)}   //그리드 init(최초한번실행)
             />
 
             <Modal isOpen={isOpen} toggle={toggle} className={''} centered>

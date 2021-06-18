@@ -1,10 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { ShopXButtonNav, ModalPopup } from '~/components/common'
-
-import { Webview } from '~/lib/webviewApi'
-import { getLoginUserType } from '~/lib/loginApi'
 import { getConsumer } from '~/lib/shopApi'
-
 import { Div, Img, Button, Link } from '~/styledComponents/shared'
 import kycSampleImg3 from '~/images/kyc/licence_man_none.svg';
 
@@ -22,42 +18,20 @@ export default class KycCertification extends Component {
         super(props);
         this.state = {
             loginUser: 'notRender',
-            loginUserType: null,
             modalOpen: false
         }
     }
 
     async componentDidMount() {
-        const loginUserType = await getLoginUserType();
-        let loginUser;
-
-        if(loginUserType.data === 'consumer') {
-            loginUser = await getConsumer();
-
-        } else if (loginUserType.data === 'producer') {
-            //생산자용 mypage로 자동이동.
-            Webview.movePage('/producer/mypage');
+        const {data} = await getConsumer();
+        if(!data){
+            this.props.history.replace('/mypage');
+            return;
         }
-
         this.setState({
-            loginUser: (loginUser) ? loginUser.data : '',
-            loginUserType: loginUserType.data
+            loginUser: (data) ? data : null
         })
     }
-
-    // onClickStart = async () => {
-    //     const {data:result} = await getConsumerKyc();
-    //
-    //     if(result) {
-    //         if(result && result.kycAuth === 1) {
-    //             Webview.movePage('/kycFinish');
-    //         } else {
-    //             Webview.movePage('/kycDocument');
-    //         }
-    //     } else {
-    //         Webview.movePage('/kycDocument');
-    //     }
-    // }
 
     onHelpClick = () => {
         this.setState({ modalOpen: !this.state.modalOpen })
@@ -100,9 +74,18 @@ export default class KycCertification extends Component {
                 {
                     this.state.modalOpen &&
                     <ModalPopup title={'KYC 신원 확인 안내'}
-                                content={<div>KYC 신원 확인은 마켓블리(MarketBly) App 내에서 토큰(BLY)출금 등 자산과 관련된 서비스를 이용하는데 있어 필요한 신원 확인 및 보증 절차입니다.
+                                content={
+                                    <div>KYC 신원 확인은 마켓블리(MarketBly) App 내에서 토큰(BLY)출금 등 자산과 관련된 서비스를 이용하는데 있어 필요한 신원 확인 및 보증 절차입니다.
                                     <br/><br/> 현재 계정 보안 자금 세탁과 테러 자금 조달 방지를 위해 출금 금액이 제한되어 있으며, KYC 신원 확인을 완료하면 출금 제한이 상향 조정됩니다.
-                                    <br/><br/> -KYC 신원 확인 전 : 일 한도 1,250BLY <br/> -KYC 신원 확인 후 : 일 한도 250,000BLY</div>}
+                                    {/*<br/><br/> -KYC 신원 확인 전 : 일 한도 1,250BLY <br/> -KYC 신원 확인 후 : 일 한도 250,000BLY</div>}*/}
+                                    {/*<br/><br/> -KYC 신원 확인 전 : 일 한도 500BLY <br/> -KYC 신원 확인 후 : 일 한도 5,000BLY</div>}*/}
+                                    <br/><br/> -KYC 신원 확인 전 : 일 한도 500BLY <br/>
+                                    -KYC 신원 확인 후 : <br/>
+                                    a. DON에어드랍 이벤트 기간 까지( ~ 3/7) : 한도 제한 없음 <br/>
+                                    b. DON에어드랍 이벤트 기간 이후(3/7 ~) : 5,000BLY
+                                    </div>
+                                    }
+
                                 onClick={this.onClose}>
 
                     </ModalPopup>

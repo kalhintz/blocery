@@ -1,12 +1,14 @@
 import React, { Component, PropTypes } from 'react';
-import { scOntTransferManagerBlct, scOntGetTotalBlsGuarantyBlct, scOntGetBalanceOfBlct, scOntGetManagerOngBalance, scOntManagerSendBlctToManager,
-    scOntTransferManagerBlctWithEvent, scOntUserSendBlctToManager, scOntTransferManagerBlctToManyAccounts, scOntTransferManagerTokenToManyAccount } from '~/lib/smartcontractApi';
-import { getConsumerAccountByEmail, getAllConsumerToken, getAllProducerToken } from '~/lib/adminApi'
-import { getBlyBalanceByAccount, sendManagerBlyToUser, sendUserBlytToManager, getEthBalance, sendEth, updateSwapBlctToBlySuccess, copyErcAccountToErcHistory} from '~/lib/swapApi'
+import { scOntTransferManagerBlct, scOntGetBalanceOfBlctAdmin, scOntGetManagerOngBalance, scOntManagerSendBlctToManager,
+    scOntTransferManagerBlctWithEvent, scOntUserSendBlctToManager, getBalanceOfBlctAllAdmin } from '~/lib/smartcontractApi';
+import { getAllConsumerToken, getAllProducerToken, getKakaoPhoneConsumer, getConsumerByConsumerNo } from '~/lib/adminApi'
+import { getBlyBalanceByAccount, sendManagerBlyToUser, sendUserBlytToManager, getEthBalance, updateSwapBlctToBlySuccess, copyErcAccountToErcHistory,
+    withdrawProducerToken} from '~/lib/swapApi'
 import { isTokenAdminUser } from '~/lib/loginApi'
-import { getConsumerEmail, getKakaoPhoneConsumer } from '~/lib/shopApi';
+import { getConsumerEmail } from '~/lib/shopApi';
 import { Server } from '~/components/Properties';
 import axios from 'axios';
+import { getProducerByProducerNo } from '~/lib/producerApi';
 
 export default class SetToken extends Component{
 
@@ -18,12 +20,16 @@ export default class SetToken extends Component{
             managerBlct: '-',
             managerOng: '-',
             sendKakao: false,
+            justHistory: false,
             ethAccount: '',
             tokenBalance: 0,
             ethBalance: 0,
             allConsumerTokens: 0,
             allProducerTokens: 0,
             consumerNo: 0,
+            consumerName: '',
+            consumerEmail: '',
+            consumerPhone: ''
         }
     }
 
@@ -42,7 +48,7 @@ export default class SetToken extends Component{
         console.log('manager Account : ' , this.state.managerAccount);
 
         let {data:managerOng} = await scOntGetManagerOngBalance();
-        let {data:managerBlct} = await scOntGetBalanceOfBlct(this.state.managerAccount);
+        let {data:managerBlct} = await scOntGetBalanceOfBlctAdmin(this.state.managerAccount);
 
         this.setState({
             managerBlct: managerBlct,
@@ -65,6 +71,21 @@ export default class SetToken extends Component{
         });
     }
 
+    onGetConsumerNoInfo = async() => {
+        if(this.getConsumerNo.value) {
+            let {data: consumerInfo} = await getConsumerByConsumerNo(this.getConsumerNo.value);
+            console.log(consumerInfo);
+            if (consumerInfo.account) {
+                this.setState({
+                    consumerNo: consumerInfo.consumerNo,
+                    account: consumerInfo.account,
+                    consumerName: consumerInfo.name,
+                    consumerPhone: consumerInfo.phone,
+                    consumerEmail: consumerInfo.email
+                })
+            }
+        }
+    }
     // email이나 phone으로 consumerNo와 account 가져오기
     onGetConsumerInfo = async() => {
 
@@ -83,6 +104,9 @@ export default class SetToken extends Component{
             }
         } else if(this.getConsumerNoPhone.value && this.getConsumerNoPhone.value.length > 11){
             let {data:consumerList} = await getKakaoPhoneConsumer(this.getConsumerNoPhone.value);
+            if(consumerList.length > 1) {
+                consumerList.forEach(consumer => console.slog(consumer.consumerNo, consumer.account));
+            }
             console.log(consumerList);
             if(consumerList.length === 0) {
                 this.setState({
@@ -112,18 +136,20 @@ export default class SetToken extends Component{
 
         let result ;
         if(this.getBalanceOfBlctAccount.value) {
-            result  = await scOntGetBalanceOfBlct(this.getBalanceOfBlctAccount.value);
+            result = await getBalanceOfBlctAllAdmin(this.getBalanceOfBlctAccount.value);
         } else {
-            result  = await scOntGetBalanceOfBlct(this.getBalanceOfBlctAccount.placeholder);
+            result = await getBalanceOfBlctAllAdmin(this.getBalanceOfBlctAccount.placeholder);
         }
-        let userAccount = document.getElementById('userBalanceBlct');
-        userAccount.textContent = result.data;
+        console.log(result.data);
+        let userBalanceBlct = document.getElementById('userBalanceBlct');
+        const resultText = `total: ${result.data.totalBalance}  /  locked: ${result.data.lockedBlct}  /  available: ${result.data.availableBalance}`
+        userBalanceBlct.textContent = resultText;
     };
 
 
     // 관리자가 사용자에게 토큰 지급하기
     onGiveUserToken = async() => {
-
+        console.slog("토큰지급요청");
         let address;
         let amount;
         if(this.giveUserAddress.value) {
@@ -146,7 +172,32 @@ export default class SetToken extends Component{
     };
 
     onGiveEventToken = async() => {
-        let {data} = await scOntTransferManagerBlctWithEvent(this.eventTitle.value, this.eventSubTitle.value,  this.giveConsumerNo.value, this.giveManyAmount.value, this.state.sendKakao);
+
+        if(this.giveConsumerNo.placeholder == 0 && this.giveConsumerNo.value == 0) {
+            alert("소비자 번호는 필수입니다.");
+            return;
+        }
+
+        if(this.state.justHistory) {
+            let confirmResult = window.confirm('토큰전송 없이 BountyHistory에 기록만 하시겠습니까?');
+            if(!confirmResult)
+                return false;
+        }
+
+        if(!this.state.justHistory && this.giveManyAmount.value < 0) {
+            let confirmResult = window.confirm('입력한 토큰양이 마이너스라 토큰을 회수합니다. 진행 하시겠습니까?');
+            if(!confirmResult)
+                return false;
+        }
+
+        console.slog("토큰지급요청");
+        let consumerNo;
+        if(this.giveConsumerNo.value) {
+            consumerNo = this.giveConsumerNo.value;
+        } else {
+            consumerNo = this.giveConsumerNo.placeholder;
+        }
+        let {data} = await scOntTransferManagerBlctWithEvent(this.eventTitle.value, this.eventSubTitle.value,  consumerNo, this.giveManyAmount.value, this.state.sendKakao, this.state.justHistory);
         if(data) {
             alert('토큰이 성공적으로 지급되었습니다');
         } else {
@@ -155,26 +206,20 @@ export default class SetToken extends Component{
     }
 
     onSendUserToken = async() => {
-
+        console.slog("토큰회수요청");
+        let account;
         if(this.sendUserAddress.value) {
-            let result  = await scOntUserSendBlctToManager(this.sendUserAddress.value, this.sendUserAmount.value);
-
-            if(result) {
-                alert('토큰이 성공적으로 지급되었습니다');
-            } else {
-                alert('토큰 지급에 실패하였습니다. 다시 시도해주세요.');
-            }
-
+            account = this.sendUserAddress.value;
         } else {
-            let placeResult  = await scOntUserSendBlctToManager(this.sendUserAddress.placeholder, this.sendUserAmount.value);
-
-            if(placeResult) {
-                alert('토큰이 성공적으로 지급되었습니다');
-            } else {
-                alert('토큰 지급에 실패하였습니다. 다시 시도해주세요.');
-            }
+            account = this.sendUserAddress.placeholder;
         }
 
+        let result  = await scOntUserSendBlctToManager(account, this.sendUserAmount.value);
+        if(result) {
+            alert('토큰이 성공적으로 회수되었습니다');
+        } else {
+            alert('토큰 지급에 실패하였습니다. 다시 시도해주세요.');
+        }
     }
 
     onSendM2MToken = async() => {
@@ -190,6 +235,12 @@ export default class SetToken extends Component{
     onSendKakao = (e) => {
         this.setState({
             sendKakao: e.target.checked
+        })
+    }
+
+    onJustHistory = (e) => {
+        this.setState({
+            justHistory: e.target.checked
         })
     }
 
@@ -259,6 +310,26 @@ export default class SetToken extends Component{
         }
     }
 
+    onWithdrawProducerToken = async() => {
+        console.slog("생산자 출금요청");
+        let {data:producer} = await getProducerByProducerNo(this.producerNo.value);
+        let {data:balance} = await scOntGetBalanceOfBlctAdmin(producer.account);
+        // console.log({balance:balance});
+        let confirmResult = window.confirm('현재 계좌에 ' + balance + 'BLCT가 있습니다. 출금하시겠습니까?');
+        if(!confirmResult)
+            return false;
+        let {data:result} = await withdrawProducerToken(this.producerNo.value, this.producerErcExAccount.value);
+        if(result === 200) {
+            alert("출금에 성공했습니다.");
+        } else if(result === -1) {
+            alert("잔액이 0보다 작습니다.")
+        } else if(result === 100) {
+            alert("blct 전송에 실패했습니다. 잠시 후 다시 시도해주세요.")
+        } else {
+            alert(result);
+        }
+    }
+
     render() {
 
         const styles = {
@@ -304,9 +375,24 @@ export default class SetToken extends Component{
                     </div>
                     <br/>
 
-                    2. 해당 account의 토큰잔액 조회 <br />
+                    1-1. 사용자 정보조회 (consumerNo) <br />
                     <div className='d-flex align-items-center'>
-                        <input className='m-0 w-25' type="text" placeholder={this.state.account}
+                        <input className='m-0 w-25' type="text" placeholder="consumerNo"
+                               ref = {(input) => {this.getConsumerNo = input}}
+                        />
+                        <button className='ml-1' onClick = {this.onGetConsumerNoInfo}> consumer 정보조회   </button>
+                    </div>
+                    <div className='d-flex align-items-center'>
+                        <span id="consumerName" className='ml-2'> Name: {this.state.consumerName} ,</span>
+                        <span id="consumerPhone" className='ml-2'> Phone: {this.state.consumerPhone} ,</span>
+                        <span id="consumerEmail" className='ml-2'> Email: {this.state.consumerEmail} ,</span>
+                        <span id="userAccount" className='ml-2'> {this.state.account}</span>
+                    </div>
+                    <br/>
+
+                    2. 해당 consumerNo의 토큰잔액 조회 <br />
+                    <div className='d-flex align-items-center'>
+                        <input className='m-0 w-25' type="text" placeholder={this.state.consumerNo}
                                ref = {(input) => {this.getBalanceOfBlctAccount = input}}
                         />
                         <button onClick = {this.onGetBalanceOfBlct}> BLCT 잔액조회   </button>
@@ -351,9 +437,12 @@ export default class SetToken extends Component{
                     <br/>
 
                     <div className='d-flex'>
-                        <span> 4. consumerNo에 BLCT 지급(토큰 지급이 완료되면 알림창을 확인해야 합니다) </span>
+                        <span> 4. consumerNo에 BLCT 지급 or 회수 (마이너스 입력시 회수됨. 토큰전송 완료시 알림창을 확인해야 합니다) </span>
                         <input id={'sendKakao'} type="checkbox" className={'m-2'} color={'default'} checked={this.state.sendKakao} onChange={this.onSendKakao} />
-                        <label for={'sendKakao'} className='text-secondary '>카카오톡 발송</label>
+                        <label for={'sendKakao'} className='text-secondary mr-2'>카카오톡 발송</label>
+                        <input id={'justHistory'} type="checkbox" className={'m-2'} color={'default'}
+                               checked={this.state.justHistory} onChange={this.onJustHistory}/>
+                        <label htmlFor={'justHistory'} className='text-secondary '>BountyHistory에 기록만</label>
                     </div>
                     {/*<br />*/}
                     <div className='d-flex'>
@@ -363,13 +452,13 @@ export default class SetToken extends Component{
                         <input className='m-0 w-25' type="text" placeholder="이벤트 상세제목 (토큰내역에 보여질 작은 설명)"
                                ref = {(input) => {this.eventSubTitle = input}}
                         />
-                        <input className='m-0 w-auto' type="text" placeholder="100"
+                        <input className='m-0 w-auto' type="text" placeholder="0"
                                ref = {(input) => {this.giveManyAmount = input}}
                         />
                     </div>
 
                     <div className='d-flex mt-2'>
-                        <input className='w-50' type="text" placeholder="consumerNo" value={this.state.consumerNo}
+                        <input className='w-50' type="text" placeholder={this.state.consumerNo}
                                ref = {(input) => {this.giveConsumerNo = input}}
                         />
                         <button onClick = {this.onGiveEventToken.bind(this)}> BLCT지급  </button>
@@ -378,21 +467,47 @@ export default class SetToken extends Component{
                     <br/>
                     <br/>
 
-                    10. 소비자 토큰 총합 구하기 (부하 많음!!) <br />
+                    5. 생산자 정산 (토큰 지급이 완료되면 알림창을 확인해야 합니다) <br />
                     <div className='d-flex align-items-center'>
-                        <button onClick = {this.onGetAllConsumerToken}> 토큰 총합 </button>
-                        <span className='ml-3'>{this.state.allConsumerTokens}</span>
+                        <input className='m-0' type="text" placeholder="생산자 번호"
+                               ref = {(input) => {this.producerNo = input}}
+                        />
+                        <input className='m-0 w-50' type="text" placeholder="출금할 erc계좌"
+                               ref = {(input) => {this.producerErcExAccount = input}}
+                        />
+                        <button onClick = {this.onWithdrawProducerToken}> 생산자 정산 </button>
                     </div>
                     <br/>
                     <br/>
 
-                    11. 생산자 토큰 총합 구하기 (부하 많음!!) <br />
+                    6.출금 BlctToBly swap 완료처리(이더스캔 확인 후 DB만 update) <br />
                     <div className='d-flex align-items-center'>
-                        <button onClick = {this.onGetAllProducerToken}> 토큰 총합 </button>
-                        <span className='ml-3'>{this.state.allProducerTokens}</span>
+                        <input className='m-0' type="text" placeholder="swapBlctToBlyNo"
+                               ref = {(input) => {this.swapBlctToBlyNo = input}}
+                        />
+                        <input className='m-0 w-50' type="text" placeholder="txHash"
+                               ref = {(input) => {this.swapBlctToBlyTxHash = input}}
+                        />
+                        <button onClick = {this.onUpdateSwapBlctToBlySuccess}> swapBlctToBly 완료 update   </button>
                     </div>
                     <br/>
                     <br/>
+
+                    {/*10. 소비자 토큰 총합 구하기 (부하 많음!!) <br />*/}
+                    {/*<div className='d-flex align-items-center'>*/}
+                    {/*    <button onClick = {this.onGetAllConsumerToken}> 토큰 총합 </button>*/}
+                    {/*    <span className='ml-3'>{this.state.allConsumerTokens}</span>*/}
+                    {/*</div>*/}
+                    {/*<br/>*/}
+                    {/*<br/>*/}
+
+                    {/*11. 생산자 토큰 총합 구하기 (부하 많음!!) <br />*/}
+                    {/*<div className='d-flex align-items-center'>*/}
+                    {/*    <button onClick = {this.onGetAllProducerToken}> 토큰 총합 </button>*/}
+                    {/*    <span className='ml-3'>{this.state.allProducerTokens}</span>*/}
+                    {/*</div>*/}
+                    {/*<br/>*/}
+                    {/*<br/>*/}
 
                 </div>
 

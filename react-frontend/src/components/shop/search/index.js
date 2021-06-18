@@ -28,7 +28,7 @@ const Search = (props) => {
 
         let localKeyword = sessionStorage.getItem('searchKeyword');
         if (localKeyword) {
-            console.log('sessionStorage:keyword=' + localKeyword);
+            //console.log('sessionStorage:keyword=' + localKeyword);
 
             setKeyword(localKeyword); //밑에 useEffect실행.
         }
@@ -49,7 +49,7 @@ const Search = (props) => {
     //상품클릭
     function onGoodsClick(goods) {
         // Webview.closePopupAndMovePage(`/goods?goodsNo=${goods.goodsNo}`)
-        console.log(props.history)
+        //console.log(props.history)
 
         props.history.push(`/goods?goodsNo=${goods.goodsNo}`)
     }
@@ -150,6 +150,7 @@ const Search = (props) => {
                                                 discountRate={Math.round(goods.discountRate)}
                                                 remainedCnt={goods.remainedCnt}
                                                 blyReview={goods.blyReviewConfirm}
+                                                buyingRewardFlag={goods.buyingRewardFlag}
                                             />
                                             <div className={Css.content}>
                                                 <div className={Css.farmersInfo} onClick={onGoodsClick.bind(this, goods)} >

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { getTransportCompanies, getDeliverTrace } from '~/lib/deliveryOpenApi'
+import {getTransportCompanies, getDeliverTrace} from '~/lib/deliveryOpenApi'
 import { Button, Table } from 'reactstrap'
 import { BlocerySpinner } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
@@ -18,7 +18,7 @@ export default class SearchTracking extends Component{
     }
     componentDidMount(){
         // this.getCompanyList()
-        this.search()
+        this.search(this.props.transportCompanyCd, this.props.trackingNumber)
     }
     getCompanyList = async() => {
         const { data } = await getTransportCompanies()
@@ -28,23 +28,17 @@ export default class SearchTracking extends Component{
     }
     //택배사 선택
     onTransportCompanyChange = (e) => {
-        console.log(e.target.value)
+        //console.log(e.target.value)
         this.setState({
             transportCompanyCd: e.target.value
         })
     }
     //택배사 조회
-    search = async () => {
-        console.log(tempData)
+    search = async (transportCompanyCd, invoiceNo) => {
+        const { status, data } = await getDeliverTrace(transportCompanyCd,invoiceNo)
         this.setState({
-            data: tempData
+            data: data
         })
-        return
-
-        const { status, data } = await getDeliverTrace()
-
-        console.log(data)
-
     }
     render(){
 
@@ -84,30 +78,30 @@ export default class SearchTracking extends Component{
                     배송지 : {data.receiverAddr}
                 </div>
 
-                <Table hover>
-                    <thead>
-                    <tr>
-                        <th>처리일시</th>
-                        <th>현재위치</th>
-                        <th>배송상태</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {
-                        trackingDetails.map(item=>{
-                            return(
-                                <tr>
-                                    <td>{item.timeString}</td>
-                                    <td>{item.where}</td>
-                                    <td>{item.kind}</td>
-                                </tr>
-                            )
-                        })
-                    }
-
-                    </tbody>
-                </Table>
-
+                <div className="col-sm-12">
+                    <table className="table">
+                        <thead>
+                        <tr>
+                            <th>시간</th>
+                            <th>현재 위치</th>
+                            <th>배송 상태</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {
+                            trackingDetails.map(item=>{
+                                return(
+                                    <tr>
+                                        <td>{item.timeString}</td>
+                                        <td>{item.where}</td>
+                                        <td>{item.kind}</td>
+                                    </tr>
+                                )
+                            })
+                        }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         )
     }

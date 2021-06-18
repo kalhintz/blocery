@@ -111,6 +111,7 @@ const WeeklyProducer = (props) => {
                                         // discountRate={Math.round(goods.discountRate)}
                                         remainedCnt={item.remainedCnt}
                                         blyReview={item.blyReviewConfirm}
+                                        buyingRewardFlag={item.buyingRewardFlag}
                                     />
                                     <SlideItemContent
                                         style={{paddingTop: 7}}

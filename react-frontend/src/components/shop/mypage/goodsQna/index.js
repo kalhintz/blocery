@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import { ShopXButtonNav } from '~/components/common'
 import {IconReload} from '~/components/common/icons'
 import { getGoodsByGoodsNo } from '~/lib/goodsApi'
-import { getGoodsQna } from '~/lib/shopApi'
+import {getConsumer, getGoodsQna} from '~/lib/shopApi'
 import {getLoginUserType} from "~/lib/loginApi";
 import {Webview} from "~/lib/webviewApi";
 import ComUtil from "~/util/ComUtil";
@@ -35,12 +35,15 @@ export default class GoodsQnaList extends Component {
 
     async componentDidMount() {
         const {data: userType} = await getLoginUserType();
-
         if(userType !== 'consumer'){
             Webview.openPopup('/login', true);
             return
         }
-
+        const loginUser = await getConsumer();
+        if(!loginUser || !loginUser.data){
+            this.props.history.replace('/mypage');
+            return;
+        }
         this.search()
     }
 

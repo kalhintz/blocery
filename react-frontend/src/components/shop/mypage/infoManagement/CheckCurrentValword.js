@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import { Container, Row, Col, Button, FormGroup, Label, InputGroup, Input, Fade, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { ShopXButtonNav } from '~/components/common/index'
 import { Webview } from "~/lib/webviewApi";
-import { getConsumerByConsumerNo } from "~/lib/shopApi";
+import {getConsumer} from "~/lib/shopApi";
 import { getProducerByProducerNo } from "~/lib/producerApi";
 import { Server } from '~/components/Properties';
 import axios from 'axios'
@@ -25,40 +25,30 @@ export default class CheckCurrentValword extends Component {
         }
     }
 
-    componentDidMount() {
+    async componentDidMount() {
+        let loginUser = await getConsumer();
+        if(!loginUser || !loginUser.data){
+            this.props.history.replace('/mypage');
+            return;
+        }
+        const consumerNo = loginUser.data.consumerNo;
         const params = new URLSearchParams(this.props.location.search)
-
-        // const userType = params.get('userType')
-        const consumerNo = params.get('consumerNo')
-        const producerNo = params.get('producerNo')
-
         const flag = params.get('flag')     //flag(1:비번변경 2:회원정보수정 3:결제비밀번호힌트)
 
-        // this.setState({ userType })
-
-        //if (userType == 'consumer') {
-            this.searchConsumer(consumerNo);
-
-            this.setState({
-                consumerNo: consumerNo,
-                flag: flag
-            })
-        // } else {
-        //     this.searchProducer(producerNo);
-        //
-        //     this.setState({
-        //         producerNo: producerNo,
-        //         flag: flag
-        //     })
-        // }
-    }
-
-    searchConsumer = async (consumerNo) => {
-        const consumerInfo = await getConsumerByConsumerNo(consumerNo)
+        this.searchConsumer();
 
         this.setState({
-            email: consumerInfo.data.email,
-            hintFront: consumerInfo.data.hintFront
+            consumerNo: consumerNo,
+            flag: flag
+        })
+    }
+
+    searchConsumer = async () => {
+        const {data:consumerInfo} = await getConsumer();
+
+        this.setState({
+            email: consumerInfo.email,
+            hintFront: consumerInfo.hintFront
         })
     }
 
@@ -94,31 +84,17 @@ export default class CheckCurrentValword extends Component {
                 credentials: 'same-origin'
             })
             .then(async(response) => {
-                console.log(response)
                 if (response.data.status === Server.ERROR)      //100: login Error
                     this.setState({fadeError: true});
                 else {
                     this.setState({fadeError: false});
-                    // if(data.userType == 'consumer') {
-                        if(this.state.flag == 1) {
-                            this.props.history.push('/modifyValword?consumerNo='+data.consumerNo);
-                        } else if(this.state.flag == 2) {
-                            this.props.history.push('/modifyConsumerInfo?consumerNo='+data.consumerNo);
-                        } else {    // flag=3, 결제비밀번호 힌트 modal, 비밀번호 확인 후 확인버튼 누르면 /mypage로
-                            this.props.history.push('/mypage/hintPassPhrase?consumerNo='+data.consumerNo)
-                        }
-                    // } else {        // 로그인유저가 producer일 때
-                    //     if(this.state.flag == 1) {
-                    //         this.props.history.push('/modifyValword?producerNo='+data.producerNo);
-                    //     } else if(this.state.flag == 2){
-                    //         // this.props.history.push('/modifyConsumerInfo?producerNo='+data.producerNo);
-                    //     } else {
-                    //         this.setState({
-                    //             modal: true
-                    //         })
-                    //     }
-                    // }
-
+                    if(this.state.flag == 1) {
+                        this.props.history.push('/modifyValword');
+                    } else if(this.state.flag == 2) {
+                        this.props.history.push('/modifyConsumerInfo');
+                    } else {    // flag=3, 결제비밀번호 힌트 modal, 비밀번호 확인 후 확인버튼 누르면 /mypage로
+                        this.props.history.push('/mypage/hintPassPhrase')
+                    }
                 }
             })
     }

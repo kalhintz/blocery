@@ -123,7 +123,13 @@ class B2cGoodsSearch extends Component{
             ],
             defaultColDef: {
                 width: 120,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             components: {
                 formatCurrencyRenderer: this.formatCurrencyRenderer,
@@ -351,14 +357,14 @@ class B2cGoodsSearch extends Component{
                                     style={{height:"400px"}}
                                 >
                                     <AgGridReact
-                                        enableSorting={true}                //정렬 여부
-                                        enableFilter={true}                 //필터링 여부
+                                        // enableSorting={true}                //정렬 여부
+                                        // enableFilter={true}                 //필터링 여부
                                         floatingFilter={true}               //Header 플로팅 필터 여부
                                         columnDefs={this.state.columnDefs}  //컬럼 세팅
                                         defaultColDef={this.state.defaultColDef}
                                         rowSelection={false}  //멀티체크 가능 여부
                                         rowHeight={this.state.rowHeight}
-                                        enableColResize={true}              //컬럼 크기 조정
+                                        // enableColResize={true}              //컬럼 크기 조정
                                         overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                                         overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                                         onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)

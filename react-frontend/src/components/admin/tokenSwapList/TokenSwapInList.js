@@ -1,28 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import {getBlyToBlctList, getSwapManagerBlyBalance, getSwapManagerEthBalance, getTotalSwapBlctIn, getBlyBalanceByAccount, swapBlyToBlctByAccount } from '~/lib/swapApi';
+import {getBlyToBlctList, getSwapManagerBlyBalance, getSwapManagerEthBalance, getTotalSwapBlctIn, getBlyBalanceByAccount, swapBlyToBlctByAccount, getBlyToBlctListWithBalance } from '~/lib/swapApi';
 
-import { scOntGetBalanceOfBlct, scOntGetManagerOngBalance } from '~/lib/smartcontractApi';
+import { scOntGetBalanceOfBlctAdmin, scOntGetManagerOngBalance } from '~/lib/smartcontractApi';
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { ExcelDownload } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
 import { Server } from '~/components/Properties';
 import axios from 'axios';
-import { Button } from 'reactstrap'
-
+import {Button, Modal, ModalBody, ModalFooter, ModalHeader} from 'reactstrap'
+import AbuserRenderer from "~/components/common/agGridRenderers/AbuserRenderer";
+import loadable from "@loadable/component";
+import {Span} from "~/styledComponents/shared";
+import {useModal} from "~/util/useModal";
+const ConsumerDetail = loadable(() => import('~/components/common/contents/ConsumerDetail'));
 const TokenSwapInList = (props) => {
-
+    function nameRenderer({value, data}) {
+        return <Span fg={'primary'} onClick={onNameClick.bind(this, data)}><u>{value}</u></Span>
+    }
+    const [modalOpen, setModalOpen, selected, setSelected, setModalState] = useModal()
     const [agGrid, setAgGrid] = useState({
         columnBlyToDefs: [
             {headerName: "erc20 임시계정", width: 380, field: "swapAccount"},
-            // {headerName: "소비자번호", width: 100, field: "consumerNo"},
+            {headerName: "소비자번호", width: 100, field: "consumerNo"},
+            {headerName: "이름", width: 150, field: "consumerName", cellRenderer: "nameRenderer"},
+            {headerName: "어뷰징", width: 100, field: "consumerNo", cellRenderer: 'abuserRenderer'},
             {headerName: "소비자 이메일주소", width: 170, field: "consumerEmail"},
+            {headerName: "소비자 전화번호", width: 150, field: "consumerPhone"},
             {headerName: "임시계정 발급시각", width: 150, field: "allocateTime", cellRenderer: 'formatDateRenderer'},
             {headerName: "입금완료토큰", width: 110, field: "blyAmount", cellRenderer: 'formatCurrencyRenderer', cellStyle:getCellStyle({cellAlign: 'center'})},
             // {headerName: "내부 BLY로 송금된 토큰", width: 160, field: "blctPayAmount", cellRenderer: 'formatCurrencyRenderer'},
             {headerName: "swap 완료", width: 100, field: "blctPayed", cellStyle:getCellStyle({cellAlign: 'center'})},
             {headerName: "swap 완료시각", width: 140, field: "blctPayedTime", cellRenderer: 'formatDateRenderer'},
+            {headerName: "BLY 잔고", width: 130, field: "blyBalance", cellStyle:getCellStyle({cellAlign: 'center'})},
             {headerName: "manager전송 완료", width: 140, field: "managerTransfered", cellStyle:getCellStyle({cellAlign: 'center'})},
             {headerName: "manager전송 시각", width: 140, field: "managerTransferedTime", cellRenderer: 'formatDateRenderer'},
             {headerName: "manager전송 토큰양", width: 150, field: "managerTransferedBly", cellStyle:getCellStyle({cellAlign: 'center'})},
@@ -33,9 +44,17 @@ const TokenSwapInList = (props) => {
 
         defaultColDef: {
             width: 170,
-            resizable: true
+            resizable: true,
+            filter: true,
+            sortable: true,
+            floatingFilter: false,
+            filterParams: {
+                newRowsAction: 'keep'
+            }
         },
         frameworkComponents: {
+            nameRenderer: nameRenderer,
+            abuserRenderer: AbuserRenderer,
             formatCurrencyRenderer: formatCurrencyRenderer,
             formatDateRenderer: formatDateRenderer,
             manualSwapRenderer: manualSwapRenderer
@@ -99,7 +118,7 @@ const TokenSwapInList = (props) => {
         // console.log('manager Account : ' , managerAccount);
 
         let {data:managerOng} = await scOntGetManagerOngBalance();
-        let {data:managerBlct} = await scOntGetBalanceOfBlct(managerAccount);
+        let {data:managerBlct} = await scOntGetBalanceOfBlctAdmin(managerAccount);
         let { data:swapManagerBly } = await getSwapManagerBlyBalance();
         let { data:swapManagerEth } = await getSwapManagerEthBalance();
 
@@ -112,7 +131,10 @@ const TokenSwapInList = (props) => {
     const getSwapData = async(showEthGasFee) => {
         let {data: blyToBlctList} = await getBlyToBlctList(showEthGasFee);
         // console.log(blyToBlctList);
+        await setList(blyToBlctList);
+    }
 
+    const setList = async(blyToBlctList) => {
         blyToBlctList.map((item, index, arr) => item.swapClick = function ()  {
             {
                 manualSwap(arr, item);
@@ -134,7 +156,6 @@ const TokenSwapInList = (props) => {
         setTotalBlctIn(swapBlctIn);
     }
 
-
     const setExcelDataFunc = (data) => {
         let excelData = getExcelData(data);
         // console.log(excelData);
@@ -143,7 +164,7 @@ const TokenSwapInList = (props) => {
 
     const getExcelData = (dataList) => {
         const columns = [
-            'erc20 임시계정', '소비자 이메일주소', '임시계정 발급시각', '입금완료토큰', '내부 BLY로 송금된 토큰', 'swap 완료여부', 'swap 완료시각',
+            'erc20 임시계정', '소비자 번호','소비자 이메일주소', '임시계정 발급시각', '입금완료토큰', '내부 BLY로 송금된 토큰', 'swap 완료여부', 'swap 완료시각', 'BLY잔액',
             'ETH가스잔고', 'manager에게 전송 완료여부', 'manager에게 전송시각', 'manager에게 전송된 토큰 양'
         ]
 
@@ -155,7 +176,7 @@ const TokenSwapInList = (props) => {
             let managerTransferedTime = (item.managerTransferedTime !== null) ? ComUtil.utcToString(item.managerTransferedTime, 'YYYY-MM-DD HH:mm:ss ') : '-';
 
             return [
-                item.swapAccount, item.consumerEmail, allocateTime, item.blyAmount, item.blctPayAmount, item.blctPayed, blctPayedTime,
+                item.swapAccount, item.consumerNo, item.consumerEmail, allocateTime, item.blyAmount, item.blctPayAmount, item.blctPayed, blctPayedTime, item.blyBalance,
                 item.ethBalance, item.managerTransfered, managerTransferedTime, item.managerTransferedBly
             ]
         })
@@ -170,6 +191,13 @@ const TokenSwapInList = (props) => {
         alert('시간이 소요되니 기다려 주세요.');
 
         await getSwapData(true); //true = showEthGasFee
+    }
+
+    const showBlyBalance = async () => {
+        alert('시간이 소요되니 기다려 주세요.');
+
+        let {data: blyToBlctList} = await getBlyToBlctListWithBalance();
+        await setList(blyToBlctList);
     }
 
     const manualSwap = async(list, data) => {
@@ -253,6 +281,19 @@ const TokenSwapInList = (props) => {
         blackText : { color: 'black' }
     };
 
+    const copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
+    }
+
+    const toggle = () => {
+        setModalState(!modalOpen)
+    }
+
+    const onNameClick = (item) => {
+        setSelected(item)
+        toggle()
+    }
+
     return (
         <div className="m-2">
 
@@ -260,12 +301,12 @@ const TokenSwapInList = (props) => {
                 <h6> Manager 계좌 정보 </h6>
                 <div className="d-flex ml-3 mb-4">
                     <div className="mr-4">
-                        SwapManager ETH : <span style={styles.blueText}>{ComUtil.toCurrency(swapManagerEth)}</span> <br/>
-                        SwapManager BLY : <span style={styles.blueText}>{ComUtil.toCurrency(swapManagerBly)} </span> <br/>
+                        SwapManager ETH : <span style={styles.blueText}>{ComUtil.toEthCurrency(swapManagerEth)}</span> <br/>
+                        SwapManager BLY : <span style={styles.blueText}>{ComUtil.toIntegerCurrency(swapManagerBly)} </span> <br/>
                     </div>
                     <div className="ml-5">
-                        Manager ONG : <span style={styles.blueText}>{ComUtil.toCurrency(managerOng)}</span> <br/>
-                        Manager BLCT : <span style={styles.blueText}>{ComUtil.toCurrency(managerBlct)} </span> <br/>
+                        Manager ONG : <span style={styles.blueText}>{ComUtil.toIntegerCurrency(managerOng)}</span> <br/>
+                        Manager BLCT : <span style={styles.blueText}>{ComUtil.toIntegerCurrency(managerBlct)} </span> <br/>
                     </div>
                 </div>
             </div>
@@ -282,7 +323,9 @@ const TokenSwapInList = (props) => {
                 />
                 &nbsp;
                 <Button color="secondary" onClick={() => showEthGasFeeRemained()}> Eth가스잔고 출력 </Button>
-
+                <div className="ml-1">
+                    <Button color="secondary" onClick={() => showBlyBalance()}> BLY잔액 출력 </Button>
+                </div>
                 <div className="flex-grow-1 text-right">
                     총 {completeCount} 건
                 </div>
@@ -297,19 +340,41 @@ const TokenSwapInList = (props) => {
                 }}
             >
                 <AgGridReact
-                    enableSorting={true}
-                    enableFilter={true}
+                    // enableSorting={true}
+                    // enableFilter={true}
                     columnDefs={agGrid.columnBlyToDefs}
                     defaultColDef={agGrid.defaultColDef}
                     rowSelection={'single'}  //멀티체크 가능 여부
-                    enableColResize={true}
+                    // enableColResize={true}
                     overlayLoadingTemplate={agGrid.overlayLoadingTemplate}
                     overlayNoRowsTempalte={agGrid.overlayNoRowsTemplate}
                     frameworkComponents={agGrid.frameworkComponents}
                     rowData={blyToBlctList}
                     //onRowClicked={selectRow}
+                    onCellDoubleClicked={copy}
                 />
             </div>
+            <Modal size="lg" isOpen={modalOpen}
+                   toggle={toggle} >
+                <ModalHeader toggle={toggle}>
+                    소비자 상세 정보
+                </ModalHeader>
+                <ModalBody style={{padding: 0}}>
+                    {
+                        selected && (
+                            <>
+                                <ConsumerDetail
+                                    consumerNo={selected && selected.consumerNo}
+                                    onClose={toggle}
+                                />
+                            </>
+                        )
+                    }
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="secondary" onClick={toggle}>닫기</Button>
+                </ModalFooter>
+            </Modal>
         </div>
     )
 

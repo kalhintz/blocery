@@ -10,6 +10,9 @@ import { BlocerySpinner, B2cGoodsSelSearch } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
 import { getTimeSaleAdmin, setSuperRewardRegist, setSuperRewardUpdate } from '~/lib/adminApi'
 import Style from './B2cSuperRewardReg.module.scss'
+import {Div, Flex, Span, Input} from '~/styledComponents/shared'
+
+const mb = 10
 
 export default class B2cSuperRewardReg extends Component {
     constructor(props) {
@@ -62,7 +65,10 @@ export default class B2cSuperRewardReg extends Component {
                 discountRate:0,             // 할인율
 
                 superRewardReward:70,       // 소비자 보상비율(70% default)
-                superRewardFeeRate:5,       // 수퍼타임 수수료 최소 5%
+                superRewardFeeRate:5,       // 수퍼리워드 수수료 최소 5%
+
+                superRewardTotalCount:0,     // 고정값 (통상 슈퍼리워드는 +5 개 정도 여유를 두기로 함)
+                superRewardBackupCount:0     // 202104추가. 17시 종료시 재고수량 더하기.
             },
 
             goodsSearchModal:false,
@@ -72,6 +78,19 @@ export default class B2cSuperRewardReg extends Component {
 
     // 상품 검색 모달 [상품선택] 온체인지 이벤트
     goodsSearchModalOnChange = (obj) => {
+
+        // const superRewardGoods = Object.assign({}, obj)
+        //
+        //
+        // if (!superRewardGoods.superRewardReward)
+        //     superRewardGoods.superRewardReward = 70
+        //
+        // // obj.superRewardFeeRate = obj;
+        //
+        // this.setState({
+        //     superRewardGoods: obj
+        // });
+
 
         const superRewardGoods = Object.assign([], this.state.superRewardGoods);
 
@@ -85,6 +104,10 @@ export default class B2cSuperRewardReg extends Component {
         superRewardGoods.discountRate = obj.discountRate;
         superRewardGoods.superRewardFeeRate = obj.feeRate;
         superRewardGoods.superRewardReward = obj.superRewardReward||70;
+
+        superRewardGoods.remainedCnt = obj.remainedCnt
+
+        console.log({superRewardGoods})
 
         this.setState({
             superRewardGoods
@@ -140,9 +163,15 @@ export default class B2cSuperRewardReg extends Component {
         }
 
         if(ComUtil.toNum(superRewardGoods.superRewardFeeRate) <= 0 || ComUtil.toNum(superRewardGoods.superRewardFeeRate) < 5) {
-            alert("슈퍼리워드가 수수료는 필수 입니다.(최소 5% 이상)");
+            alert("슈퍼리워드 수수료는 필수 입니다.(최소 5% 이상)");
             return false;
         }
+
+        if(!superRewardGoods.superRewardTotalCount) {
+            alert("슈퍼리워드 수량은 필수 입니다.");
+            return false;
+        }
+
 
         return true;
 
@@ -172,6 +201,9 @@ export default class B2cSuperRewardReg extends Component {
             superRewardGoods.superRewardReward = data.superRewardReward;
             //superRewardGoods.superRewardDiscountRate = data.superRewardDiscountRate;
             superRewardGoods.superRewardFeeRate = data.superRewardFeeRate;
+            superRewardGoods.remainedCnt = data.remainedCnt;
+            superRewardGoods.superRewardTotalCount = data.superRewardTotalCount;
+            superRewardGoods.superRewardBackupCount = data.superRewardBackupCount;
 
             let v_startDateTime =  moment(data.superRewardStart);
             let v_endDateTime = moment(data.superRewardEnd);
@@ -272,17 +304,28 @@ export default class B2cSuperRewardReg extends Component {
         });
     }
 
+    onInputChange = ({target}) => {
+        const {name, value} = target
+
+        const goods = this.state.superRewardGoods
+        goods[name] = value
+
+        this.setState({
+            superRewardGoods: goods
+        });
+    }
+
     //인풋박스
-    onInputChange = (e) => {
+    onInputChange_bak = (e) => {
         let {name, value} = e.target;
 
-        if(name === 'superRewardReward' || name === 'superRewardFeeRate') {
+        if(name === 'superRewardReward' || name === 'superRewardFeeRate' || name === 'superRewardTotalCount') {
             if(value <= 0) {
                 alert('해당 값은 0보다 커야합니다.');
                 return;
             }
         }
-        console.log('name : ', name, ', value : ', value);
+        //console.log('name : ', name, ', value : ', value);
 
         let superRewardGoods = Object.assign({}, this.state.superRewardGoods);
 
@@ -343,10 +386,14 @@ export default class B2cSuperRewardReg extends Component {
         superRewardGoods.superReward = true;
         superRewardGoods.superRewardReward = ComUtil.toNum(superRewardGoods.superRewardReward);
         superRewardGoods.superRewardFeeRate = ComUtil.toNum(superRewardGoods.superRewardFeeRate);
+        superRewardGoods.superRewardTotalCount = ComUtil.toNum(superRewardGoods.superRewardTotalCount);
+        superRewardGoods.superRewardBackupCount = ComUtil.toNum(superRewardGoods.superRewardBackupCount);
 
         let params = superRewardGoods;
 
         //console.log("onConfirmClick",params);
+
+        console.log({save: params})
 
         if(this.state.isReg == true){
             const { status, data } = await setSuperRewardRegist(params);
@@ -530,38 +577,79 @@ export default class B2cSuperRewardReg extends Component {
 
                             </div>
                         </div>
+
+
                         {
                             (superRewardGoods.goodsNo) && (
-                                <div>
-                                    <div className="mt-1">소비자가 : {ComUtil.addCommas(superRewardGoods.consumerPrice)} 원</div>
-                                    <div className="mt-1">판매가 : {ComUtil.addCommas(superRewardGoods.currentPrice)} 원 ({ComUtil.addCommas(Math.round(superRewardGoods.discountRate,0))}%)</div>
-                                    <div className="mt-1">
-                                        소비자 Bly 보상 : <input type="number"
-                                                       name={'superRewardReward'}
-                                                       className="ml-1"
-                                                       style={{width:'100px'}}
-                                                       value={superRewardGoods.superRewardReward||""}
-                                                       placeholder={'소비자 Bly 보상'}
-                                                       onChange={this.onInputChange} /> %
-                                    </div>
-                                    <div className="mt-1">
-                                        <span className="mr-5">
-                                        수수료 : <input type="number"
-                                                     name={'superRewardFeeRate'}
-                                                     className="ml-1"
-                                                     style={{width:'100px'}}
-                                                     value={superRewardGoods.superRewardFeeRate||""}
-                                                     placeholder={'수수료(5% 이상 입력)'}
-                                                     onChange={this.onInputChange}
-                                                     readOnly={true}
-                                                     disabled={true}
-                                                    /> %
-                                        </span>
-                                        <span className="ml-4">
-                                            정산가 : {ComUtil.addCommas(superRewardGoods.currentPrice * ((100 - superRewardGoods.superRewardFeeRate) / 100))}원
-                                        </span>
-                                    </div>
-                                </div>
+                                <Div p={16} bc={'light'}>
+                                    <Flex mb={mb}>
+                                        <Div width={150} mr={20}>소비자가</Div>
+                                        <Div>
+                                            {ComUtil.addCommas(superRewardGoods.consumerPrice)} 원
+                                        </Div>
+                                    </Flex>
+                                    <Flex mb={mb}>
+                                        <Div width={150} mr={20}>판매가</Div>
+                                        <Div>
+                                            {ComUtil.addCommas(superRewardGoods.currentPrice)} 원 ({ComUtil.addCommas(Math.round(superRewardGoods.discountRate,0))}%)
+                                        </Div>
+                                    </Flex>
+
+                                    <Flex mb={mb}>
+                                        <Div width={150} mr={20}>소비자 Bly 보상</Div>
+                                        <Div>
+                                            <Input type="number"
+                                                   name={'superRewardReward'}
+                                                   underLine
+                                                   value={superRewardGoods.superRewardReward||""}
+                                                   placeholder={'소비자 Bly 보상'}
+                                                   onChange={this.onInputChange} /> %
+                                        </Div>
+                                    </Flex>
+
+                                    <Flex mb={mb}>
+                                        <Div width={150} mr={20}>수수료</Div>
+                                        <Div>
+                                            <Input type="number"
+                                                   name={'superRewardFeeRate'}
+                                                   value={superRewardGoods.superRewardFeeRate||""}
+                                                   placeholder={'수수료(5% 이상 입력)'}
+                                                   underLine
+                                                   onChange={this.onInputChange}
+                                                   readOnly={true}
+                                                   disabled={true}
+                                            /> %
+                                        </Div>
+                                    </Flex>
+                                    <Flex mb={mb}>
+                                        <Div width={150} mr={20}>정산가</Div>
+                                        <Div>
+                                            {ComUtil.addCommas(superRewardGoods.currentPrice * ((100 - superRewardGoods.superRewardFeeRate) / 100))}원
+                                        </Div>
+                                    </Flex>
+                                    <Flex>
+                                        <Div width={150} mr={20}>번호표 수량</Div>
+                                        <Div>
+                                            <Span mr={10}>현 재고수량 <Span fg={'danger'} bold>{superRewardGoods.remainedCnt}</Span>개 </Span>
+                                            <Span><Input name={'superRewardTotalCount'} underLine value={superRewardGoods.superRewardTotalCount}
+                                                         onChange={this.onInputChange}
+                                                         placeholder={'현 재고수량과 같이 입력 추천'}
+                                            />개 적용</Span>
+                                        </Div>
+                                    </Flex>
+
+                                    <Flex mb={mb}>
+                                        <Div width={150} mr={20}>종료 후 재고추가수량</Div>
+                                        <Div>
+                                            <Input type="number"
+                                                   name={'superRewardBackupCount'}
+                                                   underLine
+                                                   value={superRewardGoods.superRewardBackupCount||"0"}
+                                                   placeholder={'재고추가'}
+                                                   onChange={this.onInputChange} /> 개 (17시 종료되는 상품에 한해, 자동으로 재고수량이 늘어남)
+                                        </Div>
+                                    </Flex>
+                                </Div>
                             )
                         }
 

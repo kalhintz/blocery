@@ -14,10 +14,10 @@ export default class UseGuide extends Component {
         }
     }
 
-    componentDidMount() {
-        window.scrollTo(0,0)
-        setMissionClear(9).then( (response) => console.log('UserGuide:missionEvent9:' + response.data )); //이용안내 출력..
-    }
+    // componentDidMount() {
+    //     window.scrollTo(0,0)
+    //     //setMissionClear(9).then( (response) => console.log('UserGuide:missionEvent9:' + response.data )); //이용안내 출력..
+    // }
     // 1:1문의 이동
     moveToConsumerCenter = () => {
         this.props.history.push('/mypage/consumerCenter')

@@ -25,7 +25,13 @@ export default class AddressSearchButton extends Component {
             ],
             defaultColDef: {
                 width: 100,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             components: {
             },
@@ -272,14 +278,14 @@ export default class AddressSearchButton extends Component {
                                                 style={{height:"300px"}}
                                             >
                                                 <AgGridReact
-                                                    enableSorting={false}                //정렬 여부
-                                                    enableFilter={false}                 //필터링 여부
+                                                    // enableSorting={false}                //정렬 여부
+                                                    // enableFilter={false}                 //필터링 여부
                                                     floatingFilter={false}               //Header 플로팅 필터 여부
                                                     columnDefs={this.state.columnDefs}  //컬럼 세팅
                                                     defaultColDef={this.state.defaultColDef}
                                                     rowSelection={false}  //멀티체크 가능 여부
                                                     rowHeight={this.state.rowHeight}
-                                                    enableColResize={true}              //컬럼 크기 조정
+                                                    // enableColResize={true}              //컬럼 크기 조정
                                                     overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                                                     overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                                                     onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)

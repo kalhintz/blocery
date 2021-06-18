@@ -147,6 +147,14 @@ export default class ConsumerJoin extends Component{
         saveState.phone = ComUtil.phoneRegexChange(state.phone)
 
         const response = await addConsumer(saveState);
+        if(response.data === -3) {
+            alert('관리자에게 가입문의하시길 바랍니다!');
+            return false;
+        }
+        if(response.data === -2) {
+            alert('필수입력값이 존재하지 않습니다!!');
+            return false;
+        }
 
         if(response.data === -1) {
             alert('이미 등록된 아이디(이메일)입니다.');

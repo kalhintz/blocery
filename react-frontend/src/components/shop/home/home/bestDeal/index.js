@@ -78,6 +78,7 @@ const BestDeal = (props) => {
                                     discountRate={Math.round(goods.discountRate)}
                                     remainedCnt={goods.remainedCnt}
                                     blyReview={goods.blyReviewConfirm}
+                                    buyingRewardFlag={goods.buyingRewardFlag}
                                 />
 
 

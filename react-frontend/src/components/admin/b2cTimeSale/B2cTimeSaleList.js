@@ -8,8 +8,8 @@ import { ModalConfirm,  AdminModalWithNav } from '~/components/common'
 import { B2cTimeSaleReg } from '~/components/admin/b2cTimeSale'
 
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 import { Cell } from '~/components/common'
 import { Server } from '../../Properties'
 
@@ -127,7 +127,11 @@ export default class B2cTimeSaleList extends Component{
                     cellRenderer: "titleRenderer",
                     width: 250
                 },
-
+                {
+                    headerName: "우선순위", field: "timeSalePriority",
+                    cellStyle:this.getCellStyle({cellAlign: 'center'}),
+                    width: 80
+                },
                 {
                     headerName: "소비자가",
                     field: "timeSaleConsumerPrice",
@@ -199,7 +203,13 @@ export default class B2cTimeSaleList extends Component{
             ],
             defaultColDef: {
                 width: 100,
-                resizable: true
+                resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             overlayLoadingTemplate: '<span class="ag-overlay-loading-center">...로딩중입니다...</span>',
             overlayNoRowsTemplate: '<span class="ag-overlay-loading-center">조회된 내역이 없습니다</span>',
@@ -222,6 +232,7 @@ export default class B2cTimeSaleList extends Component{
             timeSaleGoodsNo:"",
             timeSaleModalTitle:"",
             isTimeSaleModalOpen:false
+
         };
     }
 
@@ -333,7 +344,8 @@ export default class B2cTimeSaleList extends Component{
     settlementPriceRenderer = ({value, data:rowData}) => {
         return (
             <span>
-                {ComUtil.addCommas(rowData.timeSalePrice * ((100 - rowData.timeSaleFeeRate) / 100) + ComUtil.toNum(rowData.timeSaleSupportPrice))}원
+                {/*{ComUtil.addCommas(rowData.timeSalePrice * ((100 - rowData.timeSaleFeeRate) / 100) + ComUtil.toNum(rowData.timeSaleSupportPrice))}원*/}
+                {ComUtil.addCommas((rowData.timeSalePrice * ((100 - rowData.timeSaleFeeRate) / 100)).toFixed(0))}원
             </span>
         )
     }
@@ -349,10 +361,11 @@ export default class B2cTimeSaleList extends Component{
 
     //타임세일가
     timeSalePriceRenderer = ({value, data:rowData}) => {
+        const potenSaleRate = 100-(rowData.timeSalePrice/rowData.consumerPrice*100)
         return (
             <span>
-                {ComUtil.addCommas(rowData.timeSalePrice)}원({Math.round(rowData.timeSaleDiscountRate,0)}%)<br/>
-                Fee : {rowData.timeSaleFeeRate} %
+                {ComUtil.addCommas(rowData.timeSalePrice)}원({Math.round((potenSaleRate*10)/10.0)}%)<br/>
+                {/*Fee : {rowData.timeSaleFeeRate} %*/}
             </span>
         );
     };
@@ -437,7 +450,7 @@ export default class B2cTimeSaleList extends Component{
     };
 
     regTimeSale = (goodsNo) => {
-        let v_goodsNo=null;
+        let v_goodsNo = null;
         let v_title = "포텐타임 등록";
         if(goodsNo){
             v_title = "포텐타임 수정";
@@ -513,13 +526,13 @@ export default class B2cTimeSaleList extends Component{
                         }}
                     >
                         <AgGridReact
-                            enableSorting={true}                //정렬 여부
-                            enableFilter={true}                 //필터링 여부
+                            // enableSorting={true}                //정렬 여부
+                            // enableFilter={true}                 //필터링 여부
                             floatingFilter={true}               //Header 플로팅 필터 여부
                             columnDefs={this.state.columnDefs}  //컬럼 세팅
                             defaultColDef={this.state.defaultColDef}
                             rowHeight={this.state.rowHeight}
-                            enableColResize={true}              //컬럼 크기 조정
+                            // enableColResize={true}              //컬럼 크기 조정
                             overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                             overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                             // onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)

@@ -21,4 +21,4 @@ export const scOntGetConsumerMissionEventBlctHistory = () => axios(Server.getRes
 export const scOntGetBlctBountyHistory = () => axios(Server.getRestAPIHost() + '/blctBountyHistory', { method: "get",  withCredentials: true, credentials: 'same-origin' })
 
 // 모든 blctBountyHistory 조회
-export const getAllBlctBountyHistory = ({year}) => axios(Server.getRestAPIHost() + '/getAllBlctBountyHistory', { method: "get",  params:{year: year}, withCredentials: true, credentials: 'same-origin' })
+export const getAllBlctBountyHistory = ({startDate,endDate,gubun}) => axios(Server.getRestAPIHost() + '/getAllBlctBountyHistory', { method: "get",  params:{startDate:startDate,endDate:endDate,gubun:gubun}, withCredentials: true, credentials: 'same-origin' })

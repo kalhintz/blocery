@@ -3,15 +3,16 @@ import { Route, Switch, Redirect } from 'react-router-dom'
 import Search from '~/components/shop/search'
 import { Event, EventAppReview, Login, Goods, MultiGiftBuy, DirectBuy, CartBuy, BuyFinish, ConsumerJoin, InputAddress, JoinComplete, FarmersDetailActivity, CartList, ZzimList } from '../components/shop'
 import Error from '../components/Error'
-import { Mypage, TokenHistory, Deposit, Withdraw } from "~/components/shop/mypage";
-import { BlocerySpinner } from '~/components/common'
+import { Mypage, Index, Deposit, Withdraw, DonHistory } from "~/components/shop/mypage";
+import KakaoCertCheck from '~/components/shop/mypage/kakaoCertCheck'
+import {BlocerySpinner, ShopXButtonNav} from '~/components/common'
 import ShopTabBar from '~/components/common/tabBars/ShopTabBar'
 
 import ComUtil from '../util/ComUtil'
 import { GoodsReview, GoodsReviewList, ProducersGoodsList, ProducersFarmDiaryList, ProducersFarmDiary } from '../components/shop'
 import { Order, OrderDetail, OrderList, UpdateAddress, OrderCancel } from "../components/shop/mypage/orderList";
-import TokenSwap from "~/components/shop/mypage/tokenSwap"
-import { InfoManagementMenu, CheckCurrentValword, ModifyConsumerInfo, ModifyValword, AddressManagement, AddressModify, HintPassPhrase } from "../components/shop/mypage/infoManagement"
+import { CompleteSecession } from "~/components/shop/login"
+import { InfoManagementMenu, CheckCurrentValword, ModifyConsumerInfo, ModifyValword, AddressManagement, AddressModify, HintPassPhrase, ApplySecession } from "../components/shop/mypage/infoManagement"
 import GoodsQnaList from "~/components/shop/mypage/goodsQna"
 import NotificationList from "~/components/shop/mypage/notificationList";
 import { NoticeList } from "~/components/common/noticeList";
@@ -21,11 +22,15 @@ import UseGuide from '~/components/shop/mypage/useGuide'
 import { Setting, TermsOfUse, PrivacyPolicy } from "~/components/shop/mypage/setting"
 import { KycCertification, KycDocument, KycFinish } from '~/components/shop/mypage/certification'
 import { CouponList } from '~/components/shop/mypage/couponList'
+import InviteFriend from '~/components/shop/mypage/inviteFriend'
+import IosKakaoLink from '~/components/shop/mypage/inviteFriend/IosKakaoLink'
+import CouponGoodsList from "~/components/shop/couponGoodsList";
+import BuyCouponGoods from "~/components/shop/buyCouponGoods";
 
 import MdPick from '~/components/shop/mdPick'
 import MdPickSub from '~/components/shop/mdPickSub'
 
-import { Category } from '~/components/shop/category'
+import { Category, GiftSet } from '~/components/shop/category'
 import GoodsListByItemKind from '~/components/shop/goodsListByItemKind'
 
 import { PrivateRoute } from "./PrivateRoute";
@@ -40,6 +45,8 @@ import {b2cQueInfo} from '~/components/common/winOpen'
 import B2cSidebar from '~/components/common/sideBars/B2cSidebar'
 import {Transition} from 'react-spring/renderprops'
 import B2cBottomBar from '~/components/common/sideBars/B2cBottombar'
+import GoodsDetail from "~/components/common/goodsDetail";
+import {Div, Link} from "~/styledComponents/shared";
 
 const Wrapper = {
     display: 'flex',
@@ -99,8 +106,6 @@ class ShopContainer extends Component {
 
     async componentDidMount(){
         const { data: userType } = await getLoginUserType()
-        console.log({b2c_getLoginUserType: userType})
-
         if(userType){
             const user = await getLoginUser()
 
@@ -114,13 +119,13 @@ class ShopContainer extends Component {
             sessionStorage.setItem('logined', 1);
 
         }else{ //login안된 경우.
-            Webview.appLog('ShopContainer Router:' + localStorage.getItem('autoLogin'));
+            //Webview.appLog('ShopContainer Router:' + localStorage.getItem('autoLogin'));
             if (localStorage.getItem('autoLogin') != 1) { //로그아웃을 한경우만 지워주면 됨: 로그아웃하면 autoLogin이 지워짐
                 localStorage.removeItem('userType');
                 localStorage.removeItem('account'); //geth Account
                 localStorage.removeItem('email');
 
-                Webview.appLog('ShopContainer Router: + RemoveValword');
+                //Webview.appLog('ShopContainer Router: + RemoveValword');
 
                 //localStorage.removeItem('valword');
                 sessionStorage.removeItem('logined');
@@ -185,6 +190,7 @@ class ShopContainer extends Component {
 
                             <Route path={'/category/:itemNo/:itemKindCode'} component={GoodsListByItemKind}/>
                             <Route path={'/category'} component={Category}/>
+                            <Route path={'/giftSet'} component={GiftSet}/>
 
                             {/*<Route path={'/finTech/home/:id'} component={FinTechHome}/>*/}
 
@@ -193,10 +199,12 @@ class ShopContainer extends Component {
                             <Route path={'/producersGoodsList'} component={ProducersGoodsList}/>
                             <Route path={'/producersFarmDiaryList'} component={ProducersFarmDiaryList}/>
                             <Route path={'/producersFarmDiary'} component={ProducersFarmDiary}/>
-                            <Route path={'/tokenHistory'} component={TokenHistory}/>
+                            <Route path={'/tokenHistory'} component={Index}/>
+                            <Route path={'/donHistory'} component={DonHistory}/>
                             <Route path={'/deposit'} component={Deposit}/>
-                            <Route path={'/withdraw'} component={Withdraw}/>
 
+                            <Route path={'/kakaoCertCheck'} component={KakaoCertCheck}/>
+                            {/*<Route path={'/withdraw'} component={Withdraw}/>*/}
                             <Route path={'/kycCertification'} component={KycCertification}/>
                             <Route path={'/kycDocument'} component={KycDocument}/>
                             <Route path={'/kycFinish'} component={KycFinish}/>
@@ -229,16 +237,22 @@ class ShopContainer extends Component {
                             <PrivateRoute exact path={'/mypage/hintPassPhrase'} component={HintPassPhrase} />
                             <PrivateRoute exact path={'/mypage/noticeList'} component={NoticeList} />
                             <PrivateRoute exact path={'/mypage/regularShopList'} component={RegularShopList} />
-                            <PrivateRoute exact path={'/mypage/tokenSwap'} component={TokenSwap} />
                             <PrivateRoute exact path={'/mypage/couponList'} component={CouponList} userType={'consumer'} />
+                            <PrivateRoute exact path={'/mypage/inviteFriend'} component={InviteFriend} userType={'consumer'} />
+                            <PrivateRoute exact path={'/mypage/iosKakaoLink'} component={IosKakaoLink}/>
                             <PrivateRoute exact path={'/mypage/setting'} component={Setting} />
                             <PrivateRoute exact path={'/modifyConsumerInfo'} component={ModifyConsumerInfo} />
                             <PrivateRoute exact path={'/modifyValword'} component={ModifyValword} />
+                            <PrivateRoute exact path={'/applySecession'} component={ApplySecession} />
+                            <Route exact path={'/completeSecession'} component={CompleteSecession} />
                             <PrivateRoute exact path={'/orderDetail'} component={OrderDetail} />
                             <PrivateRoute exact path={'/orderList'} component={OrderList} />
                             <PrivateRoute exact path={'/updateAddress'} component={UpdateAddress} />
                             <PrivateRoute exact path={'/goodsReview'} component={GoodsReview} />
                             <PrivateRoute exact path={'/goodsReviewList/:tabId'} component={GoodsReviewList} />
+                            <PrivateRoute exact path={'/couponGoodsList'} component={CouponGoodsList} />
+                            <PrivateRoute exact path={'/buyCouponGoods'} component={BuyCouponGoods} />
+
                             {/* private end */}
 
                             <Route component={Error}/>
@@ -272,7 +286,12 @@ class ShopContainer extends Component {
                                 // '/producersFarmDiaryList',
                                 // '/producersFarmDiary',
                                 // '/queInfo',
-                                '/joinComplete'
+                                '/joinComplete',
+                                '/applySecession',
+                                '/completeSecession',
+                                '/couponGoodsList',
+                                '/buyCouponGoods',
+                                '/mypage/couponList'
                             ]}
                             onSidebarClick={this.toggleHamburger}
                             menuOpen={this.state.menuOpen}
@@ -288,5 +307,4 @@ class ShopContainer extends Component {
         )
     }
 }
-
 export default ShopContainer

@@ -18,7 +18,7 @@ const ProducersFarmDiary = (props) => {
             setFarmDiary(data.farmDiaries[0])
 
             //missionEvent 6번.
-            setMissionClear(6).then( (response) => console.log('ProducersFarmDiary:missionEvent6:' + response.data )); //재배일지 확인.
+            //setMissionClear(6).then( (response) => console.log('ProducersFarmDiary:missionEvent6:' + response.data )); //재배일지 확인.
         }
 
         fetch()

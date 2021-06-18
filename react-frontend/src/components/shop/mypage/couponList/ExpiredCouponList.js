@@ -11,7 +11,7 @@ const ExpiredCouponList = ({data: expiredCoupons}) => {
         <Div p={20}>
             <Div>
                 {
-                    expiredCoupons.map((item, index) => <CouponCard key={'coupon'+index} coupon={item} isUnused={false} />)
+                    expiredCoupons.map((item, index) => <CouponCard key={'coupon'+index} coupon={item} isExpired={true} />)
                 }
             </Div>
             <Div mt={30}>

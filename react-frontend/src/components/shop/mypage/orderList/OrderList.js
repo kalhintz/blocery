@@ -52,7 +52,8 @@ const Order = ({orderSeq, orderCnt, goodsNo, goodsNm, orderPrice, cardPrice, ord
                    blyTimeReward,       //블리타임 리워드 %
                    superRewardGoods,    //슈퍼리워드 상품 여부
                    superRewardReward,   //슈퍼리워드 %
-
+                   orderConfirm,       //판매자 주문확인 여부
+                    onePlusSubFlag      // 사은품여부
 
                }) => (
     <Div p={16}>
@@ -72,41 +73,45 @@ const Order = ({orderSeq, orderCnt, goodsNo, goodsNm, orderPrice, cardPrice, ord
                             notDeliveryDate ? <Badge fg={'white'} bg={'danger'}>미배송</Badge> :
                                 (payStatus === 'cancelled') ? <Badge fg={'white'} bg={'danger'}>취소완료</Badge> :
                                     consumerOkDate ? <Badge fg={'white'} bg={'green'}>구매확정</Badge> :
-                                        trackingNumber ?
-                                            <Badge fg={'white'} bg={'green'}>배송중</Badge> : <Badge fg={'white'} bg={'secondary'}>발송예정</Badge>
+                                        trackingNumber ? <Badge fg={'white'} bg={'green'}>배송중</Badge> :
+                                            orderConfirm === 'confirmed' ? <Badge fg={'white'} bg={'green'}>출고준비완료</Badge> : <Badge fg={'white'} bg={'secondary'}>발송예정</Badge>
                         }
                     </Flex>
                     <Div>
                         {goodsNm}
                     </Div>
-
                     {
-                        (payMethod === 'card') ?
+                        onePlusSubFlag ?
                             <Div>
-                                <Div mb={4} fontSize={14} bold>{ComUtil.addCommas(orderPrice)}원</Div>
-                                <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드결제
-                                    <Span fg={'danger'}>
-                                        {(superRewardGoods)?'(슈퍼리워드 적용)':''} {(blyTimeGoods)?'(블리타임 적용)':''}
-                                    </Span>
-                                </Right>
-                            </Div>
-                            : payMethod === 'blct' ?
-                            <Div alignItems={'center'}>
-                                <Div mb={4} fontSize={14} bold><Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken)}({ComUtil.addCommas(orderPrice)}원)</Div>
-                                <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''}| BLY결제</Right>
-                            </Div>
-                            :
-                            <Div alignItems={'center'}>
-                                <Div mb={4} fontSize={14} bold>
-                                    {ComUtil.addCommas(cardPrice)}원 +
-                                    <Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken)}({ComUtil.addCommas(ComUtil.roundDown(blctToken*orderBlctExchangeRate, 1))}원)
+                                <Div mb={4} fontSize={14} bold>0원</Div>
+                                <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} | 증정품</Right>
+                            </Div> :
+                            (payMethod === 'card') ?
+                                <Div>
+                                    <Div mb={4} fontSize={14} bold>{ComUtil.addCommas(orderPrice)}원</Div>
+                                    <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드결제
+                                        <Span fg={'danger'}>
+                                            {(superRewardGoods)?'(슈퍼리워드 적용)':''} {(blyTimeGoods)?'(블리타임 적용)':''}
+                                        </Span>
+                                    </Right>
                                 </Div>
-                                <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드+BLY결제
-                                    <Span fg={'danger'}>
-                                        {(superRewardGoods)?'(슈퍼리워드 적용)':''} {(blyTimeGoods)?'(블리타임 적용)':''}
-                                    </Span>
-                                </Right>
-                            </Div>
+                                : payMethod === 'blct' ?
+                                <Div alignItems={'center'}>
+                                    <Div mb={4} fontSize={14} bold><Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken.toFixed(2))}({ComUtil.addCommas(orderPrice)}원)</Div>
+                                    <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''}| BLY결제</Right>
+                                </Div>
+                                :
+                                <Div alignItems={'center'}>
+                                    <Div mb={4} fontSize={14} bold>
+                                        {ComUtil.addCommas(cardPrice)}원 +
+                                        <Icon name={'blocery'}/>&nbsp;{ComUtil.addCommas(blctToken.toFixed(2))}({ComUtil.addCommas(ComUtil.roundDown(blctToken*orderBlctExchangeRate, 1))}원)
+                                    </Div>
+                                    <Right fontSize={12} fg={'dark'}>수량 : {orderCnt} {partialRefundCount?'(+부분환불 ' + partialRefundCount + '건) ':''} | 카드+BLY결제
+                                        <Span fg={'danger'}>
+                                            {(superRewardGoods)?'(슈퍼리워드 적용)':''} {(blyTimeGoods)?'(블리타임 적용)':''}
+                                        </Span>
+                                    </Right>
+                                </Div>
                     }
 
                     {
@@ -120,7 +125,7 @@ const Order = ({orderSeq, orderCnt, goodsNo, goodsNm, orderPrice, cardPrice, ord
 
         </Link>
         {
-            notDeliveryDate ? null :
+            notDeliveryDate || onePlusSubFlag ? null :
                 (payStatus === 'cancelled') ? null :
                     consumerOkDate ? null :
                         trackingNumber &&
@@ -166,21 +171,19 @@ export default class OrderList extends Component {
     };
 
     async componentDidMount() {
-        const params = new URLSearchParams(this.props.location.search)
-
-        let consumerNo = params.get('consumerNo')
-
-        if (!consumerNo) {
-            const consumer = await getLoginUser(); // consumerNo 없으면 로그인정보에서 가져오도록 수정..refresh편의상..
-            consumerNo = consumer.uniqueNo;
+        // const params = new URLSearchParams(this.props.location.search)
+        // let consumerNo = params.get('consumerNo')
+        const loginUser = await getLoginUser(); // consumerNo 없으면 로그인정보에서 가져오도록 수정..refresh편의상..
+        if(!loginUser){
+            this.props.history.replace('/mypage');
+            return;
         }
-
-        this.getOrderList(consumerNo); //consumerNo
-
+        const consumerNo = loginUser.uniqueNo;
+        this.getOrderList(); //consumerNo
     }
 
-    getOrderList = async (consumerNo) => {
-        const response = await getOrderDetailListByConsumerNo(consumerNo);
+    getOrderList = async () => {
+        const response = await getOrderDetailListByConsumerNo();
 
 
         const {data} = response
@@ -212,10 +215,9 @@ export default class OrderList extends Component {
             orderGroupKey = compKey
         })
 
-        console.log({orderGroupNoList, orderGroupKeyList})
-
-        console.log(data)
-
+        // console.log({orderGroupNoList, orderGroupKeyList})
+        //
+        // console.log(data)
 
         this.setState({
             orderList: data,

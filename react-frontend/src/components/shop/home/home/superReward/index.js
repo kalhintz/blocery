@@ -225,10 +225,6 @@ export default function(props){
                     )
                 }
 
-
-
-
-
             </Div>
 
 

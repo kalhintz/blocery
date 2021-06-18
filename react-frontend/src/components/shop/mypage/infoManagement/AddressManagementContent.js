@@ -2,7 +2,7 @@ import React, {Fragment, Component} from 'react';
 import {Button} from '~/styledComponents/shared/Buttons'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
-import {getConsumerByConsumerNo, updateConsumerInfo} from "~/lib/shopApi";
+import {getConsumer} from "~/lib/shopApi";
 
 export default class AddressManagementContent extends Component {
     constructor(props) {
@@ -23,14 +23,14 @@ export default class AddressManagementContent extends Component {
     }
 
     componentDidMount() {
-        this.search(this.state.consumerNo)
+        this.search()
     }
 
-    search = async (consumerNo) => {
-        const {data:consumerInfo} = await getConsumerByConsumerNo(consumerNo)
+    search = async () => {
+        const {data:consumerInfo} = await getConsumer();
 
         this.setState({
-            consumerNo: consumerNo,
+            consumerNo: consumerInfo.consumerNo,
             addressess: consumerInfo.consumerAddresses
         })
     }
@@ -58,7 +58,7 @@ export default class AddressManagementContent extends Component {
         let query = this.state.updateAddress;
         let bodyFormData = new FormData();
 
-        console.log('query:'+query);
+        //console.log('query:'+query);
 
         bodyFormData.set('currentPage','1');
         bodyFormData.set('countPerPage','100');
@@ -80,7 +80,7 @@ export default class AddressManagementContent extends Component {
         let jsonResults = JSON.parse(allResults.substring(1, allResults.lastIndexOf(')')));
 
         let totalCount = jsonResults.results.common.totalCount;
-        console.log(jsonResults.results);
+        //console.log(jsonResults.results);
 
         const juso = jsonResults.results.juso || []
 
@@ -89,7 +89,7 @@ export default class AddressManagementContent extends Component {
             }
         );
 
-        console.log('results:',results);
+        //console.log('results:',results);
         this.setState({
             totalCount: totalCount,
             results:results
@@ -109,30 +109,10 @@ export default class AddressManagementContent extends Component {
         this.modalToggle();
     }
 
-    onClickOk = async () => {
-        let data = {};
-        data.consumerNo = this.state.consumerNo;
-        data.name = this.state.name;
-        data.phone = this.state.phone;
-        data.addr = this.state.addr;
-        data.addrDetail = this.state.addrDetail;
-        data.zipNo = this.state.zipNo;
-
-        const modified = await updateConsumerInfo(data)
-
-        if(modified.data === 1) {
-            alert('배송지 정보 수정이 완료되었습니다.')
-            this.props.history.push('/mypage/infoManagementMenu?consumerNo='+this.state.consumerNo);
-        } else {
-            alert('배송지 정보 수정 실패. 다시 시도해주세요.')
-            return false;
-        }
-    }
-
     addressModify = (i) => {
         const params = {
             pathname: '/mypage/addressModify',
-            search: '?consumerNo='+this.state.consumerNo+'&index='+i+'&flag=mypage',
+            search: '?index='+i+'&flag=mypage',
             state: null
         }
         this.props.history.push(params)
@@ -169,7 +149,7 @@ export default class AddressManagementContent extends Component {
                         <div className='w-100 h-100 bg-light d-flex justify-content-center align-items-center p-5 text-dark'>등록된 주소록이 없습니다.</div>
                 }
                 <div className='m-3'>
-                    <Link to={'/mypage/addressModify?consumerNo='+this.state.consumerNo+'&flag=mypage'}>
+                    <Link to={'/mypage/addressModify?flag=mypage'}>
                         <Button block bg={'green'} fg={'white'} py={16}>+ 배송지 추가</Button>
                     </Link>
                 </div>

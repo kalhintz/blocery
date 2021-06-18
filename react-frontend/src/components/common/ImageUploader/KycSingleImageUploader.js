@@ -230,7 +230,7 @@ class KycSingleImageUploader extends React.Component{
                 //서버에 파일 업로드
                 const { status, data: kycImages } = await this.upload(formData);
 
-                //console.log("kycImages",kycImages);
+                console.log(kycImages);
 
                 if(status !== 200){
                     this.notify(`업로드 오류 입니다, 다시 시도해 주세요`, toast.warn);

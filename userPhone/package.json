@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "cp -f ./ARNKakaoLink.podspec ./node_modules/@actbase/react-native-kakao-link/."
   },
   "dependencies": {
+    "@actbase/react-native-kakao-link": "1.0.5",
     "@react-native-community/async-storage": "^1.6.1",
     "@react-native-seoul/kakao-login": "^2.10.2",
     "axios": "^0.18.0",

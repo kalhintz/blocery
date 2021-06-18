@@ -10,8 +10,8 @@ import { BlockChainSpinner, BlocerySpinner, ExcelDownload, MonthBox } from '~/co
 
 //ag-grid
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 
 import {MdRefresh} from "react-icons/md";
 import 'react-month-picker/css/month-picker.css'
@@ -52,13 +52,19 @@ export default class WebCalculateTab extends Component {
             columnSummaryDefs: [
                 {headerName: "과세여부", field: "vatFlag", cellStyle:{"textAlign":"left", 'background-color': '#f1fff1'}, width: 90},
                 {
-                    headerName: "매출내역 (소비자판매가 A = B + C + D)",
+                    headerName: "매출내역 (소비자결제금액 A = B + C)",
                     cellStyle:this.getHeaderCellStyle,
                     children: [
-                        {headerName: '소비자판매가(A)',width: 150, field: 'summaryConsumerGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '소비자결제금액(A)',width: 150, field: 'summaryConsumerGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
                         {headerName: '판매원가(B)',width: 120, field: 'summaryTotalGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
-                        {headerName: '판매지원금(C)',width: 120, field: 'summaryTotalSupportPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
-                        {headerName: '배송비(D)',width: 110, field: 'summaryDeliveryFee', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '배송비(C)',width: 110, field: 'summaryDeliveryFee', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                    ]
+                },
+                {
+                    headerName: "지원금",
+                    cellStyle:this.getHeaderCellStyle,
+                    children: [
+                        {headerName: '쿠폰지원금(D)',width: 120, field: 'summaryTotalSupportPrice', cellStyle: {"textAlign":"left", 'background-color': '#d9d9d9'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
                     ]
                 },
                 {
@@ -69,7 +75,7 @@ export default class WebCalculateTab extends Component {
                     ]
                 },
                 {
-                    headerName: "정산내역(소비자판매가 - 수수료)",
+                    headerName: "정산내역",
                     cellStyle:this.getHeaderCellStyle,
                     children: [
                         {headerName: '총정산금액 (F)=A-E',width: 200, field: 'summarySimplePayoutAmount', cellStyle: {"textAlign":"left", 'font-weight' : 'bold', 'background-color': '#EBFBFF'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
@@ -105,9 +111,15 @@ export default class WebCalculateTab extends Component {
                             }
                         },
                         {headerName: '판매가',width: 80, field: 'currentPrice', cellStyle:{"textAlign":"left", 'background-color': '#f1fff1'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
-                        {headerName: '판매지원금',width: 100, field: 'timeSaleSupportPrice', cellStyle:{"textAlign":"left", 'background-color': '#f1fff1'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true},
+                        {headerName: '쿠폰지원금',width: 100, field: 'timeSaleSupportPrice', cellStyle:{"textAlign":"left", 'background-color': '#f1fff1'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true},
                             valueGetter: function(params) {
-                                return params.data.totalSupportPrice / params.data.orderCnt;
+                                let supportPrice = 0;
+                                if(params.data.timeSaleGoods) {
+                                    supportPrice = (params.data.usedCouponBlyAmount * params.data.orderBlctExchangeRate / params.data.orderCnt).toFixed(0)
+                                }
+
+                                return supportPrice;
+                                // return params.data.totalSupportPrice / params.data.orderCnt;
                             }
                         },
                         {headerName: '수량',width: 70, field: 'orderCnt', cellStyle:{"textAlign":"left", 'background-color': '#f1fff1'}, filterParams:{clearButton: true}},
@@ -119,10 +131,10 @@ export default class WebCalculateTab extends Component {
                     ]
                 },
                 {
-                    headerName: "매출내역 (소비자판매가 A = B + C + D)",
+                    headerName: "매출내역 (소비자결제금액 A = B + C)",
                     cellStyle:this.getHeaderCellStyle,
                     children: [
-                        {headerName: '소비자판매가(A)',width: 130, field: 'totalGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'},
+                        {headerName: '소비자결제금액(A)',width: 130, field: 'totalGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'},
                             cellRenderer: 'formatCurrencyRenderer',
                             filterParams:{clearButton: true},
                             valueGetter: function(params) {
@@ -130,8 +142,22 @@ export default class WebCalculateTab extends Component {
                             }
                         },
                         {headerName: '판매원가(B)',width: 100, field: 'totalGoodsPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
-                        {headerName: '판매지원금(C)',width: 120, field: 'totalSupportPrice', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
-                        {headerName: '배송비(D)',width: 90, field: 'deliveryFee', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                        {headerName: '배송비(C)',width: 90, field: 'deliveryFee', cellStyle: {"textAlign":"left", 'background-color': '#fafab4'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true}},
+                    ]
+                },
+                {
+                    headerName: "지원금",
+                    cellStyle:this.getHeaderCellStyle,
+                    children: [
+                        {headerName: '쿠폰지원금(D)',width: 120, field: 'totalSupportPrice', cellStyle: {"textAlign":"left", 'background-color': '#d9d9d9'}, cellRenderer: 'formatCurrencyRenderer', filterParams:{clearButton: true},
+                            valueGetter: function(params) {
+                                let supportPrice = 0;
+                                if(params.data.timeSaleGoods) {
+                                    supportPrice = (params.data.usedCouponBlyAmount * params.data.orderBlctExchangeRate).toFixed(0)
+                                }
+                                return supportPrice;
+                            }
+                        },
                     ]
                 },
                 {
@@ -193,6 +219,12 @@ export default class WebCalculateTab extends Component {
             defaultColDef: {
                 width: 130,
                 resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             frameworkComponents: {
                 checkModifyRenderer: this.checkModifyRenderer,
@@ -328,7 +360,12 @@ export default class WebCalculateTab extends Component {
             if(orderDetail.vatFlag && !orderDetail.refundFlag) {
                 vatSummary.summaryConsumerGoodsPrice = vatSummary.summaryConsumerGoodsPrice + consumerGoodsPrice;
                 vatSummary.summaryTotalGoodsPrice = vatSummary.summaryTotalGoodsPrice + orderDetail.totalGoodsPrice;
-                vatSummary.summaryTotalSupportPrice = vatSummary.summaryTotalSupportPrice + orderDetail.totalSupportPrice;
+
+                // 포텐타임의 경우에만 더해야함.
+                if(orderDetail.timeSaleGoods) {
+                    vatSummary.summaryTotalSupportPrice = vatSummary.summaryTotalSupportPrice + parseInt((orderDetail.usedCouponBlyAmount * orderDetail.orderBlctExchangeRate).toFixed(0))
+                    // vatSummary.summaryTotalSupportPrice = vatSummary.summaryTotalSupportPrice + orderDetail.totalSupportPrice;
+                }
                 vatSummary.summaryDeliveryFee = vatSummary.summaryDeliveryFee + orderDetail.deliveryFee;
                 vatSummary.summaryTotalFeeRateMoney = vatSummary.summaryTotalFeeRateMoney + totalFeeRateMoney;
                 vatSummary.summarySimplePayoutAmount = vatSummary.summarySimplePayoutAmount + orderDetail.simplePayoutAmount;
@@ -338,7 +375,12 @@ export default class WebCalculateTab extends Component {
             } else if(!orderDetail.refundFlag){
                 notVatSummary.summaryConsumerGoodsPrice = notVatSummary.summaryConsumerGoodsPrice + consumerGoodsPrice;
                 notVatSummary.summaryTotalGoodsPrice = notVatSummary.summaryTotalGoodsPrice + orderDetail.totalGoodsPrice;
-                notVatSummary.summaryTotalSupportPrice = notVatSummary.summaryTotalSupportPrice + orderDetail.totalSupportPrice;
+
+                // 포텐타임의 경우에만 더해야함.
+                if(orderDetail.timeSaleGoods) {
+                    notVatSummary.summaryTotalSupportPrice = notVatSummary.summaryTotalSupportPrice + parseInt((orderDetail.usedCouponBlyAmount * orderDetail.orderBlctExchangeRate).toFixed(0))
+                    // notVatSummary.summaryTotalSupportPrice = notVatSummary.summaryTotalSupportPrice + orderDetail.totalSupportPrice;
+                }
                 notVatSummary.summaryDeliveryFee = notVatSummary.summaryDeliveryFee + orderDetail.deliveryFee;
                 notVatSummary.summaryTotalFeeRateMoney = notVatSummary.summaryTotalFeeRateMoney + totalFeeRateMoney;
                 notVatSummary.summarySimplePayoutAmount = notVatSummary.summarySimplePayoutAmount + orderDetail.simplePayoutAmount;
@@ -370,8 +412,8 @@ export default class WebCalculateTab extends Component {
 
     getExcelData = () => {
         const columns = [
-            '주문일', '주문번호', '주문자', '상품번호', '품목', '상품구분', '환불여부', '판매가', '판매지원금', '수량', '과세여부',
-            '소비자판매가(A) A = B+C+D', '판매원가(B)', '판매지원금(C)', '배송비(D)',
+            '주문일', '주문번호', '주문자', '상품번호', '품목', '상품구분', '환불여부', '판매가', '쿠폰지원금', '수량', '과세여부',
+            '소비자판매가(A) A = B+C+D', '판매원가(B)', '쿠폰지원금(C)', '배송비(D)',
             '수수료율', '수수료(E)',
             '정산금액(F = A-E)', '공급가액(G = F/1.1)', '부가세(H = G*10%)'
         ]
@@ -381,16 +423,21 @@ export default class WebCalculateTab extends Component {
             const timeSaleGoods = orderDetail.timeSaleGoods ? "포텐타임" : ( orderDetail.blyTimeGoods? "블리타임" : ( orderDetail.superRewardGoods? "슈퍼리워드" : "일반상품" ) );
             const vatFlag = orderDetail.vatFlag ? "과세" : "비과세";
             const refundFlag = orderDetail.refundFlag ? "환불" : "-";
-            const timeSaleSupportPrice = orderDetail.totalSupportPrice / orderDetail.orderCnt;
+
+            // 쿠폰지원금
+            const timeSaleSupportPrice = orderDetail.timeSaleGoods ? (orderDetail.usedCouponBlyAmount * orderDetail.orderBlctExchangeRate / orderDetail.orderCnt).toFixed(0) : 0;
+
             const totalGoodsPrice = orderDetail.totalGoodsPrice + orderDetail.totalSupportPrice + orderDetail.deliveryFee;
             const feeRate = orderDetail.timeSaleGoods ? " " : orderDetail.blyTimeGoods ? " " : orderDetail.superRewardGoods? "" :orderDetail.feeRate;
             const feeRateMoney = (orderDetail.currentPrice * orderDetail.feeRate / 100).toFixed(0) * orderDetail.orderCnt;
             const supplyValue = orderDetail.vatFlag ? Math.round(orderDetail.simplePayoutAmount / 1.1) : 0;
             const vat = orderDetail.vatFlag ? Math.round(orderDetail.simplePayoutAmount / 1.1 * 0.1) : 0;
 
+            const orderDetailTotalSupportPrice = orderDetail.timeSaleGoods ? (orderDetail.usedCouponBlyAmount * orderDetail.orderBlctExchangeRate).toFixed(0) : 0;
+
             return [
                 orderDate, orderDetail.orderSeq, orderDetail.consumerNm, orderDetail.goodsNo, orderDetail.goodsNm, timeSaleGoods, refundFlag, orderDetail.currentPrice, timeSaleSupportPrice, orderDetail.orderCnt, vatFlag,
-                totalGoodsPrice, orderDetail.totalGoodsPrice, orderDetail.totalSupportPrice, orderDetail.deliveryFee,
+                totalGoodsPrice, orderDetail.totalGoodsPrice, orderDetailTotalSupportPrice, orderDetail.deliveryFee,
                 feeRate, feeRateMoney,
                 orderDetail.simplePayoutAmount, supplyValue, vat
             ]
@@ -407,6 +454,10 @@ export default class WebCalculateTab extends Component {
         this.setState({
             tipOpen: !this.state.tipOpen
         })
+    }
+
+    copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
     }
 
     render() {
@@ -481,9 +532,9 @@ export default class WebCalculateTab extends Component {
 
                             {this.state.tipOpen &&
                             <div className='mt-4 text-secondary small'>
-                                1. 소비자판매가는 소비자의 총 결제 금액으로 판매원가와 판매지원금, 배송비로 구성되어 있습니다. <br/>
-                                * '판매원가'란 결제금액에서 배송비와 판매지원금을 뺀 금액입니다.(수수료 적용 O) <br/>
-                                * 배송비와 판매지원금에는 판매수수료가 적용되지 않습니다. <br/>
+                                1. 소비자결제금액은 소비자의 총 결제 금액으로 판매원가와 배송비로 구성되어 있습니다. <br/>
+                                * '판매원가'란 결제금액에서 배송비를 뺀 금액입니다.(수수료 적용 O) <br/>
+                                * 배송비와 쿠폰지원금에는 판매수수료가 적용되지 않습니다. <br/>
                                 <br/>
                                 2. MarketBly는 합포장(묶음배송) 주문건이라도 판매 상품별로 개별주문번호가 생성됩니다. <br/>
                                 * 합포장(묶음배송) 상품'의 배송비가 발생할 경우, 가장 빠른 주문번호 한 건에 반영합니다. <br/>
@@ -513,12 +564,12 @@ export default class WebCalculateTab extends Component {
                         </div>
                         }
                         <AgGridReact
-                            enableSorting={true}                //정렬 여부
-                            enableFilter={true}                 //필터링 여부
+                            // enableSorting={true}                //정렬 여부
+                            // enableFilter={true}                 //필터링 여부
                             floatingFilter={false}               //Header 플로팅 필터 여부
                             columnDefs={state.columnSummaryDefs}  //컬럼 세팅
                             defaultColDef={state.defaultColDef}
-                            enableColResize={true}              //컬럼 크기 조정
+                            // enableColResize={true}              //컬럼 크기 조정
                             overlayLoadingTemplate={state.overlayNoRowsTemplate}
                             overlayNoRowsTemplate={state.overlayNoRowsTemplate}
                             onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
@@ -527,6 +578,7 @@ export default class WebCalculateTab extends Component {
                             components={state.components}
                             frameworkComponents={state.frameworkComponents}
                             suppressMovableColumns={true} //헤더고정시키
+                            onCellDoubleClicked={this.copy}
                         >
                         </AgGridReact>
                     </div>
@@ -541,12 +593,12 @@ export default class WebCalculateTab extends Component {
                     >
                         <br/>
                         <AgGridReact
-                            enableSorting={true}                //정렬 여부
-                            enableFilter={true}                 //필터링 여부
+                            // enableSorting={true}                //정렬 여부
+                            // enableFilter={true}                 //필터링 여부
                             floatingFilter={false}               //Header 플로팅 필터 여부
                             columnDefs={state.columnDefs}  //컬럼 세팅
                             defaultColDef={state.defaultColDef}
-                            enableColResize={true}              //컬럼 크기 조정
+                            // enableColResize={true}              //컬럼 크기 조정
                             overlayLoadingTemplate={state.overlayNoRowsTemplate}
                             overlayNoRowsTemplate={state.overlayNoRowsTemplate}
                             onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
@@ -555,6 +607,7 @@ export default class WebCalculateTab extends Component {
                             components={state.components}
                             frameworkComponents={state.frameworkComponents}
                             suppressMovableColumns={true} //헤더고정시키
+                            onCellDoubleClicked={this.copy}
                         >
                         </AgGridReact>
                     </div>

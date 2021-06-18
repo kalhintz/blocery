@@ -192,6 +192,14 @@ class ItemList extends Component {
                             filterAll: true,
                             width: 100
                         },
+                        {
+                            Header: '수수료(%)',
+                            accessor: 'itemFeeRate',
+                            Cell: props => <Cell>{props.value}</Cell>,
+                            filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: [filter.id] }),
+                            filterAll: true,
+                            width: 100
+                        },
 
                         {
                             id: 'itemKinds',

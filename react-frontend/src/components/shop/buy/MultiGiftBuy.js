@@ -15,7 +15,7 @@ import { getDeliveryFee } from '~/util/bzLogic'
 import { getProducerByProducerNo } from '~/lib/producerApi'
 
 import { getGoodsByGoodsNo } from '~/lib/goodsApi'
-import { getConsumer, getConsumerByConsumerNo, getGoodsRemainedCheck, addOrdersTemp } from '~/lib/shopApi'
+import { getConsumer, getGoodsRemainedCheck, addOrdersTemp } from '~/lib/shopApi'
 import { BLCT_TO_WON, exchangeWon2BLCT } from '~/lib/exchangeApi'
 import { scOntGetBalanceOfBlct, scOntOrderGoodsBlct } from '~/lib/smartcontractApi'
 
@@ -887,7 +887,7 @@ export default class MultiGiftBuy extends Component {
     payPgOpen = async(orderGroup, orderList) => {
 
         // 주문자정보
-        const consumer = await getConsumerByConsumerNo(orderGroup.consumerNo);
+        const consumer = await getConsumer();
 
         // 주문정보(주문그룹정보,주문정보리스트) 임시저장 후 주문번호 가져오기
         orderGroup.payStatus = "ready";             //주문그룹정보 결제상태로 변경

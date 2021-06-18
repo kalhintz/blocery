@@ -1,7 +1,7 @@
 import React, {Fragment, Component } from 'react';
 import {Col, Label, Input, Container, Row, Modal, InputGroup, InputGroupAddon } from 'reactstrap'
 import {Button} from '~/styledComponents/shared/Buttons'
-import { getConsumerByConsumerNo, putAddress } from "~/lib/shopApi";
+import {getConsumer, putAddress} from "~/lib/shopApi";
 import { JusoSearch, ShopXButtonNav } from '~/components/common'
 import ComUtil from '~/util/ComUtil'
 import { setMissionClear } from "~/lib/eventApi"
@@ -27,39 +27,44 @@ export default class AddressModify extends Component {
         }
     }
 
-    componentDidMount() {
-        let consumerNo, index, flag
+    async componentDidMount() {
+        let index, flag
+
+        const loginUser = await getConsumer();
+        if(!loginUser || !loginUser.data){
+            this.props.history.replace('/mypage');
+            return;
+        }
 
         if(this.props.location){
             const params = new URLSearchParams(this.props.location.search)
-            consumerNo = params.get('consumerNo')
             index = params.get('index')
             flag = params.get('flag')
         }else{
-            consumerNo = this.props.consumerNo
             index = this.props.index
             flag = this.props.flag
         }
 
         this.setState({ flag: flag })
-
         this.setState({
             addressIndex: index
         })
 
-        this.search(consumerNo);
+        this.search();
     }
 
-    search = async (consumerNo) => {
-        const {data:consumerInfo} = await getConsumerByConsumerNo(consumerNo)
+    search = async () => {
+        const {data:loginUser} = await getConsumer();
+
+        console.log(loginUser)
 
         this.setState({
-            consumerNo: consumerNo,
-            addresses: consumerInfo.consumerAddresses
+            consumerNo: loginUser.consumerNo,
+            addresses: loginUser.consumerAddresses
         })
 
         if(this.state.addressIndex !== null) {      // index 있으면 수정모드
-            const modifyAddress = consumerInfo.consumerAddresses[this.state.addressIndex]
+            const modifyAddress = loginUser.consumerAddresses[this.state.addressIndex]
             this.setState({
                 addrName: modifyAddress.addrName,
                 receiverName: modifyAddress.receiverName,
@@ -222,7 +227,7 @@ export default class AddressModify extends Component {
         if (modified.data === 1) {
             if (this.state.isCheckedDefault) {
                 //기본배송지를 저장했다면 mission8번 clear.
-                setMissionClear(8).then( (response) => console.log('base Delivery SET:missionEvent8:' + response.data )); //기본배송지를 저장
+                //setMissionClear(8).then( (response) => console.log('base Delivery SET:missionEvent8:' + response.data )); //기본배송지를 저장
             }
 
             alert('배송지 정보 저장이 완료되었습니다.')

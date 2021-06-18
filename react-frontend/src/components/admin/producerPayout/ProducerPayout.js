@@ -3,8 +3,8 @@ import { getAllProducerPayoutList, setProducerPayoutStatus, getAllTempProducerBl
 import { getLoginAdminUser } from '~/lib/loginApi'
 import ComUtil from '~/util/ComUtil'
 import { AgGridReact } from 'ag-grid-react';
-import "ag-grid-community/src/styles/ag-grid.scss";
-import "ag-grid-community/src/styles/ag-theme-balham.scss";
+// import "ag-grid-community/src/styles/ag-grid.scss";
+// import "ag-grid-community/src/styles/ag-theme-balham.scss";
 // only available in ag-Grid Enterprise!!!
 // https://www.ag-grid.com/javascript-grid-excel/
 // https://www.ag-grid.com/javascript-grid-filter-set/
@@ -94,6 +94,12 @@ export default class ProducerPayout extends Component{
             defaultColDef: {
                 width: 130,
                 resizable: true,
+                filter: true,
+                sortable: true,
+                floatingFilter: false,
+                filterParams: {
+                    newRowsAction: 'keep'
+                }
             },
             components: {
                 formatCurrencyRenderer: this.formatCurrencyRenderer,
@@ -330,6 +336,10 @@ export default class ProducerPayout extends Component{
         });
     }
 
+    copy = ({value}) => {
+        ComUtil.copyTextToClipboard(value, '', '');
+    }
+
     render() {
 
         return (
@@ -434,17 +444,18 @@ export default class ProducerPayout extends Component{
                         </div>
                         <br/>
                         <AgGridReact
-                            enableSorting={true}                //정렬 여부
-                            enableFilter={true}                 //필터링 여부
+                            // enableSorting={true}                //정렬 여부
+                            // enableFilter={true}                 //필터링 여부
                             columnDefs={this.state.columnDefs}  //컬럼 세팅
                             defaultColDef={this.state.defaultColDef}
-                            enableColResize={true}              //컬럼 크기 조정
+                            // enableColResize={true}              //컬럼 크기 조정
                             overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                             overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                             onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
                             onFilterChanged={this.onGridFilterChanged.bind(this)}
                             rowData={this.state.data}
                             components={this.state.components}
+                            onCellDoubleClicked={this.copy}
                         >
                         </AgGridReact>
                     </div>
@@ -465,11 +476,11 @@ export default class ProducerPayout extends Component{
                         <h4> 정산완료 내역 </h4>
                         <br/>
                         <AgGridReact
-                            enableSorting={true}                //정렬 여부
-                            enableFilter={true}                 //필터링 여부
+                            // enableSorting={true}                //정렬 여부
+                            // enableFilter={true}                 //필터링 여부
                             columnDefs={this.state.columnFinishedDefs}  //컬럼 세팅
                             defaultColDef={this.state.defaultColDef}
-                            enableColResize={true}              //컬럼 크기 조정
+                            // enableColResize={true}              //컬럼 크기 조정
                             overlayLoadingTemplate={this.state.overlayLoadingTemplate}
                             overlayNoRowsTemplate={this.state.overlayNoRowsTemplate}
                             onGridReady={this.onGridReady.bind(this)}   //그리드 init(최초한번실행)
