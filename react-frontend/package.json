@@ -12,7 +12,7 @@
     "ag-grid-community": "^25.2.1",
     "ag-grid-react": "^25.2.0",
     "ajv": "^6.0.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "9.0.0",
     "babel-jest": "23.6.0",
