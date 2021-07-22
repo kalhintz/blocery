@@ -111,7 +111,7 @@
     "webpack-dev-server": "^3.11.0",
     "webpack-manifest-plugin": "2.0.4",
     "workbox-webpack-plugin": "3.6.3",
-    "xlsx": "0.15.5"
+    "xlsx": "0.17.0"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.1",
